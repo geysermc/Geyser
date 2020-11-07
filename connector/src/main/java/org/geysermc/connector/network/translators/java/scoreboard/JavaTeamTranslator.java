@@ -60,6 +60,7 @@ public class JavaTeamTranslator extends PacketTranslator<ServerTeamPacket> {
             case CREATE:
                 scoreboard.registerNewTeam(packet.getTeamName(), toPlayerSet(packet.getPlayers()))
                         .setName(MessageUtils.getBedrockMessage(packet.getDisplayName()))
+                        .setCollisionRule(packet.getCollisionRule())
                         .setColor(packet.getColor())
                         .setNameTagVisibility(packet.getNameTagVisibility())
                         .setPrefix(MessageUtils.getTranslatedBedrockMessage(packet.getPrefix(), session.getLocale()))
@@ -75,6 +76,7 @@ public class JavaTeamTranslator extends PacketTranslator<ServerTeamPacket> {
                 }
 
                 team.setName(MessageUtils.getBedrockMessage(packet.getDisplayName()))
+                        .setCollisionRule(packet.getCollisionRule())
                         .setColor(packet.getColor())
                         .setNameTagVisibility(packet.getNameTagVisibility())
                         .setPrefix(MessageUtils.getTranslatedBedrockMessage(packet.getPrefix(), session.getLocale()))

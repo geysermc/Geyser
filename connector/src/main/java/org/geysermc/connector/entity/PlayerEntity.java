@@ -130,6 +130,7 @@ public class PlayerEntity extends LivingEntity {
 
     @Override
     public void moveAbsolute(GeyserSession session, Vector3f position, Vector3f rotation, boolean isOnGround, boolean teleported) {
+        boolean positionChanged = !position.add(0, entityType.getOffset(), 0).equals(this.position);
         setPosition(position);
         setRotation(rotation);
 
@@ -153,6 +154,10 @@ public class PlayerEntity extends LivingEntity {
         if (rightParrot != null) {
             rightParrot.moveAbsolute(session, position, rotation, true, teleported);
         }
+
+        if (session.getPlayerEntity() != this && positionChanged) {
+            checkPlayerCollision(session);
+        }
     }
 
     @Override
@@ -174,6 +179,10 @@ public class PlayerEntity extends LivingEntity {
         }
         if (rightParrot != null) {
             rightParrot.moveRelative(session, relX, relY, relZ, rotation, true);
+        }
+
+        if (session.getPlayerEntity() != this && (relX != 0 || relY != 0 || relZ != 0)) {
+            checkPlayerCollision(session);
         }
     }
 
@@ -216,6 +225,32 @@ public class PlayerEntity extends LivingEntity {
         if (rightParrot != null) {
             rightParrot.updateRotation(session, yaw, pitch, isOnGround);
         }
+    }
+
+    @Override
+    protected boolean canCollideWithPlayer(GeyserSession session) {
+        Team team = session.getWorldCache().getScoreboard().getTeamFor(username);
+        if (team == null) return true;
+        switch (team.getCollisionRule()) {
+            case NEVER:
+                return false;
+            case PUSH_OWN_TEAM:
+                return team.getEntities().contains(session.getPlayerEntity().getUsername());
+            case PUSH_OTHER_TEAMS:
+                return !team.getEntities().contains(session.getPlayerEntity().getUsername());
+            default:
+                return true;
+        }
+    }
+
+    @Override
+    protected boolean doesYCoordinateIntersect(GeyserSession session) {
+        float playerYMin = session.getPlayerEntity().getPosition().getY() - session.getPlayerEntity().getEntityType().getOffset();
+        float playerYMax = playerYMin + session.getPlayerEntity().getEntityType().getHeight();
+        float thisYMin = this.position.getY() - this.entityType.getOffset();
+        float thisYMax = thisYMin + this.entityType.getHeight();
+        if (thisYMin > playerYMax) return false; // Entity is higher than the player
+        return !(playerYMin > thisYMax); // Player is higher than the entity
     }
 
     @Override

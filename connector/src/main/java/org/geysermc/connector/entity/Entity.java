@@ -177,6 +177,10 @@ public class Entity {
         moveEntityPacket.setTeleported(false);
 
         session.sendUpstreamPacket(moveEntityPacket);
+
+        if (relX != 0 || relY != 0 || relZ != 0) {
+            checkPlayerCollision(session);
+        }
     }
 
     public void moveAbsolute(GeyserSession session, Vector3f position, float yaw, float pitch, boolean isOnGround, boolean teleported) {
@@ -184,6 +188,7 @@ public class Entity {
     }
 
     public void moveAbsolute(GeyserSession session, Vector3f position, Vector3f rotation, boolean isOnGround, boolean teleported) {
+        boolean positionChanged = !position.equals(this.position);
         setPosition(position);
         setRotation(rotation);
         setOnGround(isOnGround);
@@ -196,10 +201,14 @@ public class Entity {
         moveEntityPacket.setTeleported(teleported);
 
         session.sendUpstreamPacket(moveEntityPacket);
+
+        if (positionChanged) {
+            checkPlayerCollision(session);
+        }
     }
 
     /**
-     * Teleports an entity to a new location. Used in JavaEntityTeleportTranslator.
+     * Teleports an entity to a new location. Used in {@link org.geysermc.connector.network.translators.java.entity.JavaEntityTeleportTranslator}.
      * @param session GeyserSession.
      * @param position The new position of the entity.
      * @param yaw The new yaw of the entity.
@@ -211,7 +220,7 @@ public class Entity {
     }
 
     /**
-     * Updates an entity's head position. Used in JavaEntityHeadLookTranslator.
+     * Updates an entity's head position. Used in {@link org.geysermc.connector.network.translators.java.entity.JavaEntityHeadLookTranslator}.
      * @param session GeyserSession.
      * @param headYaw The new head rotation of the entity.
      */
@@ -220,7 +229,7 @@ public class Entity {
     }
 
     /**
-     * Updates an entity's position and rotation. Used in JavaEntityPositionRotationTranslator.
+     * Updates an entity's position and rotation. Used in {@link org.geysermc.connector.network.translators.java.entity.JavaEntityPositionRotationTranslator}.
      * @param session GeyserSession
      * @param moveX The new X offset of the current position.
      * @param moveY The new Y offset of the current position.
@@ -234,7 +243,7 @@ public class Entity {
     }
 
     /**
-     * Updates an entity's rotation. Used in JavaEntityRotationTranslator.
+     * Updates an entity's rotation. Used in {@link org.geysermc.connector.network.translators.java.entity.JavaEntityRotationTranslator}.
      * @param session GeyserSession.
      * @param yaw The new yaw of the entity.
      * @param pitch The new pitch of the entity.
@@ -242,6 +251,58 @@ public class Entity {
      */
     public void updateRotation(GeyserSession session, float yaw, float pitch, boolean isOnGround) {
         updatePositionAndRotation(session, 0, 0, 0, yaw, pitch, isOnGround);
+    }
+
+    /**
+     * Unlike fishing rod pulling behavior that is calculated serverside on Bedrock and clientside on Java,
+     * Bedrock player "pushing" is nonexistent on Bedrock.
+     * <br>
+     * This code checks to see if a Geyser player should be moved, and if so applies motion to the player
+     * which sends movement packets back.
+     * <br>
+     * This should be called any time an entity moves position.
+     * @param session the session of the Bedrock player
+     */
+    protected void checkPlayerCollision(GeyserSession session) {
+        if (session.getRidingVehicleEntity() == this) return;
+        if (doesYCoordinateIntersect(session)) {
+            double distanceX = session.getPlayerEntity().getPosition().getX() - this.position.getX();
+            double distanceZ = session.getPlayerEntity().getPosition().getZ() - this.position.getZ();
+            double largestDistance = Math.max(Math.abs(distanceX), Math.abs(distanceZ));
+            if (largestDistance <= 0.65 && canCollideWithPlayer(session)) {
+                double largestDistanceSquareRoot = Math.sqrt(largestDistance);
+                double velocityX = (distanceX / 20) / largestDistanceSquareRoot;
+                double velocityZ = (distanceZ / 20) / largestDistanceSquareRoot;
+
+                SetEntityMotionPacket packet = new SetEntityMotionPacket();
+                packet.setRuntimeEntityId(session.getPlayerEntity().getGeyserId());
+                packet.setMotion(Vector3f.from(velocityX, 0, velocityZ));
+                session.sendUpstreamPacket(packet);
+            }
+        }
+    }
+
+    /**
+     * Ensure that collision is possible if this entity is a player. Should be overridden for players as their team
+     * might change the status of this.
+     * @param session the Bedrock client session
+     * @return if this entity can collide with the session's player
+     */
+    protected boolean canCollideWithPlayer(GeyserSession session) {
+        return true;
+    }
+
+    /**
+     * @param session the Bedrock client session
+     * @return true if the Y level of this entity intersects with player entity
+     */
+    protected boolean doesYCoordinateIntersect(GeyserSession session) {
+        float playerYMin = session.getPlayerEntity().getPosition().getY() - session.getPlayerEntity().getEntityType().getOffset();
+        float playerYMax = playerYMin + session.getPlayerEntity().getEntityType().getHeight();
+        float entityYMax = this.position.getY() + this.entityType.getHeight();
+        float entityYMin = this.position.getY();
+        if (entityYMin > playerYMax) return false; // Entity is higher than the player
+        return !(playerYMin > entityYMax); // Player is higher than the entity
     }
 
     public void updateBedrockAttributes(GeyserSession session) {
