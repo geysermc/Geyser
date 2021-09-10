@@ -27,6 +27,7 @@ package org.geysermc.connector.network.translators.java;
 
 import com.github.steveice10.mc.protocol.packet.ingame.server.ServerChatPacket;
 import com.nukkitx.protocol.bedrock.packet.TextPacket;
+import org.geysermc.connector.GeyserConnector;
 import org.geysermc.connector.network.session.GeyserSession;
 import org.geysermc.connector.network.translators.PacketTranslator;
 import org.geysermc.connector.network.translators.Translator;
@@ -40,7 +41,19 @@ public class JavaChatTranslator extends PacketTranslator<ServerChatPacket> {
         TextPacket textPacket = new TextPacket();
         textPacket.setPlatformChatId("");
         textPacket.setSourceName("");
-        textPacket.setXuid(session.getAuthData().getXboxUUID());
+
+        // This attempts to find the XUID of the player so users can be muted/blocked
+        String xuid = "";
+        if (packet.getSenderUuid().getMostSignificantBits() != 0l || packet.getSenderUuid().getLeastSignificantBits() != 0l) {
+            GeyserSession playerSession = GeyserConnector.getInstance().getPlayerByUuid(packet.getSenderUuid());
+
+            if (playerSession != null) {
+                xuid = playerSession.getAuthData().getXboxUUID();
+            }
+        }
+
+        textPacket.setXuid(xuid);
+
         switch (packet.getType()) {
             case CHAT:
                 textPacket.setType(TextPacket.Type.CHAT);
