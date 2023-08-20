@@ -63,7 +63,7 @@ public class JavaBlockEntityDataTranslator extends PacketTranslator<ClientboundB
         BlockEntityUtils.updateBlockEntity(session, translator.getBlockEntityTag(type, position.getX(), position.getY(), position.getZ(),
                 packet.getNbt(), blockState), packet.getPosition());
         // Check for custom skulls.
-        if (session.getPreferencesCache().showCustomSkulls() && packet.getNbt() != null && packet.getNbt().contains("SkullOwner")) {
+        if (session.getPreferencesCache().getEffectiveShowSkulls() && packet.getNbt() != null && packet.getNbt().contains("SkullOwner")) {
             SkullBlockEntityTranslator.translateSkull(session, packet.getNbt(), position.getX(), position.getY(), position.getZ(), blockState);
         }
 

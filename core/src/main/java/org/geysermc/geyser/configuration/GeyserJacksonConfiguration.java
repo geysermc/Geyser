@@ -99,8 +99,9 @@ public abstract class GeyserJacksonConfiguration implements GeyserConfiguration 
     @JsonProperty("allow-third-party-capes")
     private boolean allowThirdPartyCapes = true;
 
+    @JsonDeserialize(using = CooldownType.Deserializer.class)
     @JsonProperty("show-cooldown")
-    private String showCooldown = "title";
+    private CooldownType showCooldown = CooldownType.TITLE;
 
     @JsonProperty("show-coordinates")
     private boolean showCoordinates = true;

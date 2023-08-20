@@ -27,7 +27,9 @@ package org.geysermc.geyser.util;
 
 import com.github.steveice10.mc.protocol.data.game.entity.player.GameMode;
 import com.github.steveice10.mc.protocol.data.game.setting.Difficulty;
+import it.unimi.dsi.fastutil.Pair;
 import org.geysermc.cumulus.component.DropdownComponent;
+import org.geysermc.cumulus.component.LabelComponent;
 import org.geysermc.cumulus.form.CustomForm;
 import org.geysermc.geyser.GeyserImpl;
 import org.geysermc.geyser.level.GameRule;
@@ -35,6 +37,8 @@ import org.geysermc.geyser.level.WorldManager;
 import org.geysermc.geyser.session.GeyserSession;
 import org.geysermc.geyser.text.GeyserLocale;
 import org.geysermc.geyser.text.MinecraftLocale;
+
+import java.util.Objects;
 
 public class SettingsUtils {
     /**
@@ -51,29 +55,21 @@ public class SettingsUtils {
                 .title("geyser.settings.title.main")
                 .iconPath("textures/ui/settings_glyph_color_2x.png");
 
-        // Only show the client title if any of the client settings are available
-        boolean showClientSettings = session.getPreferencesCache().isAllowShowCoordinates()
-                || CooldownUtils.getDefaultShowCooldown() != CooldownUtils.CooldownType.DISABLED
-                || session.getGeyser().getConfig().isAllowCustomSkulls();
 
+        var preferences = session.getPreferencesCache().getPreferences().values()
+            .stream()
+            .filter(pref -> pref.isModifiable(session)) // only show modifiable preferences
+            .map(pref -> Pair.of(pref, pref.component(session))) // compute components
+            .filter(p -> !(p.value() instanceof LabelComponent)) // skip any that gave us a label
+            .toList();
+
+        // Only show the client title if any of the client settings are available
+        boolean showClientSettings = !preferences.isEmpty();
         if (showClientSettings) {
             builder.label("geyser.settings.title.client");
 
-            // Client can only see its coordinates if reducedDebugInfo is disabled and coordinates are enabled in geyser config.
-            if (session.getPreferencesCache().isAllowShowCoordinates()) {
-                builder.toggle("%createWorldScreen.showCoordinates", session.getPreferencesCache().isPrefersShowCoordinates());
-            }
-
-            if (CooldownUtils.getDefaultShowCooldown() != CooldownUtils.CooldownType.DISABLED) {
-                DropdownComponent.Builder cooldownDropdown = DropdownComponent.builder("options.attackIndicator");
-                cooldownDropdown.option("options.attack.crosshair", session.getPreferencesCache().getCooldownPreference() == CooldownUtils.CooldownType.TITLE);
-                cooldownDropdown.option("options.attack.hotbar", session.getPreferencesCache().getCooldownPreference() == CooldownUtils.CooldownType.ACTIONBAR);
-                cooldownDropdown.option("options.off", session.getPreferencesCache().getCooldownPreference() == CooldownUtils.CooldownType.DISABLED);
-                builder.dropdown(cooldownDropdown);
-            }
-
-            if (session.getGeyser().getConfig().isAllowCustomSkulls()) {
-                builder.toggle("geyser.settings.option.customSkulls", session.getPreferencesCache().isPrefersCustomSkulls());
+            for (var preferenceData : preferences) {
+                builder.component(preferenceData.value());
             }
         }
 
@@ -112,19 +108,9 @@ public class SettingsUtils {
 
         builder.validResultHandler((response) -> {
             if (showClientSettings) {
-                // Client can only see its coordinates if reducedDebugInfo is disabled and coordinates are enabled in geyser config.
-                if (session.getPreferencesCache().isAllowShowCoordinates()) {
-                    session.getPreferencesCache().setPrefersShowCoordinates(response.next());
-                    session.getPreferencesCache().updateShowCoordinates();
-                }
-
-                if (CooldownUtils.getDefaultShowCooldown() != CooldownUtils.CooldownType.DISABLED) {
-                    CooldownUtils.CooldownType cooldownType = CooldownUtils.CooldownType.VALUES[(int) response.next()];
-                    session.getPreferencesCache().setCooldownPreference(cooldownType);
-                }
-
-                if (session.getGeyser().getConfig().isAllowCustomSkulls()) {
-                    session.getPreferencesCache().setPrefersCustomSkulls(response.next());
+                for (var preferenceData : preferences) {
+                    Object value = Objects.requireNonNull(response.next(), "response for preference " + preferenceData.key());
+                    preferenceData.key().onFormResponse(value);
                 }
             }
 

@@ -99,6 +99,8 @@ import org.geysermc.api.util.BedrockPlatform;
 import org.geysermc.api.util.InputMode;
 import org.geysermc.api.util.UiProfile;
 import org.geysermc.geyser.api.bedrock.camera.CameraShake;
+import org.geysermc.geyser.api.preference.Preference;
+import org.geysermc.geyser.api.preference.PreferenceKey;
 import org.geysermc.geyser.api.util.PlatformType;
 import org.geysermc.cumulus.form.Form;
 import org.geysermc.cumulus.form.util.FormBuilder;
@@ -2005,6 +2007,21 @@ public class GeyserSession implements GeyserConnection, GeyserCommandSource {
     public @NonNull Set<String> fogEffects() {
         // Use a copy so that sendFog/removeFog can be called while iterating the returned set (avoid CME)
         return Set.copyOf(this.appliedFog);
+    }
+
+    @Override
+    public <T> void storePreference(@NonNull PreferenceKey<T> key, @NonNull Preference<T> preference) {
+        this.preferencesCache.register(key, preference);
+    }
+
+    @Override
+    public @NonNull <T> Preference<T> requirePreference(@NonNull PreferenceKey<T> key) throws IllegalArgumentException {
+        return this.preferencesCache.require(key);
+    }
+
+    @Override
+    public @NonNull <T> Optional<Preference<T>> getPreference(@NonNull PreferenceKey<T> key) {
+        return this.preferencesCache.get(key);
     }
 
     public void addCommandEnum(String name, String enums) {

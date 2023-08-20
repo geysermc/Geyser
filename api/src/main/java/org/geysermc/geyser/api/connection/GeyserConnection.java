@@ -33,7 +33,10 @@ import org.geysermc.geyser.api.bedrock.camera.CameraShake;
 import org.geysermc.geyser.api.command.CommandSource;
 import org.geysermc.geyser.api.entity.type.GeyserEntity;
 import org.geysermc.geyser.api.entity.type.player.GeyserPlayerEntity;
+import org.geysermc.geyser.api.preference.Preference;
+import org.geysermc.geyser.api.preference.PreferenceKey;
 
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
@@ -95,4 +98,12 @@ public interface GeyserConnection extends Connection, CommandSource {
      */
     @NonNull
     Set<String> fogEffects();
+
+    <T> void storePreference(@NonNull PreferenceKey<T> key, @NonNull Preference<T> preference);
+
+    @NonNull
+    <T> Preference<T> requirePreference(@NonNull PreferenceKey<T> key) throws IllegalArgumentException;
+
+    @NonNull
+    <T> Optional<Preference<T>> getPreference(@NonNull PreferenceKey<T> key);
 }

@@ -25,63 +25,84 @@
 
 package org.geysermc.geyser.session.cache;
 
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import lombok.Getter;
-import lombok.Setter;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.geysermc.geyser.api.preference.Preference;
+import org.geysermc.geyser.api.preference.PreferenceKey;
+import org.geysermc.geyser.configuration.CooldownType;
 import org.geysermc.geyser.configuration.GeyserConfiguration;
+import org.geysermc.geyser.preference.CooldownPreference;
+import org.geysermc.geyser.preference.CustomSkullsPreference;
+import org.geysermc.geyser.preference.ShowCoordinatesPreference;
 import org.geysermc.geyser.session.GeyserSession;
-import org.geysermc.geyser.util.CooldownUtils;
 
-@Getter
+import java.util.Map;
+import java.util.Optional;
+
 public class PreferencesCache {
     private final GeyserSession session;
 
-    /**
-     * True if the client prefers being shown their coordinates, regardless if they're being shown or not.
-     * This will be true everytime the client joins the server because neither the client nor server store the preference permanently.
-     */
-    @Setter
-    private boolean prefersShowCoordinates = true;
-
-    /**
-     * If the client's preference will be ignored, this will return false.
-     */
-    private boolean allowShowCoordinates;
-
-    /**
-     * If the session wants custom skulls to be shown.
-     */
-    @Setter
-    private boolean prefersCustomSkulls;
-
-    /**
-     * Which CooldownType the client prefers. Initially set to {@link CooldownUtils#getDefaultShowCooldown()}.
-     */
-    @Setter
-    private CooldownUtils.CooldownType cooldownPreference = CooldownUtils.getDefaultShowCooldown();
+    @Getter
+    private final Map<PreferenceKey<?>, Preference<?>> preferences = new Object2ObjectOpenHashMap<>();
 
     public PreferencesCache(GeyserSession session) {
         this.session = session;
 
-        prefersCustomSkulls = session.getGeyser().getConfig().isAllowCustomSkulls();
+        register(CooldownPreference.KEY, new CooldownPreference(session));
+        register(CustomSkullsPreference.KEY, new CustomSkullsPreference(session));
+        register(ShowCoordinatesPreference.KEY, new ShowCoordinatesPreference(session));
+    }
+
+    public <T> void register(PreferenceKey<T> key, Preference<T> preference) {
+        if (preference == null) {
+            throw new IllegalArgumentException("preference cannot be null");
+        }
+        preferences.put(key, preference);
+    }
+
+    @SuppressWarnings("unchecked")
+    @NonNull
+    public <T> Preference<T> require(PreferenceKey<T> key) throws IllegalArgumentException {
+        Preference<T> preference = (Preference<T>) preferences.get(key);
+        if (preference == null) {
+            throw new IllegalArgumentException("preference with key " + key + " is not stored for session " + session.javaUuid());
+        }
+        return preference;
+    }
+
+    @SuppressWarnings("unchecked")
+    @NonNull
+    public <T> Optional<Preference<T>> get(PreferenceKey<T> key) {
+        return Optional.ofNullable((Preference<T>) preferences.get(key));
     }
 
     /**
-     * Tell the client to hide or show the coordinates.
-     *
-     * If {@link #prefersShowCoordinates} is true, coordinates will be shown, unless either of the following conditions apply: <br>
-     * <br>
-     * {@link GeyserSession#reducedDebugInfo} is enabled
-     * {@link GeyserConfiguration#isShowCoordinates()} is disabled
+     * Tell the client to hide or show the coordinates. The client's preference will be overridden if either of the
+     * following are true:
+     * <br><br>
+     * {@link GeyserSession#isReducedDebugInfo} is enabled.<br>
+     * {@link GeyserConfiguration#isShowCoordinates()} is disabled.
      */
     public void updateShowCoordinates() {
-        allowShowCoordinates = !session.isReducedDebugInfo() && session.getGeyser().getConfig().isShowCoordinates();
-        session.sendGameRule("showcoordinates", allowShowCoordinates && prefersShowCoordinates);
+        Preference<Boolean> preference = require(ShowCoordinatesPreference.KEY);
+        // preference itself won't be any different, but trigger an update anyway in case
+        // reduced-debug-info has changed or the config has changed
+        preference.onUpdate(session);
     }
 
-    /**
-     * @return true if the session prefers custom skulls, and the config allows them.
-     */
-    public boolean showCustomSkulls() {
-        return prefersCustomSkulls && session.getGeyser().getConfig().isAllowCustomSkulls();
+    public boolean getEffectiveShowSkulls() {
+        if (!session.getGeyser().getConfig().isAllowCustomSkulls()) {
+            return false;
+        }
+        return require(CustomSkullsPreference.KEY).value();
+    }
+
+
+    public CooldownType getEffectiveCooldown() {
+        if (session.getGeyser().getConfig().getShowCooldown() == CooldownType.DISABLED) {
+            return CooldownType.DISABLED;
+        }
+        return require(CooldownPreference.KEY).value();
     }
 }

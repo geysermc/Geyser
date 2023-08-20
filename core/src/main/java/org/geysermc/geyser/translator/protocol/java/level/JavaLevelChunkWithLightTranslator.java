@@ -90,6 +90,7 @@ public class JavaLevelChunkWithLightTranslator extends PacketTranslator<Clientbo
         int yOffset = session.getChunkCache().getChunkMinY();
         int chunkSize = session.getChunkCache().getChunkHeightY();
         int biomeGlobalPalette = session.getBiomeGlobalPalette();
+        boolean customSkulls = session.getPreferencesCache().getEffectiveShowSkulls();
 
         DataPalette[] javaChunks = new DataPalette[chunkSize];
         DataPalette[] javaBiomes = new DataPalette[chunkSize];
@@ -283,7 +284,7 @@ public class JavaLevelChunkWithLightTranslator extends PacketTranslator<Clientbo
                 bedrockBlockEntities.add(blockEntityTranslator.getBlockEntityTag(type, x + chunkBlockX, y, z + chunkBlockZ, tag, blockState));
 
                 // Check for custom skulls
-                if (session.getPreferencesCache().showCustomSkulls() && type == BlockEntityType.SKULL && tag != null && tag.contains("SkullOwner")) {
+                if (customSkulls && type == BlockEntityType.SKULL && tag != null && tag.contains("SkullOwner")) {
                     SkullBlockEntityTranslator.translateSkull(session, tag, x + chunkBlockX, y, z + chunkBlockZ, blockState);
                 }
             }
