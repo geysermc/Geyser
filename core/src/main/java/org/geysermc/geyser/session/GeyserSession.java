@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2022 GeyserMC. http://geysermc.org
+ * Copyright (c) 2019-2024 GeyserMC. http://geysermc.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -82,6 +82,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.value.qual.IntRange;
 import org.cloudburstmc.math.vector.*;
 import org.cloudburstmc.nbt.NbtMap;
+import org.cloudburstmc.nbt.NbtMapBuilder;
+import org.cloudburstmc.nbt.NbtType;
 import org.cloudburstmc.protocol.bedrock.BedrockDisconnectReasons;
 import org.cloudburstmc.protocol.bedrock.BedrockServerSession;
 import org.cloudburstmc.protocol.bedrock.data.*;
@@ -106,8 +108,10 @@ import org.geysermc.geyser.api.bedrock.camera.CameraData;
 import org.geysermc.geyser.api.bedrock.camera.CameraShake;
 import org.geysermc.geyser.api.connection.GeyserConnection;
 import org.geysermc.geyser.api.entity.EntityData;
+import org.geysermc.geyser.api.entity.EntityIdentifier;
 import org.geysermc.geyser.api.entity.type.GeyserEntity;
 import org.geysermc.geyser.api.entity.type.player.GeyserPlayerEntity;
+import org.geysermc.geyser.api.event.bedrock.SessionDefineEntitiesEvent;
 import org.geysermc.geyser.api.event.bedrock.SessionDisconnectEvent;
 import org.geysermc.geyser.api.event.bedrock.SessionLoginEvent;
 import org.geysermc.geyser.api.network.AuthType;
@@ -118,6 +122,7 @@ import org.geysermc.geyser.configuration.EmoteOffhandWorkaroundOption;
 import org.geysermc.geyser.configuration.GeyserConfiguration;
 import org.geysermc.geyser.entity.EntityDefinitions;
 import org.geysermc.geyser.entity.GeyserEntityData;
+import org.geysermc.geyser.entity.GeyserEntityIdentifier;
 import org.geysermc.geyser.entity.attribute.GeyserAttributeType;
 import org.geysermc.geyser.entity.type.Entity;
 import org.geysermc.geyser.entity.type.ItemFrameEntity;
@@ -172,6 +177,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 @Getter
 public class GeyserSession implements GeyserConnection, GeyserCommandSource {
@@ -685,9 +691,7 @@ public class GeyserSession implements GeyserConnection, GeyserCommandSource {
         biomeDefinitionListPacket.setDefinitions(Registries.BIOMES_NBT.get());
         upstream.sendPacket(biomeDefinitionListPacket);
 
-        AvailableEntityIdentifiersPacket entityPacket = new AvailableEntityIdentifiersPacket();
-        entityPacket.setIdentifiers(Registries.BEDROCK_ENTITY_IDENTIFIERS.get());
-        upstream.sendPacket(entityPacket);
+        this.sendAvailableEntityIdentifiers();
 
         CameraPresetsPacket cameraPresetsPacket = new CameraPresetsPacket();
         cameraPresetsPacket.getPresets().addAll(CameraDefinitions.CAMERA_PRESETS);
@@ -727,6 +731,36 @@ public class GeyserSession implements GeyserConnection, GeyserCommandSource {
         // Recipe unlocking
         gamerulePacket.getGameRules().add(new GameRuleData<>("recipesunlock", true));
         upstream.sendPacket(gamerulePacket);
+    }
+
+    public void sendAvailableEntityIdentifiers() {
+        NbtMap nbt = Registries.BEDROCK_ENTITY_IDENTIFIERS.get();
+        List<NbtMap> idlist = nbt.getList("idlist", NbtType.COMPOUND);
+        List<EntityIdentifier> identifiers = new ArrayList<>(idlist.size());
+        for (NbtMap identifier : idlist) {
+            identifiers.add(new GeyserEntityIdentifier(identifier));
+        }
+
+        NbtMapBuilder builder = nbt.toBuilder();
+        SessionDefineEntitiesEvent event = new SessionDefineEntitiesEvent(this, identifiers) {
+
+            @Override
+            public boolean register(@NonNull EntityIdentifier entityIdentifier) {
+                return identifiers.add(entityIdentifier);
+            }
+        };
+
+        this.geyser.eventBus().fire(event);
+
+        builder.putList("idlist", NbtType.COMPOUND, identifiers
+                .stream()
+                .map(identifer -> ((GeyserEntityIdentifier) identifer).nbt())
+                .collect(Collectors.toList())
+        );
+
+        AvailableEntityIdentifiersPacket entityPacket = new AvailableEntityIdentifiersPacket();
+        entityPacket.setIdentifiers(builder.build());
+        upstream.sendPacket(entityPacket);
     }
 
     public void authenticate(String username) {

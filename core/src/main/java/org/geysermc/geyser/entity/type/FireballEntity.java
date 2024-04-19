@@ -26,7 +26,7 @@
 package org.geysermc.geyser.entity.type;
 
 import org.cloudburstmc.math.vector.Vector3f;
-import org.geysermc.geyser.entity.EntityDefinition;
+import org.geysermc.geyser.entity.GeyserEntityDefinition;
 import org.geysermc.geyser.session.GeyserSession;
 
 import java.util.UUID;
@@ -39,7 +39,7 @@ public class FireballEntity extends ThrowableEntity {
      */
     protected int futureTicks = 3;
 
-    public FireballEntity(GeyserSession session, int entityId, long geyserId, UUID uuid, EntityDefinition<?> definition, Vector3f position, Vector3f motion, float yaw, float pitch, float headYaw) {
+    public FireballEntity(GeyserSession session, int entityId, long geyserId, UUID uuid, GeyserEntityDefinition<?> definition, Vector3f position, Vector3f motion, float yaw, float pitch, float headYaw) {
         super(session, entityId, geyserId, uuid, definition, position, Vector3f.ZERO, yaw, pitch, headYaw);
 
         float magnitude = motion.length();

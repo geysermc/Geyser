@@ -324,7 +324,7 @@ public class JavaCommandsTranslator extends PacketTranslator<ClientboundCommands
             if (entityTypes != null) {
                 return entityTypes;
             }
-            return (entityTypes = Registries.JAVA_ENTITY_IDENTIFIERS.get().keySet().toArray(new String[0]));
+            return (entityTypes = Registries.ENTITY_IDENTIFIERS.get().keySet().toArray(new String[0]));
         }
 
         public String[] getItemNames() {

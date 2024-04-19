@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2022 GeyserMC. http://geysermc.org
+ * Copyright (c) 2019-2024 GeyserMC. http://geysermc.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,7 +35,7 @@ import org.cloudburstmc.math.vector.Vector3i;
 import org.cloudburstmc.nbt.NbtMap;
 import org.cloudburstmc.nbt.NbtMapBuilder;
 import org.cloudburstmc.protocol.bedrock.packet.UpdateBlockPacket;
-import org.geysermc.geyser.entity.EntityDefinition;
+import org.geysermc.geyser.entity.GeyserEntityDefinition;
 import org.geysermc.geyser.registry.Registries;
 import org.geysermc.geyser.session.GeyserSession;
 
@@ -117,7 +117,7 @@ public class SpawnerBlockEntityTranslator extends BlockEntityTranslator {
             String entityId = idTag.getValue();
             builder.put("EntityIdentifier", entityId);
 
-            EntityDefinition<?> definition = Registries.JAVA_ENTITY_IDENTIFIERS.get(entityId);
+            GeyserEntityDefinition<?> definition = Registries.ENTITY_IDENTIFIERS.get(entityId);
             if (definition != null) {
                 builder.put("DisplayEntityWidth", definition.width());
                 builder.put("DisplayEntityHeight", definition.height());

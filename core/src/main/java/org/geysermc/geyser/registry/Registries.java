@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2022 GeyserMC. http://geysermc.org
+ * Copyright (c) 2019-2024 GeyserMC. http://geysermc.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,18 +35,31 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.cloudburstmc.nbt.NbtMap;
 import org.cloudburstmc.nbt.NbtMapBuilder;
 import org.cloudburstmc.protocol.bedrock.data.inventory.crafting.PotionMixData;
 import org.cloudburstmc.protocol.bedrock.data.inventory.crafting.recipe.RecipeData;
 import org.cloudburstmc.protocol.bedrock.packet.BedrockPacket;
 import org.geysermc.geyser.GeyserImpl;
+import org.geysermc.geyser.api.entity.EntityDefinition;
+import org.geysermc.geyser.api.event.lifecycle.GeyserDefineEntitiesEvent;
 import org.geysermc.geyser.api.pack.ResourcePack;
-import org.geysermc.geyser.entity.EntityDefinition;
+import org.geysermc.geyser.entity.GeyserEntityDefinition;
+import org.geysermc.geyser.event.type.GeyserDefineEntitiesEventImpl;
 import org.geysermc.geyser.inventory.item.Enchantment.JavaEnchantment;
 import org.geysermc.geyser.inventory.recipe.GeyserRecipe;
 import org.geysermc.geyser.item.type.Item;
-import org.geysermc.geyser.registry.loader.*;
+import org.geysermc.geyser.registry.loader.BiomeIdentifierRegistryLoader;
+import org.geysermc.geyser.registry.loader.BlockEntityRegistryLoader;
+import org.geysermc.geyser.registry.loader.EnchantmentRegistryLoader;
+import org.geysermc.geyser.registry.loader.ParticleTypesRegistryLoader;
+import org.geysermc.geyser.registry.loader.PotionMixRegistryLoader;
+import org.geysermc.geyser.registry.loader.ProviderRegistryLoader;
+import org.geysermc.geyser.registry.loader.RegistryLoaders;
+import org.geysermc.geyser.registry.loader.SoundEventsRegistryLoader;
+import org.geysermc.geyser.registry.loader.SoundRegistryLoader;
+import org.geysermc.geyser.registry.loader.SoundTranslatorRegistryLoader;
 import org.geysermc.geyser.registry.populator.ItemRegistryPopulator;
 import org.geysermc.geyser.registry.populator.PacketRegistryPopulator;
 import org.geysermc.geyser.registry.populator.RecipeRegistryPopulator;
@@ -59,8 +72,16 @@ import org.geysermc.geyser.translator.level.block.entity.BlockEntityTranslator;
 import org.geysermc.geyser.translator.level.event.LevelEventTranslator;
 import org.geysermc.geyser.translator.sound.SoundInteractionTranslator;
 import org.geysermc.geyser.translator.sound.SoundTranslator;
+import org.geysermc.geyser.util.EntityUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Holds all the common registries in Geyser.
@@ -110,12 +131,12 @@ public final class Registries {
     /**
      * A map containing all entity types and their respective Geyser definitions
      */
-    public static final SimpleMappedRegistry<EntityType, EntityDefinition<?>> ENTITY_DEFINITIONS = SimpleMappedRegistry.create(RegistryLoaders.empty(() -> new EnumMap<>(EntityType.class)));
+    public static final SimpleMappedRegistry<EntityType, GeyserEntityDefinition<?>> ENTITY_DEFINITIONS = SimpleMappedRegistry.create(RegistryLoaders.empty(() -> new EnumMap<>(EntityType.class)));
 
     /**
-     * A map containing all Java entity identifiers and their respective Geyser definitions
+     * A map containing all entity identifiers and their respective Geyser definitions
      */
-    public static final SimpleMappedRegistry<String, EntityDefinition<?>> JAVA_ENTITY_IDENTIFIERS = SimpleMappedRegistry.create(RegistryLoaders.empty(Object2ObjectOpenHashMap::new));
+    public static final SimpleMappedRegistry<String, GeyserEntityDefinition<?>> ENTITY_IDENTIFIERS = SimpleMappedRegistry.create(RegistryLoaders.empty(Object2ObjectOpenHashMap::new));
 
     /**
      * A registry containing all the Java packet translators.
@@ -199,5 +220,28 @@ public final class Registries {
             biomesNbt.put(key, value.build());
         }
         BIOMES_NBT.set(biomesNbt.build());
+    }
+
+    public static void callRegistryEvents() {
+        // Call registry events
+        List<EntityDefinition> definitions = ENTITY_IDENTIFIERS.get().values().stream()
+                .map(def -> (EntityDefinition) def)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+
+        GeyserDefineEntitiesEvent defineEntitiesEvent = new GeyserDefineEntitiesEventImpl(definitions) {
+            @Override
+            public boolean register(@NonNull EntityDefinition entityDefinition) {
+                GeyserEntityDefinition<?> geyserDefinition = (GeyserEntityDefinition<?>) entityDefinition;
+                if (!geyserDefinition.custom()) {
+                    return false;
+                }
+
+                EntityUtils.registerEntity(geyserDefinition.identifier(), geyserDefinition);
+                return true;
+            }
+        };
+
+        GeyserImpl.getInstance().eventBus().fire(defineEntitiesEvent);
     }
 }

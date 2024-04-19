@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2022 GeyserMC. http://geysermc.org
+ * Copyright (c) 2019-2023 GeyserMC. http://geysermc.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,20 +23,36 @@
  * @link https://github.com/GeyserMC/Geyser
  */
 
-package org.geysermc.geyser.entity.type.living.monster;
+package org.geysermc.geyser.api.event.lifecycle;
 
-import org.cloudburstmc.math.vector.Vector3f;
-import org.cloudburstmc.protocol.bedrock.data.entity.EntityDataTypes;
-import org.geysermc.geyser.entity.GeyserEntityDefinition;
-import org.geysermc.geyser.session.GeyserSession;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.geysermc.event.Event;
+import org.geysermc.geyser.api.entity.EntityDefinition;
 
-import java.util.UUID;
+import java.util.List;
 
-public class GiantEntity extends MonsterEntity {
+/**
+ * Called when entities are defined within Geyser.
+ * <p>
+ * This event can be used to add custom entities to Geyser.
+ * Entity definitions can be created using the builder provided
+ * inside of {@link EntityDefinition}.
+ */
+public interface GeyserDefineEntitiesEvent extends Event {
 
-    public GiantEntity(GeyserSession session, int entityId, long geyserId, UUID uuid, GeyserEntityDefinition<?> definition, Vector3f position, Vector3f motion, float yaw, float pitch, float headYaw) {
-        super(session, entityId, geyserId, uuid, definition, position, motion, yaw, pitch, headYaw);
+    /**
+     * Gets the list of entity definitions.
+     *
+     * @return the list of entity definitions
+     */
+    @NonNull
+    List<EntityDefinition> entityDefinitions();
 
-        dirtyMetadata.put(EntityDataTypes.SCALE, 6f);
-    }
+    /**
+     * Registers a new entity definition.
+     *
+     * @param entityDefinition the entity definition to register
+     * @return {@code true} if the entity definition was registered, {@code false} otherwise
+     */
+    boolean register(@NonNull EntityDefinition entityDefinition);
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2022 GeyserMC. http://geysermc.org
+ * Copyright (c) 2019-2023 GeyserMC. http://geysermc.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,30 +23,24 @@
  * @link https://github.com/GeyserMC/Geyser
  */
 
-package org.geysermc.geyser.entity.type.living.monster;
+package org.geysermc.geyser.event.type;
 
-import com.github.steveice10.mc.protocol.data.game.entity.metadata.type.BooleanEntityMetadata;
-import org.cloudburstmc.math.vector.Vector3f;
-import org.cloudburstmc.protocol.bedrock.data.entity.EntityFlag;
-import org.geysermc.geyser.entity.GeyserEntityDefinition;
-import org.geysermc.geyser.session.GeyserSession;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.geysermc.geyser.api.entity.EntityDefinition;
+import org.geysermc.geyser.api.event.lifecycle.GeyserDefineEntitiesEvent;
 
-import java.util.UUID;
+import java.util.List;
 
-public class SkeletonEntity extends AbstractSkeletonEntity {
-    private boolean convertingToStray = false;
+public abstract class GeyserDefineEntitiesEventImpl implements GeyserDefineEntitiesEvent {
+    private final List<EntityDefinition> entityDefinitions;
 
-    public SkeletonEntity(GeyserSession session, int entityId, long geyserId, UUID uuid, GeyserEntityDefinition<?> definition, Vector3f position, Vector3f motion, float yaw, float pitch, float headYaw) {
-        super(session, entityId, geyserId, uuid, definition, position, motion, yaw, pitch, headYaw);
+    public GeyserDefineEntitiesEventImpl(List<EntityDefinition> entityDefinitions) {
+        this.entityDefinitions = entityDefinitions;
     }
 
-    public void setConvertingToStray(BooleanEntityMetadata entityMetadata) {
-        this.convertingToStray = entityMetadata.getPrimitiveValue();
-        setFlag(EntityFlag.SHAKING, isShaking());
-    }
-
+    @NonNull
     @Override
-    protected boolean isShaking() {
-        return convertingToStray;
+    public List<EntityDefinition> entityDefinitions() {
+        return this.entityDefinitions;
     }
 }

@@ -234,6 +234,9 @@ public class GeyserImpl implements GeyserApi {
             CompletableFuture.runAsync(AssetUtils::downloadAndRunClientJarTasks);
         });
 
+        /* Call Registry events */
+        Registries.callRegistryEvents();
+
         startInstance();
 
         GeyserConfiguration config = bootstrap.getGeyserConfig();
