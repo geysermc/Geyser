@@ -28,6 +28,7 @@ package org.geysermc.geyser.entity;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.cloudburstmc.protocol.bedrock.data.EmoteFlag;
 import org.cloudburstmc.protocol.bedrock.packet.EmotePacket;
 import org.geysermc.geyser.api.entity.EntityData;
 import org.geysermc.geyser.api.entity.type.GeyserEntity;
@@ -71,6 +72,8 @@ public class GeyserEntityData implements EntityData {
         packet.setXuid("");
         packet.setPlatformId(""); // BDS sends empty
         packet.setEmoteId(emoteId);
+        packet.getFlags().add(EmoteFlag.SERVER_SIDE);
+        packet.getFlags().add(EmoteFlag.MUTE_EMOTE_CHAT);
         session.sendUpstreamPacket(packet);
     }
 

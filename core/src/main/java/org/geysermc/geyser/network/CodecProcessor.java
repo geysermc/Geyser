@@ -33,13 +33,20 @@ import org.cloudburstmc.protocol.bedrock.codec.v291.serializer.MobArmorEquipment
 import org.cloudburstmc.protocol.bedrock.codec.v291.serializer.MobEquipmentSerializer_v291;
 import org.cloudburstmc.protocol.bedrock.codec.v291.serializer.PlayerHotbarSerializer_v291;
 import org.cloudburstmc.protocol.bedrock.codec.v291.serializer.SetEntityLinkSerializer_v291;
-import org.cloudburstmc.protocol.bedrock.codec.v291.serializer.SetEntityMotionSerializer_v291;
 import org.cloudburstmc.protocol.bedrock.codec.v390.serializer.PlayerSkinSerializer_v390;
 import org.cloudburstmc.protocol.bedrock.codec.v407.serializer.InventoryContentSerializer_v407;
 import org.cloudburstmc.protocol.bedrock.codec.v407.serializer.InventorySlotSerializer_v407;
+import org.cloudburstmc.protocol.bedrock.codec.v422.serializer.FilterTextSerializer_v422;
 import org.cloudburstmc.protocol.bedrock.codec.v486.serializer.BossEventSerializer_v486;
+import org.cloudburstmc.protocol.bedrock.codec.v554.serializer.TextSerializer_v554;
 import org.cloudburstmc.protocol.bedrock.codec.v557.serializer.SetEntityDataSerializer_v557;
+import org.cloudburstmc.protocol.bedrock.codec.v567.serializer.CommandRequestSerializer_v567;
+import org.cloudburstmc.protocol.bedrock.codec.v630.serializer.SetPlayerInventoryOptionsSerializer_v360;
 import org.cloudburstmc.protocol.bedrock.codec.v662.serializer.SetEntityMotionSerializer_v662;
+import org.cloudburstmc.protocol.bedrock.codec.v685.serializer.TextSerializer_v685;
+import org.cloudburstmc.protocol.bedrock.data.inventory.InventoryLayout;
+import org.cloudburstmc.protocol.bedrock.data.inventory.InventoryTabLeft;
+import org.cloudburstmc.protocol.bedrock.data.inventory.InventoryTabRight;
 import org.cloudburstmc.protocol.bedrock.packet.AnvilDamagePacket;
 import org.cloudburstmc.protocol.bedrock.packet.BedrockPacket;
 import org.cloudburstmc.protocol.bedrock.packet.BossEventPacket;
@@ -48,11 +55,14 @@ import org.cloudburstmc.protocol.bedrock.packet.ClientCacheStatusPacket;
 import org.cloudburstmc.protocol.bedrock.packet.ClientCheatAbilityPacket;
 import org.cloudburstmc.protocol.bedrock.packet.ClientToServerHandshakePacket;
 import org.cloudburstmc.protocol.bedrock.packet.CodeBuilderSourcePacket;
+import org.cloudburstmc.protocol.bedrock.packet.CommandRequestPacket;
 import org.cloudburstmc.protocol.bedrock.packet.CraftingEventPacket;
 import org.cloudburstmc.protocol.bedrock.packet.CreatePhotoPacket;
 import org.cloudburstmc.protocol.bedrock.packet.DebugInfoPacket;
 import org.cloudburstmc.protocol.bedrock.packet.EditorNetworkPacket;
+import org.cloudburstmc.protocol.bedrock.packet.EmoteListPacket;
 import org.cloudburstmc.protocol.bedrock.packet.EntityFallPacket;
+import org.cloudburstmc.protocol.bedrock.packet.FilterTextPacket;
 import org.cloudburstmc.protocol.bedrock.packet.GameTestRequestPacket;
 import org.cloudburstmc.protocol.bedrock.packet.InventoryContentPacket;
 import org.cloudburstmc.protocol.bedrock.packet.InventorySlotPacket;
@@ -74,10 +84,12 @@ import org.cloudburstmc.protocol.bedrock.packet.ScriptMessagePacket;
 import org.cloudburstmc.protocol.bedrock.packet.SetEntityDataPacket;
 import org.cloudburstmc.protocol.bedrock.packet.SetEntityLinkPacket;
 import org.cloudburstmc.protocol.bedrock.packet.SetEntityMotionPacket;
+import org.cloudburstmc.protocol.bedrock.packet.SetPlayerInventoryOptionsPacket;
 import org.cloudburstmc.protocol.bedrock.packet.SettingsCommandPacket;
 import org.cloudburstmc.protocol.bedrock.packet.SimpleEventPacket;
 import org.cloudburstmc.protocol.bedrock.packet.SubChunkRequestPacket;
 import org.cloudburstmc.protocol.bedrock.packet.SubClientLoginPacket;
+import org.cloudburstmc.protocol.bedrock.packet.TextPacket;
 import org.cloudburstmc.protocol.bedrock.packet.TickSyncPacket;
 import org.cloudburstmc.protocol.common.util.VarInts;
 
@@ -136,6 +148,84 @@ class CodecProcessor {
         }
     };
 
+    private static final BedrockPacketSerializer<SetPlayerInventoryOptionsPacket> SET_PLAYER_INVENTORY_OPTIONS_SERIALIZER = new SetPlayerInventoryOptionsSerializer_v360() {
+        @Override
+        public void deserialize(ByteBuf buffer, BedrockCodecHelper helper, SetPlayerInventoryOptionsPacket packet) {
+            int leftTabIndex = VarInts.readInt(buffer);
+            int rightTabIndex = VarInts.readInt(buffer);
+
+            packet.setLeftTab(leftTabIndex >= 0 && leftTabIndex < InventoryTabLeft.VALUES.length ? InventoryTabLeft.VALUES[leftTabIndex] : InventoryTabLeft.NONE);
+            packet.setRightTab(rightTabIndex >= 0 && rightTabIndex < InventoryTabRight.VALUES.length ? InventoryTabRight.VALUES[rightTabIndex] : InventoryTabRight.NONE);
+
+            packet.setFiltering(buffer.readBoolean());
+
+            int layoutIndex = VarInts.readInt(buffer);
+            packet.setLayout(layoutIndex >= 0 && layoutIndex < InventoryLayout.VALUES.length ? InventoryLayout.VALUES[layoutIndex] : InventoryLayout.NONE);
+
+            int craftingLayoutIndex = VarInts.readInt(buffer);
+            packet.setCraftingLayout(craftingLayoutIndex >= 0 && craftingLayoutIndex < InventoryLayout.VALUES.length ? InventoryLayout.VALUES[craftingLayoutIndex] : InventoryLayout.NONE);
+        }
+    };
+
+    private static final BedrockPacketSerializer<FilterTextPacket> FILTER_TEXT = new FilterTextSerializer_v422() {
+        @Override
+        public void deserialize(ByteBuf buffer, BedrockCodecHelper helper, FilterTextPacket packet) {
+            packet.setText(helper.readStringMaxLen(buffer, 513));
+            packet.setFromServer(buffer.readBoolean());
+        }
+    };
+
+    private static final BedrockPacketSerializer<CommandRequestPacket> COMMAND_REQUEST_SERIALIZER = new CommandRequestSerializer_v567() {
+        @Override
+        public void deserialize(ByteBuf buffer, BedrockCodecHelper helper, CommandRequestPacket packet) {
+            packet.setCommand(helper.readStringMaxLen(buffer, 513));
+            packet.setCommandOriginData(helper.readCommandOrigin(buffer));
+            packet.setInternal(buffer.readBoolean());
+            packet.setVersion(VarInts.readInt(buffer));
+        }
+    };
+
+    private static final BedrockPacketSerializer<TextPacket> TEXT_SERIALIZER_V554 = new TextSerializer_v554() {
+        @Override
+        public void deserialize(ByteBuf buffer, BedrockCodecHelper helper, TextPacket packet) {
+            TextPacket.Type type = TextPacket.Type.values()[buffer.readUnsignedByte()];
+            packet.setType(type);
+            packet.setNeedsTranslation(buffer.readBoolean());
+
+            if (type == TextPacket.Type.CHAT) {
+                packet.setSourceName(helper.readString(buffer));
+                //The client does not send more than 512 characters, and we do not need to decode other TextPacket.Type
+                packet.setMessage(helper.readStringMaxLen(buffer, 513));
+            } else {
+                throw new IllegalArgumentException("Unsupported TextType " + type);
+            }
+
+            packet.setXuid(helper.readString(buffer));
+            packet.setPlatformChatId(helper.readString(buffer));
+        }
+    };
+
+    private static final BedrockPacketSerializer<TextPacket> TEXT_SERIALIZER = new TextSerializer_v685() {
+        @Override
+        public void deserialize(ByteBuf buffer, BedrockCodecHelper helper, TextPacket packet) {
+            TextPacket.Type type = TextPacket.Type.values()[buffer.readUnsignedByte()];
+            packet.setType(type);
+            packet.setNeedsTranslation(buffer.readBoolean());
+
+            if (type == TextPacket.Type.CHAT) {
+                packet.setSourceName(helper.readString(buffer));
+                //The client does not send more than 512 characters, and we do not need to decode other TextPacket.Type
+                packet.setMessage(helper.readStringMaxLen(buffer, 513));
+            } else {
+                throw new IllegalArgumentException("Unsupported TextType " + type);
+            }
+
+            packet.setXuid(helper.readString(buffer));
+            packet.setPlatformChatId(helper.readString(buffer));
+            packet.setFilteredMessage(helper.readString(buffer));
+        }
+    };
+
     /**
      * Serializer that does nothing when trying to deserialize BossEventPacket since it is not used from the client.
      */
@@ -178,15 +268,6 @@ class CodecProcessor {
     private static final BedrockPacketSerializer<SetEntityDataPacket> SET_ENTITY_DATA_SERIALIZER = new SetEntityDataSerializer_v557() {
         @Override
         public void deserialize(ByteBuf buffer, BedrockCodecHelper helper, SetEntityDataPacket packet) {
-        }
-    };
-
-    /**
-     * Serializer that does nothing when trying to deserialize SetEntityMotionPacket since it is not used from the client for codec v291.
-     */
-    private static final BedrockPacketSerializer<SetEntityMotionPacket> SET_ENTITY_MOTION_SERIALIZER_V291 = new SetEntityMotionSerializer_v291() {
-        @Override
-        public void deserialize(ByteBuf buffer, BedrockCodecHelper helper, SetEntityMotionPacket packet) {
         }
     };
 
@@ -251,6 +332,7 @@ class CodecProcessor {
             .updateSerializer(SettingsCommandPacket.class, IGNORED_SERIALIZER)
             .updateSerializer(AnvilDamagePacket.class, IGNORED_SERIALIZER)
             .updateSerializer(RefreshEntitlementsPacket.class, IGNORED_SERIALIZER)
+            .updateSerializer(EmoteListPacket.class, IGNORED_SERIALIZER)
             // Illegal when serverbound due to Geyser specific setup
             .updateSerializer(InventoryContentPacket.class, INVENTORY_CONTENT_SERIALIZER)
             .updateSerializer(InventorySlotPacket.class, INVENTORY_SLOT_SERIALIZER)
@@ -273,9 +355,18 @@ class CodecProcessor {
             .updateSerializer(SimpleEventPacket.class, IGNORED_SERIALIZER)
             .updateSerializer(MultiplayerSettingsPacket.class, IGNORED_SERIALIZER);
 
+
             if (codec.getProtocolVersion() < 685) {
                 // Ignored bidirectional packets
                 codecBuilder.updateSerializer(TickSyncPacket.class, IGNORED_SERIALIZER);
+            }
+            codecBuilder.updateSerializer(FilterTextPacket.class, FILTER_TEXT);
+            codecBuilder.updateSerializer(CommandRequestPacket.class, COMMAND_REQUEST_SERIALIZER);
+            codecBuilder.updateSerializer(SetPlayerInventoryOptionsPacket.class, SET_PLAYER_INVENTORY_OPTIONS_SERIALIZER);
+            if (codec.getProtocolVersion() >= 685) {
+                codecBuilder.updateSerializer(TextPacket.class, TEXT_SERIALIZER);
+            } else {
+                codecBuilder.updateSerializer(TextPacket.class, TEXT_SERIALIZER_V554);
             }
 
             return codecBuilder.build();

@@ -236,7 +236,7 @@ public final class GeyserServer {
                 .group(group, childGroup)
                 .option(RakChannelOption.RAK_HANDLE_PING, true)
                 .option(RakChannelOption.RAK_MAX_MTU, this.geyser.getConfig().getMtu())
-                .option(RakChannelOption.RAK_PACKET_LIMIT, rakPacketLimit)
+                .option(RakChannelOption.RAK_PACKET_LIMIT, rakPacketLimit) // FIXME When using Velocity, the proxy server gets kicked for exceeding the limit, even if this value is increased tenfold. With an online count of 1000, this happens about 40 times a day at a value of 450. It is unclear why it detects the server's IP with Velocity, rather than the players' IPs.
                 .option(RakChannelOption.RAK_GLOBAL_PACKET_LIMIT, rakGlobalPacketLimit)
                 .option(RakChannelOption.RAK_SEND_COOKIE, rakSendCookie)
                 .childHandler(serverInitializer);
