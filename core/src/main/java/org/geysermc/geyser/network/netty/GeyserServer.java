@@ -84,7 +84,7 @@ public final class GeyserServer {
     /*
     The following constants are all used to ensure the ping does not reach a length where it is unparsable by the Bedrock client
      */
-    private static final String PING_VERSION = pingVersion();
+    private static final String PING_VERSION = GameProtocol.DEFAULT_BEDROCK_CODEC.getMinecraftVersion();
     private static final int PING_VERSION_BYTES_LENGTH = PING_VERSION.getBytes(StandardCharsets.UTF_8).length;
     private static final int BRAND_BYTES_LENGTH = GeyserImpl.NAME.getBytes(StandardCharsets.UTF_8).length;
     /**
@@ -389,17 +389,6 @@ public final class GeyserServer {
         }
 
         return pong;
-    }
-
-    private static String pingVersion() {
-        // BedrockPong version is required to not be empty as of 1.16.210.59.
-        // Can only contain . and numbers, so use the latest version instead of sending all
-        var version = GameProtocol.DEFAULT_BEDROCK_CODEC.getMinecraftVersion();
-        var versionSplit = version.split("/");
-        if (versionSplit.length > 1) {
-            version = versionSplit[versionSplit.length - 1];
-        }
-        return version;
     }
 
     /**

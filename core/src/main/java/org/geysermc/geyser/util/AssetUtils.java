@@ -89,7 +89,7 @@ public final class AssetUtils {
                 // Get the url for the latest version of the games manifest
                 String latestInfoURL = "";
                 for (Version version : versionManifest.getVersions()) {
-                    if (version.getId().equals(GameProtocol.getJavaCodec().getMinecraftVersion())) {
+                    if (version.getId().equals(GameProtocol.getJavaMinecraftVersion())) {
                         latestInfoURL = version.getUrl();
                         break;
                     }
