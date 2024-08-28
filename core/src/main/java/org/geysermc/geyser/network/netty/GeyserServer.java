@@ -84,7 +84,7 @@ public final class GeyserServer {
     /*
     The following constants are all used to ensure the ping does not reach a length where it is unparsable by the Bedrock client
      */
-    private static final String PING_VERSION = GameProtocol.DEFAULT_BEDROCK_CODEC.getMinecraftVersion();
+    private static final String PING_VERSION = GameProtocol.DEFAULT_BEDROCK_VERSION;
     private static final int PING_VERSION_BYTES_LENGTH = PING_VERSION.getBytes(StandardCharsets.UTF_8).length;
     private static final int BRAND_BYTES_LENGTH = GeyserImpl.NAME.getBytes(StandardCharsets.UTF_8).length;
     /**
@@ -316,7 +316,7 @@ public final class GeyserServer {
                 .edition("MCPE")
                 .gameType("Survival") // Can only be Survival or Creative as of 1.16.210.59
                 .nintendoLimited(false)
-                .protocolVersion(GameProtocol.DEFAULT_BEDROCK_CODEC.getProtocolVersion())
+                .protocolVersion(GameProtocol.DEFAULT_BEDROCK_PROTOCOL)
                 .version(PING_VERSION)
                 .ipv4Port(this.broadcastPort)
                 .ipv6Port(this.broadcastPort)

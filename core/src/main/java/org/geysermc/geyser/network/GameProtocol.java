@@ -66,9 +66,14 @@ public final class GameProtocol {
     public static final List<MinecraftVersion> SUPPORTED_BEDROCK_VERSIONS = new ArrayList<>();
 
     /**
-     * The latest Bedrock protocol codec in use
+     * The latest Bedrock protocol version that Geyser supports.
      */
-    public static final BedrockCodec DEFAULT_BEDROCK_CODEC;
+    public static final int DEFAULT_BEDROCK_PROTOCOL;
+
+    /**
+     * The latest Bedrock Minecraft version that Geyser supports.
+     */
+    public static final String DEFAULT_BEDROCK_VERSION;
 
     /**
      * Java codec that is supported. We only ever support one version for
@@ -77,19 +82,23 @@ public final class GameProtocol {
     private static final PacketCodec DEFAULT_JAVA_CODEC = MinecraftCodec.CODEC;
 
     static {
+        // Strict ordering
         register(Bedrock_v671.CODEC, "1.20.80", "1.20.81");
         register(Bedrock_v685.CODEC, "1.21.0", "1.21.1");
         register(Bedrock_v686.CODEC, "1.21.2", "1.21.3");
         register(Bedrock_v712.CODEC, "1.21.20", "1.21.21", "1.21.22");
 
-        DEFAULT_BEDROCK_CODEC = SUPPORTED_BEDROCK_CODECS.get(SUPPORTED_BEDROCK_CODECS.size() - 1);
+        MinecraftVersion latestBedrock = SUPPORTED_BEDROCK_VERSIONS.get(SUPPORTED_BEDROCK_VERSIONS.size() - 1);
+        DEFAULT_BEDROCK_VERSION = latestBedrock.versionString();
+        DEFAULT_BEDROCK_PROTOCOL = latestBedrock.protocolVersion();
     }
 
     /**
-     * Registers the given BedrockCodec, along with its protocol version and minecraft version(s)
+     * Registers a bedrock codec, along with its protocol version and minecraft version(s).
+     * This method must be called in ascending order in terms of protocol version.
      *
      * @param codec the codec to register
-     * @param minecraftVersions all versions the codec supports
+     * @param minecraftVersions all versions the codec supports, in ascending order
      */
     private static void register(BedrockCodec codec, String... minecraftVersions) {
         // modify packet serializers to better fit our use
@@ -107,8 +116,8 @@ public final class GameProtocol {
     }
 
     /**
-     * Registers a codec, its protocol version,
-     * and a single minecraft version which is taken from the codec
+     * Registers a bedrock codec, its protocol version, and a single minecraft version which is taken from the codec.
+     * This method must be called in ascending order in terms of protocol version.
      *
      * @param codec the codec to register
      */
