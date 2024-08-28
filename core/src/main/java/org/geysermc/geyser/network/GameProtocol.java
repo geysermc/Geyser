@@ -80,7 +80,7 @@ public final class GameProtocol {
         register(Bedrock_v671.CODEC, "1.20.80", "1.20.81");
         register(Bedrock_v685.CODEC, "1.21.0", "1.21.1");
         register(Bedrock_v686.CODEC, "1.21.2", "1.21.3");
-        register(Bedrock_v712.CODEC, "1.21.20", "1.21.21");
+        register(Bedrock_v712.CODEC, "1.21.20", "1.21.21", "1.21.22");
 
         DEFAULT_BEDROCK_CODEC = SUPPORTED_BEDROCK_CODECS.get(SUPPORTED_BEDROCK_CODECS.size() - 1);
     }

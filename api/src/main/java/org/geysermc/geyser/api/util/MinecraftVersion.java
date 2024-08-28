@@ -34,7 +34,7 @@ public interface MinecraftVersion {
 
     /**
      * Gets the Minecraft version as a String.
-     * Example: "1.20.2", or "1.20.40/1.20.41"
+     * Example formats: "1.21", "1.21.1", "1.21.22"
      *
      * @return the version string
      */
