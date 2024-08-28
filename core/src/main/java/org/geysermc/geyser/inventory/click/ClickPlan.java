@@ -162,6 +162,27 @@ public final class ClickPlan {
         finished = true;
     }
 
+    public Inventory getInventory() {
+        return inventory;
+    }
+
+    /**
+     * Test if the item stacks with another item in the specified slot.
+     * This will check the simulated inventory without copying.
+     */
+    public boolean canStack(int slot, GeyserItemStack item) {
+        GeyserItemStack slotItem = simulatedItems.getOrDefault(slot, inventory.getItem(slot));
+        return InventoryUtils.canStack(slotItem, item);
+    }
+
+    /**
+     * Test if the specified slot is empty.
+     * This will check the simulated inventory without copying.
+     */
+    public boolean isEmpty(int slot) {
+        return simulatedItems.getOrDefault(slot, inventory.getItem(slot)).isEmpty();
+    }
+
     public GeyserItemStack getItem(int slot) {
         return simulatedItems.computeIfAbsent(slot, k -> inventory.getItem(slot).copy());
     }

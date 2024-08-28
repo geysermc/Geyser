@@ -88,6 +88,7 @@ public class JavaCommandsTranslator extends PacketTranslator<ClientboundCommands
             if (a == null || b == null) return false;
             if ("help".equals(a.name()) && !"help".equals(b.name())) {
                 // Merging this causes Bedrock to fallback to its own help command
+                // Tested on Paper 1.20.4 with Essentials and Bedrock 1.21
                 // https://github.com/GeyserMC/Geyser/issues/2573
                 return false;
             }
@@ -124,8 +125,9 @@ public class JavaCommandsTranslator extends PacketTranslator<ClientboundCommands
         if (!session.getGeyser().getConfig().isCommandSuggestions()) {
             session.getGeyser().getLogger().debug("Not sending translated command suggestions as they are disabled.");
 
-            // Send an empty packet so Bedrock doesn't override /help with its own, built-in help command.
+            // Send a mostly empty packet so Bedrock doesn't override /help with its own, built-in help command.
             AvailableCommandsPacket emptyPacket = new AvailableCommandsPacket();
+            emptyPacket.getCommands().add(createFakeHelpCommand());
             session.sendUpstreamPacket(emptyPacket);
             return;
         }
@@ -182,6 +184,8 @@ public class JavaCommandsTranslator extends PacketTranslator<ClientboundCommands
         // The command flags, set to NOT_CHEAT so known commands can be used while achievements are enabled.
         Set<CommandData.Flag> flags = Set.of(CommandData.Flag.NOT_CHEAT);
 
+        boolean helpAdded = false;
+
         // Loop through all the found commands
         for (Map.Entry<BedrockCommandInfo, Set<String>> entry : commands.entrySet()) {
             String commandName = entry.getValue().iterator().next(); // We know this has a value
@@ -198,6 +202,15 @@ public class JavaCommandsTranslator extends PacketTranslator<ClientboundCommands
             // Build the completed command and add it to the final list
             CommandData data = new CommandData(commandName, entry.getKey().description(), flags, CommandPermission.ANY, aliases, Collections.emptyList(), entry.getKey().paramData());
             commandData.add(data);
+
+            if (commandName.equals("help")) {
+                helpAdded = true;
+            }
+        }
+
+        if (!helpAdded) {
+            // https://github.com/GeyserMC/Geyser/issues/2573 if Brigadier does not send the help command.
+            commandData.add(createFakeHelpCommand());
         }
 
         // Add our commands to the AvailableCommandsPacket for the bedrock client
@@ -284,6 +297,11 @@ public class JavaCommandsTranslator extends PacketTranslator<ClientboundCommands
             case "minecraft:worldgen/biome" -> tags ? context.getBiomesWithTags() : context.getBiomes();
             default -> CommandParam.STRING;
         };
+    }
+
+    private CommandData createFakeHelpCommand() {
+        CommandEnumData aliases = new CommandEnumData("helpAliases", Map.of("help", EnumSet.of(CommandEnumConstraint.ALLOW_ALIASES)), false);
+        return new CommandData("help", "", Set.of(CommandData.Flag.NOT_CHEAT), CommandPermission.ANY, aliases, Collections.emptyList(), new CommandOverloadData[0]);
     }
 
     /**

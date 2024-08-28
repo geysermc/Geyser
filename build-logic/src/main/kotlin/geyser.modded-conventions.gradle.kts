@@ -87,7 +87,7 @@ tasks {
     register("remapModrinthJar", RemapJarTask::class) {
         dependsOn(shadowJar)
         inputFile.set(shadowJar.get().archiveFile)
-        archiveVersion.set(project.version.toString() + "+build."  + System.getenv("BUILD_NUMBER"))
+        archiveVersion.set(versionName(project))
         archiveClassifier.set("")
     }
 }
