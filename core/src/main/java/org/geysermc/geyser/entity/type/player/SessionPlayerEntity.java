@@ -140,7 +140,7 @@ public class SessionPlayerEntity extends PlayerEntity {
         if (valid) { // Don't update during session init
             session.getCollisionManager().updatePlayerBoundingBox(position);
         }
-        super.setPosition(position);
+        this.position = position.add(0, definition.offset(), 0);
     }
 
     /**

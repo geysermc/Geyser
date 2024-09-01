@@ -42,7 +42,11 @@ import org.cloudburstmc.protocol.bedrock.data.entity.EntityDataTypes;
 import org.cloudburstmc.protocol.bedrock.data.entity.EntityFlag;
 import org.cloudburstmc.protocol.bedrock.data.entity.EntityLinkData;
 import org.cloudburstmc.protocol.bedrock.data.inventory.ItemData;
-import org.cloudburstmc.protocol.bedrock.packet.*;
+import org.cloudburstmc.protocol.bedrock.packet.AddPlayerPacket;
+import org.cloudburstmc.protocol.bedrock.packet.MovePlayerPacket;
+import org.cloudburstmc.protocol.bedrock.packet.SetEntityDataPacket;
+import org.cloudburstmc.protocol.bedrock.packet.SetEntityLinkPacket;
+import org.cloudburstmc.protocol.bedrock.packet.UpdateAttributesPacket;
 import org.geysermc.geyser.api.entity.type.player.GeyserPlayerEntity;
 import org.geysermc.geyser.entity.EntityDefinitions;
 import org.geysermc.geyser.entity.attribute.GeyserAttributeType;
@@ -278,7 +282,13 @@ public class PlayerEntity extends LivingEntity implements GeyserPlayerEntity {
 
     @Override
     public void setPosition(Vector3f position) {
-        super.setPosition(position.add(0, definition.offset(), 0));
+        if (this.bedPosition != null) {
+            // As of Bedrock 1.21.22 and Fabric 1.21.1
+            // Messes with Bedrock if we send this to the client itself, though.
+            super.setPosition(position.up(0.2f));
+        } else {
+            super.setPosition(position.add(0, definition.offset(), 0));
+        }
     }
 
     @Override

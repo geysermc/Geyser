@@ -58,6 +58,14 @@ public class BedrockMovePlayerTranslator extends PacketTranslator<MovePlayerPack
             session.confirmTeleport(packet.getPosition().toDouble().sub(0, EntityDefinitions.PLAYER.offset(), 0));
             return;
         }
+
+        if (entity.getBedPosition() != null) {
+            // https://github.com/GeyserMC/Geyser/issues/5001
+            // Bedrock 1.21.22 started sending a MovePlayerPacket as soon as it got into a bed.
+            // This trips up Fabric.
+            return;
+        }
+
         float yaw = packet.getRotation().getY();
         float pitch = packet.getRotation().getX();
         float headYaw = packet.getRotation().getY();
