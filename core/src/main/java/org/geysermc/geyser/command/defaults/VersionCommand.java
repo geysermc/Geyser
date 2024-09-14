@@ -26,8 +26,8 @@
 package org.geysermc.geyser.command.defaults;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import org.cloudburstmc.protocol.bedrock.codec.BedrockCodec;
 import org.geysermc.geyser.GeyserImpl;
+import org.geysermc.geyser.api.util.MinecraftVersion;
 import org.geysermc.geyser.api.util.PlatformType;
 import org.geysermc.geyser.api.util.TriState;
 import org.geysermc.geyser.command.GeyserCommand;
@@ -43,6 +43,25 @@ import java.util.List;
 
 public class VersionCommand extends GeyserCommand {
 
+    private static final String SUPPORTED_BEDROCK_RANGE;
+    private static final String SUPPORTED_JAVA_RANGE;
+
+    static {
+        List<MinecraftVersion> bedrockVersions = GameProtocol.SUPPORTED_BEDROCK_VERSIONS;
+        if (bedrockVersions.size() > 1) {
+            SUPPORTED_BEDROCK_RANGE = bedrockVersions.get(0).versionString() + " - " + bedrockVersions.get(bedrockVersions.size() - 1).versionString();
+        } else {
+            SUPPORTED_BEDROCK_RANGE = bedrockVersions.get(0).versionString();
+        }
+
+        List<String> javaVersions = GameProtocol.getJavaVersions();
+        if (javaVersions.size() > 1) {
+            SUPPORTED_JAVA_RANGE = javaVersions.get(0) + " - " + javaVersions.get(javaVersions.size() - 1);
+        } else {
+            SUPPORTED_JAVA_RANGE = javaVersions.get(0);
+        }
+    }
+
     private final GeyserImpl geyser;
 
     public VersionCommand(GeyserImpl geyser, String name, String description, String permission) {
@@ -54,23 +73,8 @@ public class VersionCommand extends GeyserCommand {
     public void execute(CommandContext<GeyserCommandSource> context) {
         GeyserCommandSource source = context.sender();
 
-        String bedrockVersions;
-        List<BedrockCodec> supportedCodecs = GameProtocol.SUPPORTED_BEDROCK_CODECS;
-        if (supportedCodecs.size() > 1) {
-            bedrockVersions = supportedCodecs.get(0).getMinecraftVersion() + " - " + supportedCodecs.get(supportedCodecs.size() - 1).getMinecraftVersion();
-        } else {
-            bedrockVersions = GameProtocol.SUPPORTED_BEDROCK_CODECS.get(0).getMinecraftVersion();
-        }
-        String javaVersions;
-        List<String> supportedJavaVersions = GameProtocol.getJavaVersions();
-        if (supportedJavaVersions.size() > 1) {
-            javaVersions = supportedJavaVersions.get(0) + " - " + supportedJavaVersions.get(supportedJavaVersions.size() - 1);
-        } else {
-            javaVersions = supportedJavaVersions.get(0);
-        }
-
         source.sendMessage(GeyserLocale.getPlayerLocaleString("geyser.commands.version.version", source.locale(),
-                GeyserImpl.NAME, GeyserImpl.VERSION, javaVersions, bedrockVersions));
+                GeyserImpl.NAME, GeyserImpl.VERSION, SUPPORTED_JAVA_RANGE, SUPPORTED_BEDROCK_RANGE));
 
         // Disable update checking in dev mode and for players in Geyser Standalone
         if (!GeyserImpl.getInstance().isProductionEnvironment() || (!source.isConsole() && geyser.getPlatformType() == PlatformType.STANDALONE)) {

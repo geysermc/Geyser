@@ -84,7 +84,7 @@ public final class GeyserServer {
     /*
     The following constants are all used to ensure the ping does not reach a length where it is unparsable by the Bedrock client
      */
-    private static final String PING_VERSION = pingVersion();
+    private static final String PING_VERSION = GameProtocol.DEFAULT_BEDROCK_VERSION;
     private static final int PING_VERSION_BYTES_LENGTH = PING_VERSION.getBytes(StandardCharsets.UTF_8).length;
     private static final int BRAND_BYTES_LENGTH = GeyserImpl.NAME.getBytes(StandardCharsets.UTF_8).length;
     /**
@@ -311,7 +311,7 @@ public final class GeyserServer {
                 .edition("MCPE")
                 .gameType("Survival") // Can only be Survival or Creative as of 1.16.210.59
                 .nintendoLimited(false)
-                .protocolVersion(GameProtocol.DEFAULT_BEDROCK_CODEC.getProtocolVersion())
+                .protocolVersion(GameProtocol.DEFAULT_BEDROCK_PROTOCOL)
                 .version(PING_VERSION)
                 .ipv4Port(this.broadcastPort)
                 .ipv6Port(this.broadcastPort)
@@ -384,17 +384,6 @@ public final class GeyserServer {
         }
 
         return pong;
-    }
-
-    private static String pingVersion() {
-        // BedrockPong version is required to not be empty as of 1.16.210.59.
-        // Can only contain . and numbers, so use the latest version instead of sending all
-        var version = GameProtocol.DEFAULT_BEDROCK_CODEC.getMinecraftVersion();
-        var versionSplit = version.split("/");
-        if (versionSplit.length > 1) {
-            version = versionSplit[versionSplit.length - 1];
-        }
-        return version;
     }
 
     /**

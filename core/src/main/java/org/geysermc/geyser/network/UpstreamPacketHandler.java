@@ -106,8 +106,9 @@ public class UpstreamPacketHandler extends LoggingPacketHandler {
     private boolean setCorrectCodec(int protocolVersion) {
         BedrockCodec packetCodec = GameProtocol.getBedrockCodec(protocolVersion);
         if (packetCodec == null) {
+            // None of our Bedrock codecs support this client version, so we can simply compare it to our default protocol.
             String supportedVersions = GameProtocol.getAllSupportedBedrockVersions();
-            if (protocolVersion > GameProtocol.DEFAULT_BEDROCK_CODEC.getProtocolVersion()) {
+            if (protocolVersion > GameProtocol.DEFAULT_BEDROCK_PROTOCOL) {
                 // Too early to determine session locale
                 String disconnectMessage = GeyserLocale.getLocaleStringLog("geyser.network.outdated.server", supportedVersions);
                 // If the latest release matches this version, then let the user know.
@@ -118,7 +119,7 @@ public class UpstreamPacketHandler extends LoggingPacketHandler {
                 }
                 session.disconnect(disconnectMessage);
                 return false;
-            } else if (protocolVersion < GameProtocol.DEFAULT_BEDROCK_CODEC.getProtocolVersion()) {
+            } else if (protocolVersion < GameProtocol.DEFAULT_BEDROCK_PROTOCOL) {
                 // A note on the following line: various older client versions have different forms of DisconnectPacket.
                 // Using only the latest BedrockCompat for such clients leads to inaccurate disconnect messages: https://github.com/GeyserMC/Geyser/issues/4378
                 // This updates the BedrockCompat protocol if necessary:
