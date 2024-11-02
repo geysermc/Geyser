@@ -200,7 +200,9 @@ public class JavaUpdateRecipesTranslator extends PacketTranslator<ClientboundUpd
                     craftingDataPacket.getCraftingData().add(MultiRecipeData.of(UUID.fromString("685a742a-c42e-4a4e-88ea-5eb83fc98e5b"), context.getAndIncrementNetId()));
                 }
                 case CRAFTING_SPECIAL_BOOKCLONING -> {
-                    craftingDataPacket.getCraftingData().add(MultiRecipeData.of(UUID.fromString("d1ca6b84-338e-4f2f-9c6b-76cc8b4bd98d"), context.getAndIncrementNetId()));
+                    int bookCloningID = context.getAndIncrementNetId();
+                    session.setBookCloningID(bookCloningID);
+                    craftingDataPacket.getCraftingData().add(MultiRecipeData.of(UUID.fromString("d1ca6b84-338e-4f2f-9c6b-76cc8b4bd98d"), bookCloningID));
                 }
                 case CRAFTING_SPECIAL_REPAIRITEM -> {
                     craftingDataPacket.getCraftingData().add(MultiRecipeData.of(UUID.fromString("00000000-0000-0000-0000-000000000001"), context.getAndIncrementNetId()));

@@ -460,6 +460,13 @@ public class GeyserSession implements GeyserConnection, GeyserCommandSource {
     private Int2ObjectMap<GeyserStonecutterData> stonecutterRecipes;
 
     /**
+     * Saves the ID for cloning books through the crafting table, as these need different handling
+     */
+    @Setter
+    private int bookCloningID;
+
+
+    /**
      * Whether to work around 1.13's different behavior in villager trading menus.
      */
     @Setter

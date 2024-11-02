@@ -521,35 +521,46 @@ public abstract class InventoryTranslator {
         ClickPlan plan = new ClickPlan(session, this, inventory);
         // Track all the crafting table slots to report back the contents of the slots after crafting
         IntSet affectedSlots = new IntOpenHashSet();
+        boolean reject = false;
         for (ItemStackRequestAction action : request.getActions()) {
             switch (action.getType()) {
                 case CRAFT_RECIPE: {
                     if (craftState != CraftState.START) {
-                        return rejectRequest(request);
+                        reject = true;
+                        break;
                     }
                     craftState = CraftState.RECIPE_ID;
+
+                    if (((RecipeItemStackRequestAction) action).getRecipeNetworkId() == session.getBookCloningID()) {
+                        // Book copying needs to be handled differently
+                        // The original written book is leftover in the crafting grid
+                        return translateBookCopyCraftingRequest(session, inventory, request);
+                    }
                     break;
                 }
                 case CRAFT_RESULTS_DEPRECATED: {
                     CraftResultsDeprecatedAction deprecatedCraftAction = (CraftResultsDeprecatedAction) action;
                     if (craftState != CraftState.RECIPE_ID) {
-                        return rejectRequest(request);
+                        reject = true;
+                        break;
                     }
                     craftState = CraftState.DEPRECATED;
 
                     if (deprecatedCraftAction.getResultItems().length != 1) {
-                        return rejectRequest(request);
+                        reject = true;
+                        break;
                     }
                     resultSize = deprecatedCraftAction.getResultItems()[0].getCount();
                     timesCrafted = deprecatedCraftAction.getTimesCrafted();
                     if (resultSize <= 0 || timesCrafted <= 0) {
-                        return rejectRequest(request);
+                        reject = true;
                     }
                     break;
                 }
                 case CONSUME: {
                     if (craftState != CraftState.DEPRECATED && craftState != CraftState.INGREDIENTS) {
-                        return rejectRequest(request);
+                        reject = true;
+                        break;
                     }
                     craftState = CraftState.INGREDIENTS;
                     affectedSlots.add(bedrockSlotToJava(((ConsumeAction) action).getSource()));
@@ -559,15 +570,18 @@ public abstract class InventoryTranslator {
                 case PLACE: {
                     TransferItemStackRequestAction transferAction = (TransferItemStackRequestAction) action;
                     if (craftState != CraftState.INGREDIENTS && craftState != CraftState.TRANSFER) {
-                        return rejectRequest(request);
+                        reject = true;
+                        break;
                     }
                     craftState = CraftState.TRANSFER;
 
                     if (transferAction.getSource().getContainer() != ContainerSlotType.CREATED_OUTPUT) {
-                        return rejectRequest(request);
+                        reject = true;
+                        break;
                     }
                     if (transferAction.getCount() <= 0) {
-                        return rejectRequest(request);
+                        reject = true;
+                        break;
                     }
 
                     int sourceSlot = bedrockSlotToJava(transferAction.getSource());
@@ -579,7 +593,8 @@ public abstract class InventoryTranslator {
                     } else {
                         if (leftover != 0) {
                             if (transferAction.getCount() > leftover) {
-                                return rejectRequest(request);
+                                reject = true;
+                                break;
                             }
                             if (transferAction.getCount() == leftover) {
                                 plan.add(Click.LEFT, destSlot);
@@ -605,7 +620,8 @@ public abstract class InventoryTranslator {
                             GeyserItemStack cursor = session.getPlayerInventory().getCursor();
                             int tempSlot = findTempSlot(plan, cursor, true, sourceSlot, destSlot);
                             if (tempSlot == -1) {
-                                return rejectRequest(request);
+                                reject = true;
+                                break;
                             }
 
                             plan.add(Click.LEFT, tempSlot); //place cursor into temp slot
@@ -627,13 +643,100 @@ public abstract class InventoryTranslator {
                     break;
                 }
                 default:
-                    return rejectRequest(request);
+                    reject = true;
             }
+
+        }
+        if (reject) {
+            return rejectRequest(request);
         }
         plan.execute(false);
         affectedSlots.addAll(plan.getAffectedSlots());
         return acceptRequest(request, makeContainerEntries(session, inventory, affectedSlots));
     }
+
+    /**
+     * Book copying is unique in that there is an item remaining in the crafting table when done.
+     */
+    public ItemStackResponse translateBookCopyCraftingRequest(GeyserSession session, Inventory inventory, ItemStackRequest request) {
+        CraftState craftState = CraftState.START;
+        boolean newBookHandled = false;
+
+        ClickPlan plan = new ClickPlan(session, this, inventory, true);
+        for (ItemStackRequestAction action : request.getActions()) {
+            switch (action.getType()) {
+                case CRAFT_RECIPE -> {
+                    if (craftState != CraftState.START) {
+                        return rejectRequest(request);
+                    }
+                    craftState = CraftState.RECIPE_ID;
+                }
+                case CRAFT_RESULTS_DEPRECATED -> {
+                    CraftResultsDeprecatedAction deprecatedCraftAction = (CraftResultsDeprecatedAction) action;
+                    if (craftState != CraftState.RECIPE_ID) {
+                        return rejectRequest(request);
+                    }
+                    craftState = CraftState.DEPRECATED;
+
+                    if (deprecatedCraftAction.getResultItems().length != 2) {
+                        // Crafted item and old book
+                        return rejectRequest(request);
+                    }
+                    int resultSize = deprecatedCraftAction.getResultItems()[0].getCount();
+                    int timesCrafted = deprecatedCraftAction.getTimesCrafted();
+                    if (resultSize != 1 || timesCrafted != 1) {
+                        return rejectRequest(request);
+                    }
+                }
+                case CONSUME -> {
+                    // Ignore I guess
+                }
+                case CREATE -> {
+                    // After the proper book is created this is called
+                }
+                case TAKE, PLACE -> {
+                    TransferItemStackRequestAction transferAction = (TransferItemStackRequestAction) action;
+                    if (craftState != CraftState.DEPRECATED) {
+                        return rejectRequest(request);
+                    }
+
+                    if (newBookHandled) {
+                        // Don't let this execute for the old book and keep it in its old slot
+                        // Bedrock wants to move it to the inventory; don't let it
+                        continue;
+                    }
+
+                    if (transferAction.getSource().getContainer() != ContainerSlotType.CREATED_OUTPUT) {
+                        return rejectRequest(request);
+                    }
+                    if (transferAction.getCount() != 1) {
+                        return rejectRequest(request);
+                    }
+
+                    int sourceSlot = bedrockSlotToJava(transferAction.getSource());
+                    int destSlot = bedrockSlotToJava(transferAction.getDestination());
+
+                    // Books are pretty simple in this regard - we'll yeet the written book when we execute
+                    // the click plan, but otherwise a book isn't stackable so there aren't many options for it
+                    if (isCursor(transferAction.getDestination())) {
+                        plan.add(Click.LEFT, sourceSlot);
+                    } else {
+                        plan.add(Click.LEFT, sourceSlot);
+                        plan.add(Click.LEFT, destSlot);
+                    }
+
+                    newBookHandled = true;
+                }
+                default -> {
+                    return rejectRequest(request);
+                }
+            }
+        }
+
+        plan.execute(false);
+        return acceptRequest(request, makeContainerEntries(session, inventory, plan.getAffectedSlots()));
+    }
+
 
     public ItemStackResponse translateAutoCraftingRequest(GeyserSession session, Inventory inventory, ItemStackRequest request) {
         final int gridSize = getGridSize();
