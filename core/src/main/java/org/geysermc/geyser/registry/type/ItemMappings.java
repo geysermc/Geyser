@@ -144,7 +144,7 @@ public class ItemMappings implements DefinitionRegistry<ItemDefinition> {
             return lightBlock;
         }
 
-        boolean isBlock = data.getBlockDefinition() != null;
+        boolean isBlock = data.getBlockDefinition() != null && data.getBlockDefinition().getRuntimeId() != 0;
         boolean hasDamage = data.getDamage() != 0;
 
         for (ItemMapping mapping : this.items) {
