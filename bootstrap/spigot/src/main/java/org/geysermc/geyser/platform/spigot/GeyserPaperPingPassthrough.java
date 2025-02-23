@@ -27,6 +27,8 @@ package org.geysermc.geyser.platform.spigot;
 
 import com.destroystokyo.paper.event.server.PaperServerListPingEvent;
 import com.destroystokyo.paper.network.StatusClient;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -81,7 +83,10 @@ public final class GeyserPaperPingPassthrough implements IGeyserPingPassthrough 
                 players = new GeyserPingInfo.Players(event.getMaxPlayers(), event.getNumPlayers());
             }
 
-            return new GeyserPingInfo(event.getMotd(), players);
+            return new GeyserPingInfo(
+                GsonComponentSerializer.gson().serialize(LegacyComponentSerializer.legacySection().deserialize(event.getMotd())),
+                players
+            );
         } catch (Exception | LinkageError e) { // LinkageError in the event that method/constructor signatures change
             logger.debug("Error while getting Paper ping passthrough: " + e);
             return null;

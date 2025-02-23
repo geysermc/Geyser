@@ -26,6 +26,8 @@
 package org.geysermc.geyser.platform.spigot;
 
 import lombok.AllArgsConstructor;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.server.ServerListPingEvent;
@@ -52,7 +54,11 @@ public class GeyserSpigotPingPassthrough implements IGeyserPingPassthrough {
         try {
             ServerListPingEvent event = new GeyserPingEvent(inetSocketAddress.getAddress(), Bukkit.getMotd(), Bukkit.getOnlinePlayers().size(), Bukkit.getMaxPlayers());
             Bukkit.getPluginManager().callEvent(event);
-            return new GeyserPingInfo(event.getMotd(), event.getMaxPlayers(), event.getNumPlayers());
+            return new GeyserPingInfo(
+                GsonComponentSerializer.gson().serialize(LegacyComponentSerializer.legacySection().deserialize(event.getMotd())),
+                event.getMaxPlayers(),
+                event.getNumPlayers()
+            );
         } catch (Exception | LinkageError e) { // LinkageError in the event that method/constructor signatures change
             logger.debug("Error while getting Bukkit ping passthrough: " + e);
             return null;

@@ -80,11 +80,8 @@ public class ModPingPassthrough implements IGeyserPingPassthrough {
             }
         }
 
-        String jsonDescription = net.minecraft.network.chat.Component.Serializer.toJson(status.description(), RegistryAccess.EMPTY);
-        String legacyDescription = LEGACY_SERIALIZER.serialize(GSON_SERIALIZER.deserializeOr(jsonDescription, Component.empty()));
-
         return new GeyserPingInfo(
-            legacyDescription,
+            net.minecraft.network.chat.Component.Serializer.toJson(status.description(), RegistryAccess.EMPTY),
             status.players().map(ServerStatus.Players::max).orElse(1),
             status.players().map(ServerStatus.Players::online).orElse(0)
         );

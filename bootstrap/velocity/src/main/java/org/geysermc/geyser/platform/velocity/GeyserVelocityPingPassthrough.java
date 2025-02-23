@@ -33,7 +33,7 @@ import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.proxy.server.ServerPing;
 import com.velocitypowered.api.proxy.server.ServerPing.Version;
 import lombok.AllArgsConstructor;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import org.geysermc.geyser.network.GameProtocol;
 import org.geysermc.geyser.ping.GeyserPingInfo;
 import org.geysermc.geyser.ping.IGeyserPingPassthrough;
@@ -60,7 +60,7 @@ public class GeyserVelocityPingPassthrough implements IGeyserPingPassthrough {
             throw new RuntimeException(e);
         }
         return new GeyserPingInfo(
-                LegacyComponentSerializer.legacy('§').serialize(event.getPing().getDescriptionComponent()),
+                GsonComponentSerializer.gson().serialize(event.getPing().getDescriptionComponent()),
                 event.getPing().getPlayers().map(ServerPing.Players::getMax).orElse(1),
                 event.getPing().getPlayers().map(ServerPing.Players::getOnline).orElse(0)
         );

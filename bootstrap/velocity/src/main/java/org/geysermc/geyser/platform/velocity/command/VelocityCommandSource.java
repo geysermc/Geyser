@@ -60,7 +60,7 @@ public class VelocityCommandSource implements GeyserCommandSource {
 
     @Override
     public void sendMessage(@NonNull String message) {
-        handle.sendMessage(LegacyComponentSerializer.legacy('§').deserialize(message));
+        handle.sendMessage(LegacyComponentSerializer.legacySection().deserialize(message));
     }
 
     @Override
