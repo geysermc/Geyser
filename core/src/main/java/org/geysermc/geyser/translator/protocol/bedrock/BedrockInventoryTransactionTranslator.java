@@ -174,6 +174,7 @@ public class BedrockInventoryTransactionTranslator extends PacketTranslator<Inve
                 break;
             case ITEM_USE:
                 switch (packet.getActionType()) {
+                    // Block placing
                     case 0 -> {
                         final Vector3i packetBlockPosition = packet.getBlockPosition();
                         Vector3i blockPos = BlockUtils.getBlockPosition(packetBlockPosition, packet.getBlockFace());
