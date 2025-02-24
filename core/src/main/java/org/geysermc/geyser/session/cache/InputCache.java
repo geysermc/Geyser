@@ -32,8 +32,11 @@ import org.cloudburstmc.math.vector.Vector2f;
 import org.cloudburstmc.protocol.bedrock.data.InputMode;
 import org.cloudburstmc.protocol.bedrock.data.PlayerAuthInputData;
 import org.cloudburstmc.protocol.bedrock.packet.PlayerAuthInputPacket;
+import org.geysermc.geyser.entity.type.player.PlayerEntity;
 import org.geysermc.geyser.session.GeyserSession;
+import org.geysermc.mcprotocollib.protocol.data.game.entity.player.PlayerState;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.level.ServerboundPlayerInputPacket;
+import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.player.ServerboundPlayerCommandPacket;
 
 import java.util.Set;
 
@@ -53,7 +56,7 @@ public final class InputCache {
         this.session = session;
     }
 
-    public void processInputs(PlayerAuthInputPacket packet) {
+    public void processInputs(PlayerEntity entity, PlayerAuthInputPacket packet) {
         // Input is sent to the server before packet positions, as of 1.21.2
         Set<PlayerAuthInputData> bedrockInput = packet.getInputData();
         var oldInputPacket = this.inputPacket;
@@ -74,6 +77,8 @@ public final class InputCache {
             right = analogMovement.getX() < 0;
         }
 
+        boolean sneaking = bedrockInput.contains(PlayerAuthInputData.SNEAKING);
+
         // TODO when is UP_LEFT, etc. used?
         this.inputPacket = this.inputPacket
             .withForward(up)
@@ -81,8 +86,19 @@ public final class InputCache {
             .withLeft(left)
             .withRight(right)
             .withJump(bedrockInput.contains(PlayerAuthInputData.JUMPING)) // Looks like this only triggers when the JUMP key input is being pressed. There's also JUMP_DOWN?
-            .withShift(bedrockInput.contains(PlayerAuthInputData.SNEAKING))
+            .withShift(sneaking)
             .withSprint(bedrockInput.contains(PlayerAuthInputData.SPRINTING)); // SPRINTING will trigger even if the player isn't moving
+
+        // Send sneaking state before inputs, matches Java client
+        if (oldInputPacket.isShift() != sneaking) {
+            if (sneaking) {
+                session.sendDownstreamGamePacket(new ServerboundPlayerCommandPacket(entity.javaId(), PlayerState.START_SNEAKING));
+                session.startSneaking();
+            } else {
+                session.sendDownstreamGamePacket(new ServerboundPlayerCommandPacket(entity.javaId(), PlayerState.STOP_SNEAKING));
+                session.stopSneaking();
+            }
+        }
 
         if (oldInputPacket != this.inputPacket) { // Simple equality check is fine since we're checking for an instance change.
             session.sendDownstreamGamePacket(this.inputPacket);
