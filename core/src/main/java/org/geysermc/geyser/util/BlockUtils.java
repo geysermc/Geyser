@@ -171,6 +171,7 @@ public final class BlockUtils {
     }
 
     public static BlockCollision getCollision(int blockId) {
+        if (blockId == -1) return null;
         return BlockRegistries.COLLISIONS.get(blockId);
     }
 
