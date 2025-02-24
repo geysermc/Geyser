@@ -69,12 +69,12 @@ public final class SoundUtils {
     public static String translatePlaySound(String javaIdentifier) {
         String soundIdentifier = removeMinecraftNamespace(javaIdentifier);
         SoundMapping soundMapping = Registries.SOUNDS.get(soundIdentifier);
-        if (soundMapping == null || soundMapping.getPlaysound() == null) {
+        if (soundMapping == null || soundMapping.playsound() == null) {
             // no mapping
             GeyserImpl.getInstance().getLogger().debug("[PlaySound] Defaulting to sound server gave us for " + javaIdentifier);
             return soundIdentifier;
         }
-        return soundMapping.getPlaysound();
+        return soundMapping.playsound();
     }
 
     private static String removeMinecraftNamespace(String identifier) {
@@ -112,50 +112,50 @@ public final class SoundUtils {
             return;
         }
 
-        if (soundMapping.getPlaysound() != null) {
+        if (soundMapping.playsound() != null) {
             // We always prefer the PlaySound mapping because we can control volume and pitch
-            playSound(session, soundMapping.getPlaysound(), position, volume, pitch);
+            playSound(session, soundMapping.playsound(), position, volume, pitch * soundMapping.pitchAdjust());
             return;
         }
 
-        if (soundMapping.isLevelEvent()) {
+        if (soundMapping.levelEvent()) {
             LevelEventPacket levelEventPacket = new LevelEventPacket();
             levelEventPacket.setPosition(position);
             levelEventPacket.setData(0);
-            levelEventPacket.setType(LevelEvent.valueOf(soundMapping.getBedrock()));
+            levelEventPacket.setType(LevelEvent.valueOf(soundMapping.bedrock()));
             session.sendUpstreamPacket(levelEventPacket);
             return;
         }
 
         LevelSoundEventPacket soundPacket = new LevelSoundEventPacket();
-        SoundEvent sound = SoundUtils.toSoundEvent(soundMapping.getBedrock());
+        SoundEvent sound = SoundUtils.toSoundEvent(soundMapping.bedrock());
         if (sound == null) {
             sound = SoundUtils.toSoundEvent(soundIdentifier);
         }
         if (sound == null) {
-            session.getGeyser().getLogger().debug("[Builtin] Sound for original '" + soundIdentifier + "' to mappings '" + soundMapping.getBedrock()
+            session.getGeyser().getLogger().debug("[Builtin] Sound for original '" + soundIdentifier + "' to mappings '" + soundMapping.bedrock()
                 + "' was not a playable level sound, or has yet to be mapped to an enum in SoundEvent.");
             return;
         }
 
         soundPacket.setSound(sound);
         soundPacket.setPosition(position);
-        soundPacket.setIdentifier(soundMapping.getIdentifier());
+        soundPacket.setIdentifier(soundMapping.identifier());
         if (sound == SoundEvent.NOTE) {
             // Minecraft Wiki: 2^(x/12) = Java pitch where x is -12 to 12
             // Java sends the note value as above starting with -12 and ending at 12
             // Bedrock has a number for each type of note, then proceeds up the scale by adding to that number
-            soundPacket.setExtraData(soundMapping.getExtraData() + (int) (Math.round((Math.log10(pitch) / Math.log10(2)) * 12)) + 12);
-        } else if (sound == SoundEvent.PLACE && soundMapping.getExtraData() == -1) {
-            if (!soundMapping.getIdentifier().equals(":")) {
-                int javaId = BlockRegistries.JAVA_IDENTIFIER_TO_ID.get().getOrDefault(soundMapping.getIdentifier(), Block.JAVA_AIR_ID);
+            soundPacket.setExtraData(soundMapping.extraData() + (int) (Math.round((Math.log10(pitch) / Math.log10(2)) * 12)) + 12);
+        } else if (sound == SoundEvent.PLACE && soundMapping.extraData() == -1) {
+            if (!soundMapping.identifier().equals(":")) {
+                int javaId = BlockRegistries.JAVA_IDENTIFIER_TO_ID.get().getOrDefault(soundMapping.identifier(), Block.JAVA_AIR_ID);
                 soundPacket.setExtraData(session.getBlockMappings().getBedrockBlockId(javaId));
             } else {
                 session.getGeyser().getLogger().debug("PLACE sound mapping identifier was invalid! Please report: " + soundMapping);
             }
             soundPacket.setIdentifier(":");
         } else {
-            soundPacket.setExtraData(soundMapping.getExtraData());
+            soundPacket.setExtraData(soundMapping.extraData());
         }
 
         soundPacket.setBabySound(false); // might need to adjust this in the future

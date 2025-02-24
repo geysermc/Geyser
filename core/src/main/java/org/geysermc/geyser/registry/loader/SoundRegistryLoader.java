@@ -26,6 +26,7 @@
 package org.geysermc.geyser.registry.loader;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.geysermc.geyser.GeyserImpl;
 import org.geysermc.geyser.registry.type.SoundMapping;
 
@@ -39,7 +40,6 @@ import java.util.Map;
  * Loads sounds from the given input.
  */
 public class SoundRegistryLoader implements RegistryLoader<String, Map<String, SoundMapping>> {
-
     @Override
     public Map<String, SoundMapping> load(String input) {
         JsonNode soundsTree;
@@ -51,7 +51,7 @@ public class SoundRegistryLoader implements RegistryLoader<String, Map<String, S
 
         Map<String, SoundMapping> soundMappings = new HashMap<>();
         Iterator<Map.Entry<String, JsonNode>> soundsIterator = soundsTree.fields();
-        while(soundsIterator.hasNext()) {
+        while (soundsIterator.hasNext()) {
             Map.Entry<String, JsonNode> next = soundsIterator.next();
             JsonNode brMap = next.getValue();
             String javaSound = next.getKey();
@@ -61,7 +61,8 @@ public class SoundRegistryLoader implements RegistryLoader<String, Map<String, S
                             brMap.has("playsound_mapping") && brMap.get("playsound_mapping").isTextual() ? brMap.get("playsound_mapping").asText() : null,
                             brMap.has("extra_data") && brMap.get("extra_data").isInt() ? brMap.get("extra_data").asInt() : -1,
                             brMap.has("identifier") && brMap.get("identifier").isTextual() ? brMap.get("identifier").asText() : null,
-                            brMap.has("level_event") && brMap.get("level_event").isBoolean() && brMap.get("level_event").asBoolean()
+                            brMap.has("level_event") && brMap.get("level_event").isBoolean() && brMap.get("level_event").asBoolean(),
+                            brMap.has("pitch_adjust") && brMap.get("pitch_adjust").isNumber() ? brMap.get("pitch_adjust").floatValue() : 1.0f
                     )
             );
         }

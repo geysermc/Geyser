@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2022 GeyserMC. http://geysermc.org
+ * Copyright (c) 2025 GeyserMC. http://geysermc.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,17 +23,10 @@
  * @link https://github.com/GeyserMC/Geyser
  */
 
-package org.geysermc.geyser.registry.type;
+package org.geysermc.geyser.level.block.type;
 
-public record SoundMapping(String java, String bedrock, String playsound, int extraData, String identifier,
-                           boolean levelEvent, float pitchAdjust) {
-    public SoundMapping(String java, String bedrock, String playsound, int extraData, String identifier, boolean levelEvent, float pitchAdjust) {
-        this.java = java;
-        this.bedrock = bedrock == null || bedrock.isEmpty() ? null : bedrock;
-        this.playsound = playsound == null || playsound.isEmpty() ? null : playsound;
-        this.extraData = extraData;
-        this.identifier = identifier == null || identifier.isEmpty() ? ":" : identifier;
-        this.levelEvent = levelEvent;
-        this.pitchAdjust = pitchAdjust;
+public class ButtonBlock extends Block {
+    public ButtonBlock(String javaIdentifier, Builder builder) {
+        super(javaIdentifier, builder);
     }
 }

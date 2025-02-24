@@ -630,7 +630,7 @@ public final class Blocks {
     public static final Block REDSTONE_WALL_TORCH = register(new Block("redstone_wall_torch", builder().pushReaction(PistonBehavior.DESTROY)
         .enumState(HORIZONTAL_FACING, Direction.NORTH, Direction.SOUTH, Direction.WEST, Direction.EAST)
         .booleanState(LIT)));
-    public static final Block STONE_BUTTON = register(new Block("stone_button", builder().destroyTime(0.5f).pushReaction(PistonBehavior.DESTROY)
+    public static final Block STONE_BUTTON = register(new ButtonBlock("stone_button", builder().destroyTime(0.5f).pushReaction(PistonBehavior.DESTROY)
         .enumState(ATTACH_FACE)
         .enumState(HORIZONTAL_FACING, Direction.NORTH, Direction.SOUTH, Direction.WEST, Direction.EAST)
         .booleanState(POWERED)));
@@ -997,43 +997,43 @@ public final class Blocks {
         .intState(AGE_7)));
     public static final Block POTATOES = register(new Block("potatoes", builder().pushReaction(PistonBehavior.DESTROY)
         .intState(AGE_7)));
-    public static final Block OAK_BUTTON = register(new Block("oak_button", builder().destroyTime(0.5f).pushReaction(PistonBehavior.DESTROY)
+    public static final Block OAK_BUTTON = register(new ButtonBlock("oak_button", builder().destroyTime(0.5f).pushReaction(PistonBehavior.DESTROY)
         .enumState(ATTACH_FACE)
         .enumState(HORIZONTAL_FACING, Direction.NORTH, Direction.SOUTH, Direction.WEST, Direction.EAST)
         .booleanState(POWERED)));
-    public static final Block SPRUCE_BUTTON = register(new Block("spruce_button", builder().destroyTime(0.5f).pushReaction(PistonBehavior.DESTROY)
+    public static final Block SPRUCE_BUTTON = register(new ButtonBlock("spruce_button", builder().destroyTime(0.5f).pushReaction(PistonBehavior.DESTROY)
         .enumState(ATTACH_FACE)
         .enumState(HORIZONTAL_FACING, Direction.NORTH, Direction.SOUTH, Direction.WEST, Direction.EAST)
         .booleanState(POWERED)));
-    public static final Block BIRCH_BUTTON = register(new Block("birch_button", builder().destroyTime(0.5f).pushReaction(PistonBehavior.DESTROY)
+    public static final Block BIRCH_BUTTON = register(new ButtonBlock("birch_button", builder().destroyTime(0.5f).pushReaction(PistonBehavior.DESTROY)
         .enumState(ATTACH_FACE)
         .enumState(HORIZONTAL_FACING, Direction.NORTH, Direction.SOUTH, Direction.WEST, Direction.EAST)
         .booleanState(POWERED)));
-    public static final Block JUNGLE_BUTTON = register(new Block("jungle_button", builder().destroyTime(0.5f).pushReaction(PistonBehavior.DESTROY)
+    public static final Block JUNGLE_BUTTON = register(new ButtonBlock("jungle_button", builder().destroyTime(0.5f).pushReaction(PistonBehavior.DESTROY)
         .enumState(ATTACH_FACE)
         .enumState(HORIZONTAL_FACING, Direction.NORTH, Direction.SOUTH, Direction.WEST, Direction.EAST)
         .booleanState(POWERED)));
-    public static final Block ACACIA_BUTTON = register(new Block("acacia_button", builder().destroyTime(0.5f).pushReaction(PistonBehavior.DESTROY)
+    public static final Block ACACIA_BUTTON = register(new ButtonBlock("acacia_button", builder().destroyTime(0.5f).pushReaction(PistonBehavior.DESTROY)
         .enumState(ATTACH_FACE)
         .enumState(HORIZONTAL_FACING, Direction.NORTH, Direction.SOUTH, Direction.WEST, Direction.EAST)
         .booleanState(POWERED)));
-    public static final Block CHERRY_BUTTON = register(new Block("cherry_button", builder().destroyTime(0.5f).pushReaction(PistonBehavior.DESTROY)
+    public static final Block CHERRY_BUTTON = register(new ButtonBlock("cherry_button", builder().destroyTime(0.5f).pushReaction(PistonBehavior.DESTROY)
         .enumState(ATTACH_FACE)
         .enumState(HORIZONTAL_FACING, Direction.NORTH, Direction.SOUTH, Direction.WEST, Direction.EAST)
         .booleanState(POWERED)));
-    public static final Block DARK_OAK_BUTTON = register(new Block("dark_oak_button", builder().destroyTime(0.5f).pushReaction(PistonBehavior.DESTROY)
+    public static final Block DARK_OAK_BUTTON = register(new ButtonBlock("dark_oak_button", builder().destroyTime(0.5f).pushReaction(PistonBehavior.DESTROY)
         .enumState(ATTACH_FACE)
         .enumState(HORIZONTAL_FACING, Direction.NORTH, Direction.SOUTH, Direction.WEST, Direction.EAST)
         .booleanState(POWERED)));
-    public static final Block PALE_OAK_BUTTON = register(new Block("pale_oak_button", builder().destroyTime(0.5f).pushReaction(PistonBehavior.DESTROY)
+    public static final Block PALE_OAK_BUTTON = register(new ButtonBlock("pale_oak_button", builder().destroyTime(0.5f).pushReaction(PistonBehavior.DESTROY)
         .enumState(ATTACH_FACE)
         .enumState(HORIZONTAL_FACING, Direction.NORTH, Direction.SOUTH, Direction.WEST, Direction.EAST)
         .booleanState(POWERED)));
-    public static final Block MANGROVE_BUTTON = register(new Block("mangrove_button", builder().destroyTime(0.5f).pushReaction(PistonBehavior.DESTROY)
+    public static final Block MANGROVE_BUTTON = register(new ButtonBlock("mangrove_button", builder().destroyTime(0.5f).pushReaction(PistonBehavior.DESTROY)
         .enumState(ATTACH_FACE)
         .enumState(HORIZONTAL_FACING, Direction.NORTH, Direction.SOUTH, Direction.WEST, Direction.EAST)
         .booleanState(POWERED)));
-    public static final Block BAMBOO_BUTTON = register(new Block("bamboo_button", builder().destroyTime(0.5f).pushReaction(PistonBehavior.DESTROY)
+    public static final Block BAMBOO_BUTTON = register(new ButtonBlock("bamboo_button", builder().destroyTime(0.5f).pushReaction(PistonBehavior.DESTROY)
         .enumState(ATTACH_FACE)
         .enumState(HORIZONTAL_FACING, Direction.NORTH, Direction.SOUTH, Direction.WEST, Direction.EAST)
         .booleanState(POWERED)));
@@ -2232,11 +2232,11 @@ public final class Blocks {
         .enumState(HALF)
         .enumState(STAIRS_SHAPE)
         .booleanState(WATERLOGGED)));
-    public static final Block CRIMSON_BUTTON = register(new Block("crimson_button", builder().destroyTime(0.5f).pushReaction(PistonBehavior.DESTROY)
+    public static final Block CRIMSON_BUTTON = register(new ButtonBlock("crimson_button", builder().destroyTime(0.5f).pushReaction(PistonBehavior.DESTROY)
         .enumState(ATTACH_FACE)
         .enumState(HORIZONTAL_FACING, Direction.NORTH, Direction.SOUTH, Direction.WEST, Direction.EAST)
         .booleanState(POWERED)));
-    public static final Block WARPED_BUTTON = register(new Block("warped_button", builder().destroyTime(0.5f).pushReaction(PistonBehavior.DESTROY)
+    public static final Block WARPED_BUTTON = register(new ButtonBlock("warped_button", builder().destroyTime(0.5f).pushReaction(PistonBehavior.DESTROY)
         .enumState(ATTACH_FACE)
         .enumState(HORIZONTAL_FACING, Direction.NORTH, Direction.SOUTH, Direction.WEST, Direction.EAST)
         .booleanState(POWERED)));
@@ -2336,7 +2336,7 @@ public final class Blocks {
         .booleanState(WATERLOGGED)));
     public static final Block POLISHED_BLACKSTONE_PRESSURE_PLATE = register(new Block("polished_blackstone_pressure_plate", builder().destroyTime(0.5f).pushReaction(PistonBehavior.DESTROY)
         .booleanState(POWERED)));
-    public static final Block POLISHED_BLACKSTONE_BUTTON = register(new Block("polished_blackstone_button", builder().destroyTime(0.5f).pushReaction(PistonBehavior.DESTROY)
+    public static final Block POLISHED_BLACKSTONE_BUTTON = register(new ButtonBlock("polished_blackstone_button", builder().destroyTime(0.5f).pushReaction(PistonBehavior.DESTROY)
         .enumState(ATTACH_FACE)
         .enumState(HORIZONTAL_FACING, Direction.NORTH, Direction.SOUTH, Direction.WEST, Direction.EAST)
         .booleanState(POWERED)));
