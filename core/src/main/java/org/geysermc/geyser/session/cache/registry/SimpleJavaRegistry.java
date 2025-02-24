@@ -31,10 +31,18 @@ import org.checkerframework.checker.index.qual.NonNegative;
 import java.util.List;
 
 public class SimpleJavaRegistry<T> implements JavaRegistry<T> {
-    protected final ObjectArrayList<T> values = new ObjectArrayList<>();
+    protected final ObjectArrayList<RegistryEntryData<T>> values = new ObjectArrayList<>();
 
     @Override
     public T byId(@NonNegative int id) {
+        if (id < 0 || id >= this.values.size()) {
+            return null;
+        }
+        return this.values.get(id).data();
+    }
+
+    @Override
+    public RegistryEntryData<T> entryById(@NonNegative int id) {
         if (id < 0 || id >= this.values.size()) {
             return null;
         }
@@ -43,11 +51,26 @@ public class SimpleJavaRegistry<T> implements JavaRegistry<T> {
 
     @Override
     public int byValue(T value) {
-        return this.values.indexOf(value);
+        for (int i = 0; i < this.values.size(); i++) {
+            if (values.get(i).data().equals(value)) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     @Override
-    public void reset(List<T> values) {
+    public RegistryEntryData<T> entryByValue(T value) {
+        for (RegistryEntryData<T> entry : this.values) {
+            if (entry.data().equals(value)) {
+                return entry;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public void reset(List<RegistryEntryData<T>> values) {
         this.values.clear();
         this.values.addAll(values);
         this.values.trim();
@@ -55,7 +78,7 @@ public class SimpleJavaRegistry<T> implements JavaRegistry<T> {
 
     @Override
     public List<T> values() {
-        return this.values;
+        return this.values.stream().map(RegistryEntryData::data).toList();
     }
 
     @Override

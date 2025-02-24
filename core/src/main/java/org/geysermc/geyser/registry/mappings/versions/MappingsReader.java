@@ -25,10 +25,12 @@
 
 package org.geysermc.geyser.registry.mappings.versions;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.geysermc.geyser.api.item.custom.CustomItemData;
 import org.geysermc.geyser.api.item.custom.CustomRenderOffsets;
+import org.geysermc.geyser.api.item.custom.v2.CustomItemDefinition;
+import org.geysermc.geyser.api.util.Identifier;
 import org.geysermc.geyser.item.exception.InvalidCustomMappingsFileException;
 import org.geysermc.geyser.registry.mappings.util.CustomBlockMapping;
 
@@ -36,51 +38,48 @@ import java.nio.file.Path;
 import java.util.function.BiConsumer;
 
 public abstract class MappingsReader {
-    public abstract void readItemMappings(Path file, JsonNode mappingsRoot, BiConsumer<String, CustomItemData> consumer);
-    public abstract void readBlockMappings(Path file, JsonNode mappingsRoot, BiConsumer<String, CustomBlockMapping> consumer);
+    public abstract void readItemMappings(Path file, JsonObject mappingsRoot, BiConsumer<Identifier, CustomItemDefinition> consumer);
+    public abstract void readBlockMappings(Path file, JsonObject mappingsRoot, BiConsumer<String, CustomBlockMapping> consumer);
 
-    public abstract CustomItemData readItemMappingEntry(JsonNode node) throws InvalidCustomMappingsFileException;
-    public abstract CustomBlockMapping readBlockMappingEntry(String identifier, JsonNode node) throws InvalidCustomMappingsFileException;
+    public abstract CustomItemDefinition readItemMappingEntry(Identifier identifier, JsonElement node) throws InvalidCustomMappingsFileException;
+    public abstract CustomBlockMapping readBlockMappingEntry(String identifier, JsonElement node) throws InvalidCustomMappingsFileException;
 
-    protected @Nullable CustomRenderOffsets fromJsonNode(JsonNode node) {
-        if (node == null || !node.isObject()) {
+    protected @Nullable CustomRenderOffsets fromJsonObject(JsonObject node) {
+        if (node == null) {
             return null;
         }
 
         return new CustomRenderOffsets(
-                getHandOffsets(node, "main_hand"),
-                getHandOffsets(node, "off_hand")
+            getHandOffsets(node, "main_hand"),
+            getHandOffsets(node, "off_hand")
         );
     }
 
-    protected CustomRenderOffsets.@Nullable Hand getHandOffsets(JsonNode node, String hand) {
-        JsonNode tmpNode = node.get(hand);
-        if (tmpNode == null || !tmpNode.isObject()) {
+    protected CustomRenderOffsets.@Nullable Hand getHandOffsets(JsonObject node, String hand) {
+        if (!(node.get(hand) instanceof JsonObject tmpNode)) {
             return null;
         }
 
         return new CustomRenderOffsets.Hand(
-                getPerspectiveOffsets(tmpNode, "first_person"),
-                getPerspectiveOffsets(tmpNode, "third_person")
+            getPerspectiveOffsets(tmpNode, "first_person"),
+            getPerspectiveOffsets(tmpNode, "third_person")
         );
     }
 
-    protected CustomRenderOffsets.@Nullable Offset getPerspectiveOffsets(JsonNode node, String perspective) {
-        JsonNode tmpNode = node.get(perspective);
-        if (tmpNode == null || !tmpNode.isObject()) {
+    protected CustomRenderOffsets.@Nullable Offset getPerspectiveOffsets(JsonObject node, String perspective) {
+        if (!(node.get(perspective) instanceof JsonObject tmpNode)) {
             return null;
         }
 
         return new CustomRenderOffsets.Offset(
-                getOffsetXYZ(tmpNode, "position"),
-                getOffsetXYZ(tmpNode, "rotation"),
-                getOffsetXYZ(tmpNode, "scale")
+            getOffsetXYZ(tmpNode, "position"),
+            getOffsetXYZ(tmpNode, "rotation"),
+            getOffsetXYZ(tmpNode, "scale")
         );
     }
 
-    protected CustomRenderOffsets.@Nullable OffsetXYZ getOffsetXYZ(JsonNode node, String offsetType) {
-        JsonNode tmpNode = node.get(offsetType);
-        if (tmpNode == null || !tmpNode.isObject()) {
+    protected CustomRenderOffsets.@Nullable OffsetXYZ getOffsetXYZ(JsonObject node, String offsetType) {
+        if (!(node.get(offsetType) instanceof JsonObject tmpNode)) {
             return null;
         }
 
@@ -89,9 +88,9 @@ public abstract class MappingsReader {
         }
 
         return new CustomRenderOffsets.OffsetXYZ(
-                tmpNode.get("x").floatValue(),
-                tmpNode.get("y").floatValue(),
-                tmpNode.get("z").floatValue()
+            tmpNode.get("x").getAsFloat(),
+            tmpNode.get("y").getAsFloat(),
+            tmpNode.get("z").getAsFloat()
         );
     }
 }

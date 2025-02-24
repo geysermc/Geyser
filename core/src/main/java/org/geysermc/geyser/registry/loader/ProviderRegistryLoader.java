@@ -25,6 +25,7 @@
 
 package org.geysermc.geyser.registry.loader;
 
+import net.kyori.adventure.key.Key;
 import org.geysermc.geyser.api.bedrock.camera.CameraFade;
 import org.geysermc.geyser.api.bedrock.camera.CameraPosition;
 import org.geysermc.geyser.api.block.custom.CustomBlockData;
@@ -39,7 +40,17 @@ import org.geysermc.geyser.api.extension.Extension;
 import org.geysermc.geyser.api.item.custom.CustomItemData;
 import org.geysermc.geyser.api.item.custom.CustomItemOptions;
 import org.geysermc.geyser.api.item.custom.NonVanillaCustomItemData;
+import org.geysermc.geyser.api.item.custom.v2.CustomItemBedrockOptions;
+import org.geysermc.geyser.api.item.custom.v2.CustomItemDefinition;
+import org.geysermc.geyser.api.item.custom.v2.predicate.ConditionItemPredicate;
+import org.geysermc.geyser.api.item.custom.v2.predicate.MatchItemPredicate;
+import org.geysermc.geyser.api.item.custom.v2.predicate.RangeDispatchItemPredicate;
+import org.geysermc.geyser.api.item.custom.v2.predicate.RangeDispatchPredicateProperty;
+import org.geysermc.geyser.api.item.custom.v2.predicate.condition.ConditionPredicateProperty;
+import org.geysermc.geyser.api.item.custom.v2.predicate.match.MatchPredicateProperty;
 import org.geysermc.geyser.api.pack.PathPackCodec;
+import org.geysermc.geyser.api.util.Identifier;
+import org.geysermc.geyser.impl.IdentifierImpl;
 import org.geysermc.geyser.impl.camera.GeyserCameraFade;
 import org.geysermc.geyser.impl.camera.GeyserCameraPosition;
 import org.geysermc.geyser.event.GeyserEventRegistrar;
@@ -47,6 +58,11 @@ import org.geysermc.geyser.extension.command.GeyserExtensionCommand;
 import org.geysermc.geyser.item.GeyserCustomItemData;
 import org.geysermc.geyser.item.GeyserCustomItemOptions;
 import org.geysermc.geyser.item.GeyserNonVanillaCustomItemData;
+import org.geysermc.geyser.item.custom.GeyserCustomItemBedrockOptions;
+import org.geysermc.geyser.item.custom.GeyserCustomItemDefinition;
+import org.geysermc.geyser.item.custom.predicate.ConditionPredicate;
+import org.geysermc.geyser.item.custom.predicate.MatchPredicate;
+import org.geysermc.geyser.item.custom.predicate.RangeDispatchPredicate;
 import org.geysermc.geyser.level.block.GeyserCustomBlockComponents;
 import org.geysermc.geyser.level.block.GeyserCustomBlockData;
 import org.geysermc.geyser.level.block.GeyserGeometryComponent;
@@ -67,6 +83,8 @@ public class ProviderRegistryLoader implements RegistryLoader<Map<Class<?>, Prov
     @Override
     public Map<Class<?>, ProviderSupplier> load(Map<Class<?>, ProviderSupplier> providers) {
         // misc
+        providers.put(Identifier.class, args -> new IdentifierImpl(Key.key((String) args[0], (String) args[1])));
+
         providers.put(Command.Builder.class, args -> new GeyserExtensionCommand.Builder<>((Extension) args[0]));
 
         providers.put(CustomBlockComponents.Builder.class, args -> new GeyserCustomBlockComponents.Builder());
@@ -83,6 +101,13 @@ public class ProviderRegistryLoader implements RegistryLoader<Map<Class<?>, Prov
         providers.put(CustomItemData.Builder.class, args -> new GeyserCustomItemData.Builder());
         providers.put(CustomItemOptions.Builder.class, args -> new GeyserCustomItemOptions.Builder());
         providers.put(NonVanillaCustomItemData.Builder.class, args -> new GeyserNonVanillaCustomItemData.Builder());
+
+        // items v2
+        providers.put(CustomItemDefinition.Builder.class, args -> new GeyserCustomItemDefinition.Builder((Identifier) args[0], (Identifier) args[1]));
+        providers.put(CustomItemBedrockOptions.Builder.class, args -> new GeyserCustomItemBedrockOptions.Builder());
+        providers.put(ConditionItemPredicate.class, args -> new ConditionPredicate<>((ConditionPredicateProperty<? super Object>) args[0], (boolean) args[1], args[2]));
+        providers.put(MatchItemPredicate.class, args -> new MatchPredicate<>((MatchPredicateProperty<? super Object>) args[0], args[1]));
+        providers.put(RangeDispatchItemPredicate.class, args -> new RangeDispatchPredicate((RangeDispatchPredicateProperty) args[0], (double) args[1], (double) args[2], (boolean) args[3], (int) args[4]));
 
         // cameras
         providers.put(CameraFade.Builder.class, args -> new GeyserCameraFade.Builder());

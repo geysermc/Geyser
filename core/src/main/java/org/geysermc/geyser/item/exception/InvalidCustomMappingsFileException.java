@@ -35,4 +35,8 @@ public class InvalidCustomMappingsFileException extends Exception {
     public InvalidCustomMappingsFileException(String message) {
         super(message);
     }
+
+    public InvalidCustomMappingsFileException(String task, String error, String... context) {
+        this("While " + task + " in " + String.join(" in ", context) + ": " + error);
+    }
 }
