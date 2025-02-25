@@ -45,10 +45,22 @@ public class BedrockAnimateTranslator extends PacketTranslator<AnimatePacket> {
         }
 
         if (packet.getAction() == AnimatePacket.Action.SWING_ARM) {
-            session.armSwingPending();
-            // Delay so entity damage can be processed first
+
+            // If this is the case, we just hit the air. Poor air.
+            // Touch devices send PlayerAuthInputPackets with MISSED_SWING, and then the animate packet.
+            // This tends to happen 1-2 ticks after the auth input packet.
+            if (session.getTicks() - session.getLastAirHitTick() < 3) {
+                return;
+            }
+
+            // Windows unfortunately sends the animate packet first, then the auth input packet with the MISSED_SWING.
+            // Often, these are sent in the same tick. In that case, the wait here ensures the auth input packet is processed first.
+            // Other times, there is a 1-tick-delay, which would result in the swing packet sent here. The BedrockAuthInputTranslator's
+            // MISSED_SWING case also accounts for that by checking if a swing was sent a tick ago here.
+
+            // Also, delay the swing so entity damage can be processed first
             session.scheduleInEventLoop(() -> {
-                    if (session.getArmAnimationTicks() != 0) {
+                    if (session.getArmAnimationTicks() != 0 && (session.getTicks() - session.getLastAirHitTick() > 2)) {
                         // So, generally, a Java player can only do one *thing* at a time.
                         // If a player right-clicks, for example, then there's probably only one action associated with
                         // that right-click that will send a swing.
@@ -61,12 +73,12 @@ public class BedrockAnimateTranslator extends PacketTranslator<AnimatePacket> {
                         // This behavior was last touched on with ViaVersion 4.5.1 (with its packet limiter), Java 1.16.5,
                         // and Bedrock 1.19.51.
                         // Note for the future: we should probably largely ignore this packet and instead replicate
-                        // all actions on our end, and send swings where needed.
+                        // all actions on our end, and send swings where needed. Can be done once we replicate Block and Item interactions fully.
                         session.sendDownstreamGamePacket(new ServerboundSwingPacket(Hand.MAIN_HAND));
                         session.activateArmAnimationTicking();
                     }
                 },
-                25,
+                (long) (session.getMillisecondsPerTick() * 0.5),
                 TimeUnit.MILLISECONDS
             );
         }

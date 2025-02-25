@@ -536,9 +536,16 @@ public class GeyserSession implements GeyserConnection, GeyserCommandSource {
 
     /**
      * Counts how many ticks have occurred since an arm animation started.
-     * -1 means there is no active arm swing; -2 means an arm swing will start in a tick.
+     * -1 means there is no active arm swing
      */
     private int armAnimationTicks = -1;
+
+    /**
+     * The tick in which the player last hit air.
+     * Used to ensure we dont send two sing packets for one hit.
+     */
+    @Setter
+    private int lastAirHitTick;
 
     /**
      * Controls whether the daylight cycle gamerule has been sent to the client, so the sun/moon remain motionless.
@@ -1113,13 +1120,10 @@ public class GeyserSession implements GeyserConnection, GeyserCommandSource {
 
     public void updateTickingState(float tickRate, boolean frozen) {
         tickThread.cancel(false);
-
         this.tickingFrozen = frozen;
 
         tickRate = MathUtils.clamp(tickRate, 1.0f, 10000.0f);
-
         millisecondsPerTick = 1000.0f / tickRate;
-
         nanosecondsPerTick = MathUtils.ceil(1000000000.0f / tickRate);
         tickThread = tickEventLoop.scheduleAtFixedRate(this::tick, nanosecondsPerTick, nanosecondsPerTick, TimeUnit.NANOSECONDS);
     }
@@ -1132,7 +1136,6 @@ public class GeyserSession implements GeyserConnection, GeyserCommandSource {
         } catch (Throwable e) {
             geyser.getLogger().error("Error thrown in " + this.bedrockUsername() + "'s event loop!", e);
         }
-
     }
 
     /**
@@ -1365,13 +1368,10 @@ public class GeyserSession implements GeyserConnection, GeyserCommandSource {
     }
 
     /**
-     * For <a href="https://github.com/GeyserMC/Geyser/issues/2113">issue 2113</a> and combating arm ticking activating being delayed in
-     * BedrockAnimateTranslator.
+     * You can't break blocks, attack entities, or use items while driving in a boat
      */
-    public void armSwingPending() {
-        if (armAnimationTicks == -1) {
-            armAnimationTicks = -2;
-        }
+    public boolean isHandsBusy() {
+        return steeringRight || steeringLeft;
     }
 
     /**

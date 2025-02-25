@@ -64,7 +64,7 @@ public class BrushableBlockEntityTranslator extends BlockEntityTranslator implem
         }
         NbtMapBuilder itemBuilder = NbtMap.builder()
             .putString("Name", mapping.getBedrockIdentifier())
-            .putByte("Count", (byte) itemTag.getByte("Count"));
+            .putByte("Count", itemTag.getByte("Count"));
 
         bedrockNbt.putCompound("item", itemBuilder.build());
         // controls which side the item protrudes from

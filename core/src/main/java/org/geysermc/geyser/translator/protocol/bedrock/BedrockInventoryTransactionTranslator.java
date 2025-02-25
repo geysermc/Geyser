@@ -454,6 +454,11 @@ public class BedrockInventoryTransactionTranslator extends PacketTranslator<Inve
                 switch (packet.getActionType()) {
                     case 0 -> processEntityInteraction(session, packet, entity); // Interact
                     case 1 -> { // Attack
+                        if (session.isHandsBusy()) {
+                            // See Minecraft#startAttack and LocalPlayer#isHandsBusy
+                            return;
+                        }
+
                         int entityId;
                         if (entity.getDefinition() == EntityDefinitions.ENDER_DRAGON) {
                             // Redirects the attack to its body entity, this only happens when
