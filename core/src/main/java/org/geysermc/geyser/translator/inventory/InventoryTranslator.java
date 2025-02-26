@@ -534,9 +534,9 @@ public abstract class InventoryTranslator {
                 case CRAFT_RESULTS_DEPRECATED: // Tends to be called for UI inventories
                 case CRAFT_RECIPE_OPTIONAL: // Anvils and cartography tables will handle this
                 case CRAFT_LOOM: // Looms 1.17.40+
-                case CRAFT_REPAIR_AND_DISENCHANT: { // Grindstones 1.17.40+
+                case CRAFT_REPAIR_AND_DISENCHANT: // Grindstones 1.17.40+
+                case MINE_BLOCK: // Server auth block breaking, confirms durability change
                     break;
-                }
                 default:
                     return rejectRequest(request);
             }

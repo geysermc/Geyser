@@ -29,15 +29,14 @@ import org.cloudburstmc.math.GenericMath;
 import org.cloudburstmc.math.vector.Vector2f;
 import org.cloudburstmc.math.vector.Vector3f;
 import org.cloudburstmc.math.vector.Vector3i;
-import org.cloudburstmc.protocol.bedrock.data.LevelEvent;
 import org.cloudburstmc.protocol.bedrock.data.PlayerActionType;
 import org.cloudburstmc.protocol.bedrock.data.PlayerAuthInputData;
 import org.cloudburstmc.protocol.bedrock.data.entity.EntityFlag;
 import org.cloudburstmc.protocol.bedrock.data.inventory.transaction.ItemUseTransaction;
-import org.cloudburstmc.protocol.bedrock.packet.LevelEventPacket;
+import org.cloudburstmc.protocol.bedrock.packet.ItemStackResponsePacket;
 import org.cloudburstmc.protocol.bedrock.packet.PlayerActionPacket;
 import org.cloudburstmc.protocol.bedrock.packet.PlayerAuthInputPacket;
-import org.geysermc.geyser.entity.EntityDefinitions;
+import org.geysermc.geyser.GeyserImpl;
 import org.geysermc.geyser.entity.type.BoatEntity;
 import org.geysermc.geyser.entity.type.Entity;
 import org.geysermc.geyser.entity.type.ItemFrameEntity;
@@ -45,21 +44,16 @@ import org.geysermc.geyser.entity.type.living.animal.horse.AbstractHorseEntity;
 import org.geysermc.geyser.entity.type.living.animal.horse.LlamaEntity;
 import org.geysermc.geyser.entity.type.player.SessionPlayerEntity;
 import org.geysermc.geyser.entity.vehicle.ClientVehicle;
-import org.geysermc.geyser.level.block.type.Block;
 import org.geysermc.geyser.session.GeyserSession;
 import org.geysermc.geyser.translator.protocol.PacketTranslator;
 import org.geysermc.geyser.translator.protocol.Translator;
-import org.geysermc.geyser.translator.protocol.bedrock.BedrockInventoryTransactionTranslator;
 import org.geysermc.geyser.util.CooldownUtils;
-import org.geysermc.mcprotocollib.protocol.data.game.entity.object.Direction;
 import org.geysermc.mcprotocollib.protocol.data.game.entity.player.GameMode;
 import org.geysermc.mcprotocollib.protocol.data.game.entity.player.InteractAction;
-import org.geysermc.mcprotocollib.protocol.data.game.entity.player.PlayerAction;
 import org.geysermc.mcprotocollib.protocol.data.game.entity.player.PlayerState;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.level.ServerboundMoveVehiclePacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.player.ServerboundInteractPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.player.ServerboundPlayerAbilitiesPacket;
-import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.player.ServerboundPlayerActionPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.player.ServerboundPlayerCommandPacket;
 
 import java.util.Set;
@@ -82,6 +76,11 @@ public final class BedrockPlayerAuthInputTranslator extends PacketTranslator<Pla
         for (PlayerAuthInputData input : inputData) {
             switch (input) {
                 case PERFORM_ITEM_INTERACTION -> processItemUseTransaction(session, packet.getItemUseTransaction());
+                case PERFORM_ITEM_STACK_REQUEST -> {
+                    ItemStackResponsePacket responsePacket = new ItemStackResponsePacket();
+                    responsePacket.getEntries().add(session.getInventoryTranslator().translateRequest(session, session.getPlayerInventory(), packet.getItemStackRequest()));
+                    session.sendUpstreamPacket(responsePacket);
+                }
                 case PERFORM_BLOCK_ACTIONS -> BedrockBlockActions.translate(session, packet.getPlayerActions());
                 case START_SNEAKING -> {
                     ServerboundPlayerCommandPacket startSneakPacket = new ServerboundPlayerCommandPacket(entity.getEntityId(), PlayerState.START_SNEAKING);
@@ -172,52 +171,15 @@ public final class BedrockPlayerAuthInputTranslator extends PacketTranslator<Pla
     }
 
     private static void processItemUseTransaction(GeyserSession session, ItemUseTransaction transaction) {
+        GeyserImpl.getInstance().getLogger().error("ITEM USE TRANSACTION: " + transaction.toString());
         if (transaction.getActionType() == 2) {
-            int blockState = session.getGameMode() == GameMode.CREATIVE ?
-                session.getGeyser().getWorldManager().getBlockAt(session, transaction.getBlockPosition()) : session.getBreakingBlock();
-
-            session.setLastBlockPlaced(null);
-            session.setLastBlockPlacePosition(null);
-
-            // Same deal with vanilla block placing as above.
-            if (!session.getWorldBorder().isInsideBorderBoundaries()) {
-                BedrockInventoryTransactionTranslator.restoreCorrectBlock(session, transaction.getBlockPosition());
-                return;
-            }
-
-            Vector3f playerPosition = session.getPlayerEntity().getPosition();
-            playerPosition = playerPosition.down(EntityDefinitions.PLAYER.offset() - session.getEyeHeight());
-
-            if (!BedrockInventoryTransactionTranslator.canInteractWithBlock(session, playerPosition, transaction.getBlockPosition())) {
-                BedrockInventoryTransactionTranslator.restoreCorrectBlock(session, transaction.getBlockPosition());
-                return;
-            }
-
-            int sequence = session.getWorldCache().nextPredictionSequence();
-            session.getWorldCache().markPositionInSequence(transaction.getBlockPosition());
-            // -1 means we don't know what block they're breaking
-            if (blockState == -1) {
-                blockState = Block.JAVA_AIR_ID;
-            }
-
-            LevelEventPacket blockBreakPacket = new LevelEventPacket();
-            blockBreakPacket.setType(LevelEvent.PARTICLE_DESTROY_BLOCK);
-            blockBreakPacket.setPosition(transaction.getBlockPosition().toFloat());
-            blockBreakPacket.setData(session.getBlockMappings().getBedrockBlockId(blockState));
-            session.sendUpstreamPacket(blockBreakPacket);
-            session.setBreakingBlock(-1);
-
+            // TODO test
             Entity itemFrameEntity = ItemFrameEntity.getItemFrameEntity(session, transaction.getBlockPosition());
             if (itemFrameEntity != null) {
                 ServerboundInteractPacket attackPacket = new ServerboundInteractPacket(itemFrameEntity.getEntityId(),
                     InteractAction.ATTACK, session.isSneaking());
                 session.sendDownstreamGamePacket(attackPacket);
-                return;
             }
-
-            PlayerAction action = session.getGameMode() == GameMode.CREATIVE ? PlayerAction.START_DIGGING : PlayerAction.FINISH_DIGGING;
-            ServerboundPlayerActionPacket breakPacket = new ServerboundPlayerActionPacket(action, transaction.getBlockPosition(), Direction.VALUES[transaction.getBlockFace()], sequence);
-            session.sendDownstreamGamePacket(breakPacket);
         } else {
             session.getGeyser().getLogger().error("Unhandled item use transaction type!");
             if (session.getGeyser().getLogger().isDebug()) {
