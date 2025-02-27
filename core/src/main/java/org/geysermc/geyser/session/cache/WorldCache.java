@@ -182,6 +182,12 @@ public final class WorldCache {
         ChunkUtils.updateBlock(session, blockState, position);
     }
 
+    public void removePrediction(Vector3i position) {
+        if (!this.unverifiedPredictions.isEmpty()) {
+            this.unverifiedPredictions.removeInt(position);
+        }
+    }
+
     public void endPredictionsUpTo(int sequence) {
         if (this.unverifiedPredictions.isEmpty()) {
             return;
