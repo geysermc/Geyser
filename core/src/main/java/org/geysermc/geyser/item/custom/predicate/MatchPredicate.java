@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2022 GeyserMC. http://geysermc.org
+ * Copyright (c) 2024-2025 GeyserMC. http://geysermc.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,25 +23,10 @@
  * @link https://github.com/GeyserMC/Geyser
  */
 
-package org.geysermc.geyser.item.components;
+package org.geysermc.geyser.item.custom.predicate;
 
-import org.cloudburstmc.nbt.NbtMap;
+import org.geysermc.geyser.api.item.custom.v2.predicate.MatchItemPredicate;
+import org.geysermc.geyser.api.item.custom.v2.predicate.match.MatchPredicateProperty;
 
-import java.util.Locale;
-
-public enum WearableSlot {
-    HEAD,
-    CHEST,
-    LEGS,
-    FEET;
-
-    private final NbtMap slotNbt;
-
-    WearableSlot() {
-        this.slotNbt = NbtMap.builder().putString("slot", "slot.armor." + this.name().toLowerCase(Locale.ROOT)).build();
-    }
-
-    public NbtMap getSlotNbt() {
-        return slotNbt;
-    }
+public record MatchPredicate<T>(MatchPredicateProperty<T> property, T data) implements MatchItemPredicate<T> {
 }

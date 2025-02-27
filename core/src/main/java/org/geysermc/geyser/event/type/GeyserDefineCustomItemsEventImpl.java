@@ -26,10 +26,14 @@
 package org.geysermc.geyser.event.type;
 
 import com.google.common.collect.Multimap;
+import com.google.common.collect.MultimapBuilder;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.geysermc.geyser.api.event.lifecycle.GeyserDefineCustomItemsEvent;
+import org.geysermc.geyser.api.exception.CustomItemDefinitionRegisterException;
 import org.geysermc.geyser.api.item.custom.CustomItemData;
 import org.geysermc.geyser.api.item.custom.NonVanillaCustomItemData;
+import org.geysermc.geyser.api.item.custom.v2.CustomItemDefinition;
+import org.geysermc.geyser.api.util.Identifier;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -37,49 +41,41 @@ import java.util.List;
 import java.util.Map;
 
 public abstract class GeyserDefineCustomItemsEventImpl implements GeyserDefineCustomItemsEvent {
-    private final Multimap<String, CustomItemData> customItems;
+    private final Multimap<String, CustomItemData> deprecatedCustomItems = MultimapBuilder.hashKeys().arrayListValues().build();
+    private final Multimap<Identifier, CustomItemDefinition> customItems;
     private final List<NonVanillaCustomItemData> nonVanillaCustomItems;
 
-    public GeyserDefineCustomItemsEventImpl(Multimap<String, CustomItemData> customItems, List<NonVanillaCustomItemData> nonVanillaCustomItems) {
+    public GeyserDefineCustomItemsEventImpl(Multimap<Identifier, CustomItemDefinition> customItems, List<NonVanillaCustomItemData> nonVanillaCustomItems) {
         this.customItems = customItems;
         this.nonVanillaCustomItems = nonVanillaCustomItems;
     }
 
-    /**
-     * Gets a multimap of all the already registered custom items indexed by the item's extended java item's identifier.
-     *
-     * @return a multimap of all the already registered custom items
-     */
     @Override
+    @Deprecated
     public @NonNull Map<String, Collection<CustomItemData>> getExistingCustomItems() {
-        return Collections.unmodifiableMap(this.customItems.asMap());
+        return Collections.unmodifiableMap(deprecatedCustomItems.asMap());
     }
 
-    /**
-     * Gets the list of the already registered non-vanilla custom items.
-     *
-     * @return the list of the already registered non-vanilla custom items
-     */
+    @Override
+    public @NonNull Map<Identifier, Collection<CustomItemDefinition>> customItemDefinitions() {
+        return Collections.unmodifiableMap(customItems.asMap());
+    }
+
     @Override
     public @NonNull List<NonVanillaCustomItemData> getExistingNonVanillaCustomItems() {
         return Collections.unmodifiableList(this.nonVanillaCustomItems);
     }
 
-    /**
-     * Registers a custom item with a base Java item. This is used to register items with custom textures and properties
-     * based on NBT data.
-     *
-     * @param identifier the base (java) item
-     * @param customItemData the custom item data to register
-     * @return if the item was registered
-     */
-    public abstract boolean register(@NonNull String identifier, @NonNull CustomItemData customItemData);
-
-    /**
-     * Registers a custom item with no base item. This is used for mods.
-     *
-     * @param customItemData the custom item data to register
-     * @return if the item was registered
-     */
-    public abstract boolean register(@NonNull NonVanillaCustomItemData customItemData);
+    @Override
+    @Deprecated
+    public boolean register(@NonNull String identifier, @NonNull CustomItemData customItemData) {
+        try {
+            Identifier vanillaItemIdentifier = Identifier.of(identifier);
+            register(vanillaItemIdentifier, customItemData.toDefinition(vanillaItemIdentifier).build());
+            deprecatedCustomItems.put(identifier, customItemData);
+            return true;
+        } catch (CustomItemDefinitionRegisterException exception) {
+            return false;
+        }
+    }
 }

@@ -27,8 +27,11 @@ package org.geysermc.geyser.api.event.lifecycle;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.geysermc.event.Event;
+import org.geysermc.geyser.api.exception.CustomItemDefinitionRegisterException;
 import org.geysermc.geyser.api.item.custom.CustomItemData;
 import org.geysermc.geyser.api.item.custom.NonVanillaCustomItemData;
+import org.geysermc.geyser.api.item.custom.v2.CustomItemDefinition;
+import org.geysermc.geyser.api.util.Identifier;
 
 import java.util.Collection;
 import java.util.List;
@@ -40,13 +43,24 @@ import java.util.Map;
  * This event will not be called if the "add non-Bedrock items" setting is disabled in the Geyser config.
  */
 public interface GeyserDefineCustomItemsEvent extends Event {
+
     /**
-     * Gets a multimap of all the already registered custom items indexed by the item's extended java item's identifier.
+     * Gets a multimap of all the already registered (using the deprecated method) custom items indexed by the item's extended java item's identifier.
      *
-     * @return a multimap of all the already registered custom items
+     * @deprecated use {@link GeyserDefineCustomItemsEvent#customItemDefinitions()}
+     * @return a multimap of all the already custom items registered using {@link GeyserDefineCustomItemsEvent#register(String, CustomItemData)}
      */
+    @Deprecated
     @NonNull
     Map<String, Collection<CustomItemData>> getExistingCustomItems();
+
+    /**
+     * Gets a multimap of all the already registered custom item definitions indexed by the item's extended java item's identifier.
+     *
+     * @return a multimap of all the already registered custom item definitions
+     */
+    @NonNull
+    Map<Identifier, Collection<CustomItemDefinition>> customItemDefinitions();
 
     /**
      * Gets the list of the already registered non-vanilla custom items.
@@ -58,13 +72,25 @@ public interface GeyserDefineCustomItemsEvent extends Event {
 
     /**
      * Registers a custom item with a base Java item. This is used to register items with custom textures and properties
-     * based on NBT data.
+     * based on NBT data. This method should not be used anymore, {@link CustomItemDefinition}s are preferred now and this method will convert {@code CustomItemData} to {@code CustomItemDefinition} internally.
      *
+     * @deprecated use {@link GeyserDefineCustomItemsEvent#register(Identifier, CustomItemDefinition)}
      * @param identifier the base (java) item
      * @param customItemData the custom item data to register
      * @return if the item was registered
      */
+    @Deprecated
     boolean register(@NonNull String identifier, @NonNull CustomItemData customItemData);
+
+    /**
+     * Registers a custom item with a base Java item. This is used to register items with custom textures and properties
+     * based on NBT data.
+     *
+     * @param identifier of the Java edition base item 
+     * @param customItemDefinition the custom item definition to register
+     * @throws CustomItemDefinitionRegisterException when an error occurred while registering the item.
+     */
+    void register(@NonNull Identifier identifier, @NonNull CustomItemDefinition customItemDefinition) throws CustomItemDefinitionRegisterException;
 
     /**
      * Registers a custom item with no base item. This is used for mods.

@@ -25,16 +25,20 @@
 
 package org.geysermc.geyser.registry.mappings;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.geysermc.geyser.GeyserImpl;
-import org.geysermc.geyser.api.item.custom.CustomItemData;
+import org.geysermc.geyser.api.item.custom.v2.CustomItemDefinition;
+import org.geysermc.geyser.api.util.Identifier;
 import org.geysermc.geyser.registry.mappings.util.CustomBlockMapping;
 import org.geysermc.geyser.registry.mappings.versions.MappingsReader;
 import org.geysermc.geyser.registry.mappings.versions.MappingsReader_v1;
+import org.geysermc.geyser.registry.mappings.versions.MappingsReader_v2;
 
+import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -46,13 +50,14 @@ public class MappingsConfigReader {
 
     public MappingsConfigReader() {
         this.mappingReaders.put(1, new MappingsReader_v1());
+        this.mappingReaders.put(2, new MappingsReader_v2());
     }
 
     public Path[] getCustomMappingsFiles() {
         try {
             return Files.walk(this.customMappingsDirectory)
-                    .filter(child -> child.toString().endsWith(".json"))
-                    .toArray(Path[]::new);
+                .filter(child -> child.toString().endsWith(".json"))
+                .toArray(Path[]::new);
         } catch (IOException e) {
             return new Path[0];
         }
@@ -73,7 +78,7 @@ public class MappingsConfigReader {
         return true;
     }
 
-    public void loadItemMappingsFromJson(BiConsumer<String, CustomItemData> consumer) {
+    public void loadItemMappingsFromJson(BiConsumer<Identifier, CustomItemDefinition> consumer) {
         if (!ensureMappingsDirectory(this.customMappingsDirectory)) {
             return;
         }
@@ -95,10 +100,10 @@ public class MappingsConfigReader {
         }
     }
 
-    public @Nullable JsonNode getMappingsRoot(Path file) {
-        JsonNode mappingsRoot;
-        try {
-            mappingsRoot = GeyserImpl.JSON_MAPPER.readTree(file.toFile());
+    public @Nullable JsonObject getMappingsRoot(Path file) {
+        JsonObject mappingsRoot;
+        try (FileReader reader = new FileReader(file.toFile())) {
+            mappingsRoot = (JsonObject) new JsonParser().parse(reader);
         } catch (IOException e) {
             GeyserImpl.getInstance().getLogger().error("Failed to read custom mapping file: " + file, e);
             return null;
@@ -112,8 +117,8 @@ public class MappingsConfigReader {
         return mappingsRoot;
     }
 
-    public int getFormatVersion(JsonNode mappingsRoot, Path file) {
-        int formatVersion =  mappingsRoot.get("format_version").asInt();
+    public int getFormatVersion(JsonObject mappingsRoot, Path file) {
+        int formatVersion =  mappingsRoot.get("format_version").getAsInt();
         if (!this.mappingReaders.containsKey(formatVersion)) {
             GeyserImpl.getInstance().getLogger().error("Mappings file " + file + " has an unknown format version: " + formatVersion);
             return -1;
@@ -121,8 +126,8 @@ public class MappingsConfigReader {
         return formatVersion;
     }
 
-    public void readItemMappingsFromJson(Path file, BiConsumer<String, CustomItemData> consumer) {
-        JsonNode mappingsRoot = getMappingsRoot(file);
+    public void readItemMappingsFromJson(Path file, BiConsumer<Identifier, CustomItemDefinition> consumer) {
+        JsonObject mappingsRoot = getMappingsRoot(file);
 
         if (mappingsRoot == null) {
             return;
@@ -138,7 +143,7 @@ public class MappingsConfigReader {
     }
 
     public void readBlockMappingsFromJson(Path file, BiConsumer<String, CustomBlockMapping> consumer) {
-        JsonNode mappingsRoot = getMappingsRoot(file);
+        JsonObject mappingsRoot = getMappingsRoot(file);
 
         if (mappingsRoot == null) {
             return;

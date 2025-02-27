@@ -75,7 +75,7 @@ public class ShulkerBoxItem extends BlockItem {
 
             if (boxComponents != null) {
                 // Check for custom items
-                ItemDefinition customItemDefinition = CustomItemTranslator.getCustomItem(boxComponents, boxMapping);
+                ItemDefinition customItemDefinition = CustomItemTranslator.getCustomItem(session, item.getAmount(), boxComponents, boxMapping);
                 if (customItemDefinition != null) {
                     bedrockIdentifier = customItemDefinition.getIdentifier();
                     bedrockData = 0;

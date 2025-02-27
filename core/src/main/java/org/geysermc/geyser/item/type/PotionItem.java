@@ -49,7 +49,7 @@ public class PotionItem extends Item {
         if (components == null) return super.translateToBedrock(session, count, components, mapping, mappings);
         PotionContents potionContents = components.get(DataComponentTypes.POTION_CONTENTS);
         if (potionContents != null) {
-            ItemDefinition customItemDefinition = CustomItemTranslator.getCustomItem(components, mapping);
+            ItemDefinition customItemDefinition = CustomItemTranslator.getCustomItem(session, count, components, mapping);
             if (customItemDefinition == null) {
                 Potion potion = Potion.getByJavaId(potionContents.getPotionId());
                 if (potion != null) {

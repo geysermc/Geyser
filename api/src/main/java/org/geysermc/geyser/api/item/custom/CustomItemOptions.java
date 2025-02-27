@@ -33,7 +33,10 @@ import java.util.OptionalInt;
 
 /**
  * This class represents the different ways you can register custom items
+ *
+ * @deprecated use the new {@link org.geysermc.geyser.api.item.custom.v2.CustomItemDefinition}.
  */
+@Deprecated
 public interface CustomItemOptions {
     /**
      * Gets if the item should be unbreakable.

@@ -51,6 +51,7 @@ import org.geysermc.geyser.session.cache.registry.JavaRegistries;
 import org.geysermc.geyser.session.cache.registry.JavaRegistry;
 import org.geysermc.geyser.session.cache.registry.JavaRegistryKey;
 import org.geysermc.geyser.session.cache.registry.RegistryEntryContext;
+import org.geysermc.geyser.session.cache.registry.RegistryEntryData;
 import org.geysermc.geyser.session.cache.registry.SimpleJavaRegistry;
 import org.geysermc.geyser.text.ChatDecoration;
 import org.geysermc.geyser.translator.level.BiomeTranslator;
@@ -189,7 +190,7 @@ public final class RegistryCache {
                 entryIdMap.put(entries.get(i).getId(), i);
             }
 
-            List<T> builder = new ArrayList<>(entries.size());
+            List<RegistryEntryData<T>> builder = new ArrayList<>(entries.size());
             for (int i = 0; i < entries.size(); i++) {
                 RegistryEntry entry = entries.get(i);
                 // If the data is null, that's the server telling us we need to use our default values.
@@ -203,7 +204,7 @@ public final class RegistryCache {
                 RegistryEntryContext context = new RegistryEntryContext(entry, entryIdMap, registryCache.session);
                 // This is what Geyser wants to keep as a value for this registry.
                 T cacheEntry = reader.apply(context);
-                builder.add(i, cacheEntry);
+                builder.add(i, new RegistryEntryData<>(entry.getId(), cacheEntry));
             }
             localCache.reset(builder);
         });
