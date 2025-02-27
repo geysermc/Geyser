@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2023 GeyserMC. http://geysermc.org
+ * Copyright (c) 2024 GeyserMC. http://geysermc.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,18 +23,23 @@
  * @link https://github.com/GeyserMC/Geyser
  */
 
-package org.geysermc.geyser.api.event.bedrock;
+package org.geysermc.geyser.pack;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.geysermc.geyser.api.connection.GeyserConnection;
-import org.geysermc.geyser.api.event.connection.ConnectionEvent;
+import org.geysermc.geyser.api.pack.ResourcePack;
+import org.geysermc.geyser.api.pack.option.PriorityOption;
+import org.geysermc.geyser.pack.option.OptionHolder;
 
-/**
- * Called when Geyser session connected to a Java remote server and is in a play-ready state.
- * @since 2.1.1
- */
-public final class SessionJoinEvent extends ConnectionEvent {
-    public SessionJoinEvent(@NonNull GeyserConnection connection) {
-        super(connection);
+public record ResourcePackHolder(
+    @NonNull GeyserResourcePack pack,
+    @NonNull OptionHolder optionHolder
+) {
+
+    public static ResourcePackHolder of(GeyserResourcePack pack) {
+        return new ResourcePackHolder(pack, new OptionHolder(PriorityOption.NORMAL));
+    }
+
+    public ResourcePack resourcePack() {
+        return this.pack;
     }
 }

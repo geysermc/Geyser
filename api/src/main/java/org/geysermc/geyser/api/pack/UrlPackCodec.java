@@ -23,18 +23,29 @@
  * @link https://github.com/GeyserMC/Geyser
  */
 
-package org.geysermc.geyser.api.event.bedrock;
+package org.geysermc.geyser.api.pack;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.geysermc.geyser.api.connection.GeyserConnection;
-import org.geysermc.geyser.api.event.connection.ConnectionEvent;
 
 /**
- * Called when Geyser session connected to a Java remote server and is in a play-ready state.
- * @since 2.1.1
+ * Represents a pack codec that creates a resource
+ * pack from a URL.
+ * <p>
+ * Due to Bedrock limitations, the URL must:
+ * <ul>
+ *     <li>be a direct download link to a .zip or .mcpack resource pack</li>
+ *     <li>use the application type `application/zip` and set a correct content length</li>
+ * </ul>
+ * @since 2.6.2
  */
-public final class SessionJoinEvent extends ConnectionEvent {
-    public SessionJoinEvent(@NonNull GeyserConnection connection) {
-        super(connection);
-    }
+public abstract class UrlPackCodec extends PackCodec {
+
+    /**
+     * Gets the URL to the resource pack location.
+     *
+     * @return the URL of the resource pack
+     * @since 2.6.2
+     */
+    @NonNull
+    public abstract String url();
 }

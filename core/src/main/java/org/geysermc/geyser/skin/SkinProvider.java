@@ -167,7 +167,7 @@ public class SkinProvider {
                 if (count > 0) {
                     GeyserImpl.getInstance().getLogger().debug(String.format("Removed %d cached image files as they have expired", count));
                 }
-            }, 10, 1440, TimeUnit.MINUTES);
+            }, 10, 1, TimeUnit.DAYS);
         }
     }
 

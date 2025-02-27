@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2023 GeyserMC. http://geysermc.org
+ * Copyright (c) 2024 GeyserMC. http://geysermc.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,18 +23,39 @@
  * @link https://github.com/GeyserMC/Geyser
  */
 
-package org.geysermc.geyser.api.event.bedrock;
+package org.geysermc.geyser.pack.option;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.geysermc.geyser.api.connection.GeyserConnection;
-import org.geysermc.geyser.api.event.connection.ConnectionEvent;
+import org.geysermc.geyser.api.pack.ResourcePack;
+import org.geysermc.geyser.api.pack.exception.ResourcePackException;
+import org.geysermc.geyser.api.pack.option.PriorityOption;
 
-/**
- * Called when Geyser session connected to a Java remote server and is in a play-ready state.
- * @since 2.1.1
- */
-public final class SessionJoinEvent extends ConnectionEvent {
-    public SessionJoinEvent(@NonNull GeyserConnection connection) {
-        super(connection);
+import java.util.Objects;
+
+public record GeyserPriorityOption(double priority) implements PriorityOption {
+
+    public GeyserPriorityOption {
+        if (priority < 0 || priority > 10) {
+            throw new IllegalArgumentException("Priority must be between 0 and 10 inclusive!");
+        }
+    }
+
+    @Override
+    public @NonNull Type type() {
+        return Type.PRIORITY;
+    }
+
+    @Override
+    public @NonNull Double value() {
+        return priority;
+    }
+
+    @Override
+    public void validate(@NonNull ResourcePack pack) {
+        Objects.requireNonNull(pack);
+        if (priority <= 10 && priority > 0) {
+            throw new ResourcePackException(ResourcePackException.Cause.INVALID_PACK_OPTION,
+                "Priority must be between 0 and 10 inclusive!");
+        }
     }
 }

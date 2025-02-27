@@ -35,6 +35,7 @@ import java.nio.file.Path;
 /**
  * Represents a pack codec that can be used
  * to provide resource packs to clients.
+ * @since 2.1.1
  */
 public abstract class PackCodec {
 
@@ -42,6 +43,7 @@ public abstract class PackCodec {
      * Gets the sha256 hash of the resource pack.
      *
      * @return the hash of the resource pack
+     * @since 2.1.1
      */
     public abstract byte @NonNull [] sha256();
 
@@ -49,34 +51,66 @@ public abstract class PackCodec {
      * Gets the resource pack size.
      *
      * @return the resource pack file size
+     * @since 2.1.1
      */
     public abstract long size();
 
     /**
-     * Serializes the given resource pack into a byte buffer.
+     * @deprecated use {@link #serialize()} instead.
+     */
+    @Deprecated
+    @NonNull
+    public SeekableByteChannel serialize(@NonNull ResourcePack resourcePack) throws IOException {
+        return serialize();
+    };
+
+    /**
+     * Serializes the given codec into a byte buffer.
      *
-     * @param resourcePack the resource pack to serialize
      * @return the serialized resource pack
+     * @since 2.6.2
      */
     @NonNull
-    public abstract SeekableByteChannel serialize(@NonNull ResourcePack resourcePack) throws IOException;
+    public abstract SeekableByteChannel serialize() throws IOException;
 
     /**
      * Creates a new resource pack from this codec.
      *
      * @return the new resource pack
+     * @since 2.1.1
      */
     @NonNull
     protected abstract ResourcePack create();
+
+    /**
+     * Creates a new resource pack builder from this codec.
+     *
+     * @return the new resource pack builder
+     * @since 2.6.2
+     */
+    protected abstract ResourcePack.@NonNull Builder createBuilder();
 
     /**
      * Creates a new pack provider from the given path.
      *
      * @param path the path to create the pack provider from
      * @return the new pack provider
+     * @since 2.1.1
      */
     @NonNull
-    public static PackCodec path(@NonNull Path path) {
+    public static PathPackCodec path(@NonNull Path path) {
         return GeyserApi.api().provider(PathPackCodec.class, path);
+    }
+
+    /**
+     * Creates a new pack provider from the given url.
+     *
+     * @param url the url to create the pack provider from
+     * @return the new pack provider
+     * @since 2.6.2
+     */
+    @NonNull
+    public static UrlPackCodec url(@NonNull String url) {
+        return GeyserApi.api().provider(UrlPackCodec.class, url);
     }
 }

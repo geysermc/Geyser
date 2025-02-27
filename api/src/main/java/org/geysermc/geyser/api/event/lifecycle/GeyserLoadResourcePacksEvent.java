@@ -32,9 +32,8 @@ import java.nio.file.Path;
 import java.util.List;
 
 /**
- * Called when resource packs are loaded within Geyser.
- *
- * @param resourcePacks a mutable list of the currently listed resource packs
+ * @deprecated Use the {@link GeyserDefineResourcePacksEvent} instead.
  */
+@Deprecated
 public record GeyserLoadResourcePacksEvent(@NonNull List<Path> resourcePacks) implements Event {
 }

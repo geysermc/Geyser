@@ -33,7 +33,7 @@ import org.geysermc.geyser.api.extension.ExtensionManager;
 
 /**
  * Called when Geyser is about to reload. Primarily aimed at extensions, so they can decide on their own what to reload.
- * After this event is fired, some lifecycle events can be fired again - such as the {@link GeyserLoadResourcePacksEvent}.
+ * After this event is fired, some lifecycle events can be fired again - such as the {@link GeyserDefineResourcePacksEvent}.
  *
  * @param extensionManager the extension manager
  * @param eventBus the event bus

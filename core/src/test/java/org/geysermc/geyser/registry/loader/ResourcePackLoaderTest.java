@@ -62,7 +62,7 @@ public class ResourcePackLoaderTest {
     public void testPack() throws Exception {
         // this mcpack only contains a folder, which the manifest is in
         Path path = getResource("empty_pack.mcpack");
-        ResourcePack pack = ResourcePackLoader.readPack(path);
+        ResourcePack pack = ResourcePackLoader.readPack(path).build();
         assertEquals("", pack.contentKey());
         // should probably add some more tests here related to the manifest
     }
@@ -71,7 +71,7 @@ public class ResourcePackLoaderTest {
     public void testEncryptedPack() throws Exception {
         // this zip only contains a contents.json and manifest.json at the root
         Path path = getResource("encrypted_pack.zip");
-        ResourcePack pack = ResourcePackLoader.readPack(path);
+        ResourcePack pack = ResourcePackLoader.readPack(path).build();
         assertEquals("JAGcSXcXwcODc1YS70GzeWAUKEO172UA", pack.contentKey());
     }
 

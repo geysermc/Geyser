@@ -79,13 +79,18 @@ public class GeyserPathPackCodec extends PathPackCodec {
     }
 
     @Override
-    public @NonNull SeekableByteChannel serialize(@NonNull ResourcePack resourcePack) throws IOException {
+    public @NonNull SeekableByteChannel serialize() throws IOException {
         return FileChannel.open(this.path);
     }
 
     @Override
-    protected @NonNull ResourcePack create() {
+    protected ResourcePack.@NonNull Builder createBuilder() {
         return ResourcePackLoader.readPack(this.path);
+    }
+
+    @Override
+    protected @NonNull ResourcePack create() {
+        return createBuilder().build();
     }
 
     private void checkLastModified() {
