@@ -25,12 +25,16 @@
 
 package org.geysermc.geyser.level.block;
 
-import it.unimi.dsi.fastutil.objects.*;
+import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectLists;
 import lombok.RequiredArgsConstructor;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.geysermc.geyser.Constants;
-import org.geysermc.geyser.GeyserImpl;
+import org.geysermc.geyser.GeyserLogger;
 import org.geysermc.geyser.api.block.custom.CustomBlockData;
 import org.geysermc.geyser.api.block.custom.CustomBlockPermutation;
 import org.geysermc.geyser.api.block.custom.CustomBlockState;
@@ -71,7 +75,7 @@ public class GeyserCustomBlockData implements CustomBlockData {
             Object2ObjectMap<String, Object> defaultProperties = new Object2ObjectOpenHashMap<>(this.properties.size());
             for (CustomBlockProperty<?> property : properties.values()) {
                 if (property.values().size() > 16) {
-                    GeyserImpl.getInstance().getLogger().warning(property.name() + " contains more than 16 values, but BDS specifies it should not. This may break in future versions.");
+                    GeyserLogger.get().warning(property.name() + " contains more than 16 values, but BDS specifies it should not. This may break in future versions.");
                 }
                 if (property.values().stream().distinct().count() != property.values().size()) {
                     throw new IllegalStateException(property.name() + " has duplicate values.");

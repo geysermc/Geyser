@@ -33,6 +33,7 @@ import org.cloudburstmc.nbt.NbtType;
 import org.cloudburstmc.protocol.bedrock.data.definitions.BlockDefinition;
 import org.cloudburstmc.protocol.bedrock.packet.UpdateBlockPacket;
 import org.geysermc.geyser.GeyserImpl;
+import org.geysermc.geyser.GeyserLogger;
 import org.geysermc.geyser.level.block.property.Properties;
 import org.geysermc.geyser.level.block.type.BlockState;
 import org.geysermc.geyser.session.GeyserSession;
@@ -111,13 +112,13 @@ public class SkullBlockEntityTranslator extends BlockEntityTranslator implements
             try {
                 String texture = texturesFuture.get();
                 if (texture == null) {
-                    session.getGeyser().getLogger().debug("Custom skull with invalid profile tag: " + blockPosition + " " + javaNbt);
+                    GeyserLogger.get().debug("Custom skull with invalid profile tag: " + blockPosition + " " + javaNbt);
                     return null;
                 }
                 SkullCache.Skull skull = session.getSkullCache().putSkull(blockPosition, uuid, texture, blockState);
                 return skull.getBlockDefinition();
             } catch (InterruptedException | ExecutionException e) {
-                session.getGeyser().getLogger().debug("Failed to acquire textures for custom skull: " + blockPosition + " " + javaNbt);
+                GeyserLogger.get().debug("Failed to acquire textures for custom skull: " + blockPosition + " " + javaNbt);
                 if (GeyserImpl.getInstance().getConfig().isDebugMode()) {
                     e.printStackTrace();
                 }
@@ -128,7 +129,7 @@ public class SkullBlockEntityTranslator extends BlockEntityTranslator implements
         // profile contained a username, so we have to wait for it to be retrieved
         texturesFuture.whenComplete((texturesProperty, throwable) -> {
             if (texturesProperty == null) {
-                session.getGeyser().getLogger().debug("Custom skull with invalid profile tag: " + blockPosition + " " + javaNbt);
+                GeyserLogger.get().debug("Custom skull with invalid profile tag: " + blockPosition + " " + javaNbt);
                 return;
             }
 

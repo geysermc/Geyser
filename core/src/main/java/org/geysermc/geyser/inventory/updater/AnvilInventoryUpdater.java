@@ -33,7 +33,7 @@ import org.cloudburstmc.nbt.NbtMapBuilder;
 import org.cloudburstmc.protocol.bedrock.data.inventory.ContainerId;
 import org.cloudburstmc.protocol.bedrock.data.inventory.ItemData;
 import org.cloudburstmc.protocol.bedrock.packet.InventorySlotPacket;
-import org.geysermc.geyser.GeyserImpl;
+import org.geysermc.geyser.GeyserLogger;
 import org.geysermc.geyser.inventory.AnvilContainer;
 import org.geysermc.geyser.inventory.GeyserItemStack;
 import org.geysermc.geyser.inventory.Inventory;
@@ -52,6 +52,7 @@ import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.inventory.S
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.IntStream;
 
 public class AnvilInventoryUpdater extends InventoryUpdater {
     public static final AnvilInventoryUpdater INSTANCE = new AnvilInventoryUpdater();
@@ -376,7 +377,7 @@ public class AnvilInventoryUpdater extends InventoryUpdater {
             for (Map.Entry<Integer, Integer> entry : enchantmentComponent.getEnchantments().entrySet()) {
                 Enchantment enchantment = session.getRegistryCache().enchantments().byId(entry.getKey());
                 if (enchantment == null) {
-                    GeyserImpl.getInstance().getLogger().debug("Unknown Java enchantment in anvil: " + entry.getKey());
+                    GeyserLogger.get().debug("Unknown Java enchantment in anvil: " + entry.getKey());
                     continue;
                 }
                 enchantments.put(enchantment, entry.getValue().intValue());

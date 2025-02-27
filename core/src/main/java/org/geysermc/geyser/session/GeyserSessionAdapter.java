@@ -29,6 +29,7 @@ import org.geysermc.floodgate.crypto.FloodgateCipher;
 import org.geysermc.floodgate.util.BedrockData;
 import org.geysermc.geyser.Constants;
 import org.geysermc.geyser.GeyserImpl;
+import org.geysermc.geyser.GeyserLogger;
 import org.geysermc.geyser.api.network.AuthType;
 import org.geysermc.geyser.api.util.PlatformType;
 import org.geysermc.geyser.network.netty.LocalSession;
@@ -99,7 +100,7 @@ public class GeyserSessionAdapter extends SessionAdapter {
                         skinUploader.getVerifyCode()
                     ).toString());
                 } catch (Exception e) {
-                    geyser.getLogger().error(GeyserLocale.getLocaleStringLog("geyser.auth.floodgate.encrypt_fail"), e);
+                    GeyserLogger.get().error(GeyserLocale.getLocaleStringLog("geyser.auth.floodgate.encrypt_fail"), e);
                     geyserSession.disconnect(GeyserLocale.getPlayerLocaleString("geyser.auth.floodgate.encrypt_fail", locale));
                     return;
                 }
@@ -129,11 +130,11 @@ public class GeyserSessionAdapter extends SessionAdapter {
 
         if (geyserSession.getDownstream().getSession() instanceof LocalSession) {
             // Connected directly to the server
-            geyser.getLogger().info(GeyserLocale.getLocaleStringLog("geyser.network.remote.connect_internal",
+            GeyserLogger.get().info(GeyserLocale.getLocaleStringLog("geyser.network.remote.connect_internal",
                 geyserSession.bedrockUsername(), geyserSession.getProtocol().getProfile().getName()));
         } else {
             // Connected to an IP address
-            geyser.getLogger().info(GeyserLocale.getLocaleStringLog("geyser.network.remote.connect",
+            GeyserLogger.get().info(GeyserLocale.getLocaleStringLog("geyser.network.remote.connect",
                 geyserSession.bedrockUsername(), geyserSession.getProtocol().getProfile().getName(), geyserSession.remoteServer().address()));
         }
 
@@ -173,7 +174,7 @@ public class GeyserSessionAdapter extends SessionAdapter {
                 // Server expects online mode
                 customDisconnectMessage = GeyserLocale.getPlayerLocaleString("geyser.network.remote.authentication_type_mismatch", locale);
                 // Explain that they may be looking for Floodgate.
-                geyser.getLogger().warning(GeyserLocale.getLocaleStringLog(
+                GeyserLogger.get().warning(GeyserLocale.getLocaleStringLog(
                     geyser.getPlatformType() == PlatformType.STANDALONE ?
                         "geyser.network.remote.floodgate_explanation_standalone"
                         : "geyser.network.remote.floodgate_explanation_plugin",
@@ -183,7 +184,7 @@ public class GeyserSessionAdapter extends SessionAdapter {
                 // Likely that Floodgate is not configured correctly.
                 customDisconnectMessage = GeyserLocale.getPlayerLocaleString("geyser.network.remote.floodgate_login_error", locale);
                 if (geyser.getPlatformType() == PlatformType.STANDALONE) {
-                    geyser.getLogger().warning(GeyserLocale.getLocaleStringLog("geyser.network.remote.floodgate_login_error_standalone"));
+                    GeyserLogger.get().warning(GeyserLocale.getLocaleStringLog("geyser.network.remote.floodgate_login_error_standalone"));
                 }
             }
         } else if (cause instanceof ConnectException) {
@@ -195,15 +196,15 @@ public class GeyserSessionAdapter extends SessionAdapter {
         disconnectMessage = customDisconnectMessage != null ? customDisconnectMessage : MessageTranslator.convertMessage(event.getReason());;
 
         if (geyserSession.getDownstream().getSession() instanceof LocalSession) {
-            geyser.getLogger().info(GeyserLocale.getLocaleStringLog("geyser.network.remote.disconnect_internal", geyserSession.bedrockUsername(), disconnectMessage));
+            GeyserLogger.get().info(GeyserLocale.getLocaleStringLog("geyser.network.remote.disconnect_internal", geyserSession.bedrockUsername(), disconnectMessage));
         } else {
-            geyser.getLogger().info(GeyserLocale.getLocaleStringLog("geyser.network.remote.disconnect", geyserSession.bedrockUsername(), geyserSession.remoteServer().address(), disconnectMessage));
+            GeyserLogger.get().info(GeyserLocale.getLocaleStringLog("geyser.network.remote.disconnect", geyserSession.bedrockUsername(), geyserSession.remoteServer().address(), disconnectMessage));
         }
         if (cause != null) {
             if (cause.getMessage() != null) {
-                GeyserImpl.getInstance().getLogger().error(cause.getMessage());
+                GeyserLogger.get().error(cause.getMessage());
             } else {
-                GeyserImpl.getInstance().getLogger().error("An exception occurred: ", cause);
+                GeyserLogger.get().error("An exception occurred: ", cause);
             }
             if (geyser.getConfig().isDebugMode()) {
                 cause.printStackTrace();
@@ -231,7 +232,7 @@ public class GeyserSessionAdapter extends SessionAdapter {
 
     @Override
     public void packetError(PacketErrorEvent event) {
-        geyser.getLogger().warning(GeyserLocale.getLocaleStringLog("geyser.network.downstream_error",
+        GeyserLogger.get().warning(GeyserLocale.getLocaleStringLog("geyser.network.downstream_error",
             (event.getPacketClass() != null ? "(" + event.getPacketClass().getSimpleName() + ") " : "") +
                 event.getCause().getMessage())
         );

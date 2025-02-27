@@ -85,6 +85,13 @@ public class GeyserModLogger implements GeyserLogger {
     }
 
     @Override
+    public void debug(String message, Object... parameters) {
+        if (debug) {
+            logger.info(message, parameters);
+        }
+    }
+
+    @Override
     public void setDebug(boolean debug) {
         this.debug = debug;
     }

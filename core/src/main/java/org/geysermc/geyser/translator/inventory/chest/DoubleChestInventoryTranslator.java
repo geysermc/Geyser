@@ -34,7 +34,7 @@ import org.cloudburstmc.protocol.bedrock.packet.BlockEntityDataPacket;
 import org.cloudburstmc.protocol.bedrock.packet.ContainerClosePacket;
 import org.cloudburstmc.protocol.bedrock.packet.ContainerOpenPacket;
 import org.cloudburstmc.protocol.bedrock.packet.UpdateBlockPacket;
-import org.geysermc.geyser.GeyserImpl;
+import org.geysermc.geyser.GeyserLogger;
 import org.geysermc.geyser.inventory.Container;
 import org.geysermc.geyser.inventory.Inventory;
 import org.geysermc.geyser.level.block.Blocks;
@@ -149,9 +149,9 @@ public class DoubleChestInventoryTranslator extends ChestInventoryTranslator {
     @Override
     public void closeInventory(GeyserSession session, Inventory inventory) {
         if (!(inventory instanceof Container container)) {
-            GeyserImpl.getInstance().getLogger().warning("Tried to close a non-container inventory in a block inventory holder! Please report this error on discord.");
-            GeyserImpl.getInstance().getLogger().warning("Current inventory translator: " + session.getInventoryTranslator().getClass().getSimpleName());
-            GeyserImpl.getInstance().getLogger().warning("Current inventory: " + inventory.getClass().getSimpleName());
+            GeyserLogger.get().warning("Tried to close a non-container inventory in a block inventory holder! Please report this error on discord.");
+            GeyserLogger.get().warning("Current inventory translator: " + session.getInventoryTranslator().getClass().getSimpleName());
+            GeyserLogger.get().warning("Current inventory: " + inventory.getClass().getSimpleName());
             // Try to save ourselves? maybe?
             // https://github.com/GeyserMC/Geyser/issues/4141
             // TODO: improve once this issue is pinned down

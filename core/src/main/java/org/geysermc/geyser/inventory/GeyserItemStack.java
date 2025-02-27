@@ -33,7 +33,7 @@ import lombok.Setter;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.cloudburstmc.protocol.bedrock.data.inventory.ItemData;
-import org.geysermc.geyser.GeyserImpl;
+import org.geysermc.geyser.GeyserLogger;
 import org.geysermc.geyser.item.Items;
 import org.geysermc.geyser.item.type.Item;
 import org.geysermc.geyser.registry.Registries;
@@ -103,7 +103,7 @@ public class GeyserItemStack {
         if (slotDisplay instanceof ItemStackSlotDisplay itemStackSlotDisplay) {
             return GeyserItemStack.from(itemStackSlotDisplay.itemStack());
         }
-        GeyserImpl.getInstance().getLogger().warning("Unsure how to convert to ItemStack: " + slotDisplay);
+        GeyserLogger.get().warning("Unsure how to convert to ItemStack: " + slotDisplay);
         return GeyserItemStack.EMPTY;
     }
 

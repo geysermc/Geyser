@@ -28,6 +28,7 @@ package org.geysermc.geyser.translator.protocol.bedrock;
 import org.cloudburstmc.protocol.bedrock.data.AttributeData;
 import org.cloudburstmc.protocol.bedrock.packet.NetworkStackLatencyPacket;
 import org.cloudburstmc.protocol.bedrock.packet.UpdateAttributesPacket;
+import org.geysermc.geyser.GeyserLogger;
 import org.geysermc.geyser.entity.attribute.GeyserAttributeType;
 import org.geysermc.geyser.session.GeyserSession;
 import org.geysermc.geyser.translator.protocol.PacketTranslator;
@@ -54,7 +55,7 @@ public class BedrockNetworkStackLatencyTranslator extends PacketTranslator<Netwo
                 // c) 1.20.10 and later reply with a different magnitude
                 Long keepAliveId = session.getKeepAliveCache().poll();
                 if (keepAliveId == null) {
-                    session.getGeyser().getLogger().debug("Received a latency packet that we don't have a KeepAlive for: " + packet);
+                    GeyserLogger.get().debug("Received a latency packet that we don't have a KeepAlive for: " + packet);
                     return;
                 }
 

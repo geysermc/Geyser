@@ -117,7 +117,7 @@ public class GeyserExtensionLoader extends ExtensionLoader {
     }
 
     private GeyserExtensionContainer setup(Extension extension, GeyserExtensionDescription description, Path dataFolder, ExtensionEventBus eventBus) {
-        GeyserExtensionLogger logger = new GeyserExtensionLogger(GeyserImpl.getInstance().getLogger(), description.id());
+        GeyserExtensionLogger logger = new GeyserExtensionLogger(GeyserLogger.get(), description.id());
         return new GeyserExtensionContainer(extension, dataFolder, description, this, logger, eventBus);
     }
 
@@ -159,7 +159,7 @@ public class GeyserExtensionLoader extends ExtensionLoader {
 
     @Override
     protected void loadAllExtensions(@NonNull ExtensionManager extensionManager) {
-        GeyserLogger logger = GeyserImpl.getInstance().getLogger();
+        GeyserLogger logger = GeyserLogger.get();
         try {
             if (Files.notExists(extensionsDirectory)) {
                 Files.createDirectory(extensionsDirectory);

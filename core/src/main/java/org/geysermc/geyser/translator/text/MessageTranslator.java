@@ -25,8 +25,6 @@
 
 package org.geysermc.geyser.translator.text;
 
-import java.util.ArrayList;
-import java.util.List;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.JoinConfiguration;
 import net.kyori.adventure.text.ScoreComponent;
@@ -43,7 +41,7 @@ import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.cloudburstmc.nbt.NbtMap;
 import org.cloudburstmc.protocol.bedrock.packet.TextPacket;
-import org.geysermc.geyser.GeyserImpl;
+import org.geysermc.geyser.GeyserLogger;
 import org.geysermc.geyser.session.GeyserSession;
 import org.geysermc.geyser.text.ChatColor;
 import org.geysermc.geyser.text.ChatDecoration;
@@ -55,6 +53,9 @@ import org.geysermc.mcprotocollib.protocol.data.DefaultComponentSerializer;
 import org.geysermc.mcprotocollib.protocol.data.game.Holder;
 import org.geysermc.mcprotocollib.protocol.data.game.chat.ChatType;
 import org.geysermc.mcprotocollib.protocol.data.game.chat.ChatTypeDecoration;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MessageTranslator {
     // These are used for handling the translations of the messages
@@ -194,8 +195,8 @@ public class MessageTranslator {
 
             return finalLegacy.toString();
         } catch (Exception e) {
-            GeyserImpl.getInstance().getLogger().debug(GSON_SERIALIZER.serialize(message));
-            GeyserImpl.getInstance().getLogger().error("Failed to parse message", e);
+            GeyserLogger.get().debug(GSON_SERIALIZER.serialize(message));
+            GeyserLogger.get().error("Failed to parse message", e);
 
             return "";
         }
@@ -366,7 +367,7 @@ public class MessageTranslator {
             withDecoration.arguments(args);
             textPacket.setMessage(MessageTranslator.convertMessage(withDecoration.build(), session.locale()));
         } else {
-            session.getGeyser().getLogger().debug("Likely illegal chat type detection found.");
+            GeyserLogger.get().debug("Likely illegal chat type detection found.");
             if (session.getGeyser().getConfig().isDebugMode()) {
                 Thread.dumpStack();
             }
@@ -486,7 +487,7 @@ public class MessageTranslator {
             }
         }
 
-        GeyserImpl.getInstance().getLogger().error("Expected tag to be a literal string, a list of components, or a component object with a text/translate key: " + nbtTag);
+        GeyserLogger.get().error("Expected tag to be a literal string, a list of components, or a component object with a text/translate key: " + nbtTag);
         return Component.empty();
     }
 

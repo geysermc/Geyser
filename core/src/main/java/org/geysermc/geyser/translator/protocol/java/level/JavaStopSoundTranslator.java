@@ -25,12 +25,13 @@
 
 package org.geysermc.geyser.translator.protocol.java.level;
 
-import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.ClientboundStopSoundPacket;
 import org.cloudburstmc.protocol.bedrock.packet.StopSoundPacket;
+import org.geysermc.geyser.GeyserLogger;
 import org.geysermc.geyser.session.GeyserSession;
 import org.geysermc.geyser.translator.protocol.PacketTranslator;
 import org.geysermc.geyser.translator.protocol.Translator;
 import org.geysermc.geyser.util.SoundUtils;
+import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.ClientboundStopSoundPacket;
 
 @Translator(packet = ClientboundStopSoundPacket.class)
 public class JavaStopSoundTranslator extends PacketTranslator<ClientboundStopSoundPacket> {
@@ -51,6 +52,6 @@ public class JavaStopSoundTranslator extends PacketTranslator<ClientboundStopSou
         stopSoundPacket.setStoppingAllSound(false);
 
         session.sendUpstreamPacket(stopSoundPacket);
-        session.getGeyser().getLogger().debug("[StopSound] Stopped " + packet.getSound() + " -> " + stopSoundPacket.getSoundName());
+        GeyserLogger.get().debug("[StopSound] Stopped " + packet.getSound() + " -> " + stopSoundPacket.getSoundName());
     }
 }

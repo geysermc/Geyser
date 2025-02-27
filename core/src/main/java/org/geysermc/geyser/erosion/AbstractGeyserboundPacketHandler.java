@@ -26,7 +26,16 @@
 package org.geysermc.geyser.erosion;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.geysermc.erosion.packet.geyserbound.*;
+import org.geysermc.erosion.packet.geyserbound.GeyserboundBatchBlockIdPacket;
+import org.geysermc.erosion.packet.geyserbound.GeyserboundBlockEntityPacket;
+import org.geysermc.erosion.packet.geyserbound.GeyserboundBlockIdPacket;
+import org.geysermc.erosion.packet.geyserbound.GeyserboundBlockLookupFailPacket;
+import org.geysermc.erosion.packet.geyserbound.GeyserboundBlockPlacePacket;
+import org.geysermc.erosion.packet.geyserbound.GeyserboundPacket;
+import org.geysermc.erosion.packet.geyserbound.GeyserboundPacketHandler;
+import org.geysermc.erosion.packet.geyserbound.GeyserboundPickBlockPacket;
+import org.geysermc.erosion.packet.geyserbound.GeyserboundPistonEventPacket;
+import org.geysermc.geyser.GeyserLogger;
 import org.geysermc.geyser.session.GeyserSession;
 
 public abstract class AbstractGeyserboundPacketHandler implements GeyserboundPacketHandler {
@@ -83,6 +92,6 @@ public abstract class AbstractGeyserboundPacketHandler implements GeyserboundPac
     }
 
     protected final void illegalPacket(GeyserboundPacket packet) {
-        session.getGeyser().getLogger().warning("Illegal packet sent from backend server! " + packet);
+        GeyserLogger.get().warning("Illegal packet sent from backend server! " + packet);
     }
 }

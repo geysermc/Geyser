@@ -35,6 +35,7 @@ import org.cloudburstmc.protocol.bedrock.data.definitions.ItemDefinition;
 import org.cloudburstmc.protocol.bedrock.data.definitions.SimpleItemDefinition;
 import org.cloudburstmc.protocol.bedrock.data.inventory.ItemVersion;
 import org.geysermc.geyser.GeyserImpl;
+import org.geysermc.geyser.GeyserLogger;
 import org.geysermc.geyser.api.item.custom.CustomItemData;
 import org.geysermc.geyser.api.item.custom.CustomRenderOffsets;
 import org.geysermc.geyser.api.item.custom.NonVanillaCustomItemData;
@@ -48,7 +49,6 @@ import org.geysermc.geyser.registry.mappings.MappingsConfigReader;
 import org.geysermc.geyser.registry.type.GeyserMappingItem;
 import org.geysermc.geyser.registry.type.ItemMapping;
 import org.geysermc.geyser.registry.type.NonVanillaItemRegistration;
-import org.geysermc.mcprotocollib.protocol.data.game.item.component.DataComponentTypes;
 import org.geysermc.mcprotocollib.protocol.data.game.item.component.DataComponentTypes;
 import org.geysermc.mcprotocollib.protocol.data.game.item.component.DataComponents;
 
@@ -83,14 +83,14 @@ public class CustomItemRegistryPopulator {
             @Override
             public boolean register(@NonNull NonVanillaCustomItemData customItemData) {
                 if (customItemData.identifier().startsWith("minecraft:")) {
-                    GeyserImpl.getInstance().getLogger().error("The custom item " + customItemData.identifier() +
+                    GeyserLogger.get().error("The custom item " + customItemData.identifier() +
                             " is attempting to masquerade as a vanilla Minecraft item!");
                     return false;
                 }
 
                 if (customItemData.javaId() < items.size()) {
                     // Attempting to overwrite an item that already exists in the protocol
-                    GeyserImpl.getInstance().getLogger().error("The custom item " + customItemData.identifier() +
+                    GeyserLogger.get().error("The custom item " + customItemData.identifier() +
                             " is attempting to overwrite a vanilla Minecraft item!");
                     return false;
                 }
@@ -102,7 +102,7 @@ public class CustomItemRegistryPopulator {
 
         int customItemCount = customItems.size() + nonVanillaCustomItems.size();
         if (customItemCount > 0) {
-            GeyserImpl.getInstance().getLogger().info("Registered " + customItemCount + " custom items");
+            GeyserLogger.get().info("Registered " + customItemCount + " custom items");
         }
     }
 
@@ -115,18 +115,18 @@ public class CustomItemRegistryPopulator {
 
     static boolean initialCheck(String identifier, CustomItemData item, Map<String, GeyserMappingItem> mappings) {
         if (!mappings.containsKey(identifier)) {
-            GeyserImpl.getInstance().getLogger().error("Could not find the Java item to add custom item properties to for " + item.name());
+            GeyserLogger.get().error("Could not find the Java item to add custom item properties to for " + item.name());
             return false;
         }
         if (!item.customItemOptions().hasCustomItemOptions()) {
-            GeyserImpl.getInstance().getLogger().error("The custom item " + item.name() + " has no registration types");
+            GeyserLogger.get().error("The custom item " + item.name() + " has no registration types");
         }
         String name = item.name();
         if (name.isEmpty()) {
-            GeyserImpl.getInstance().getLogger().warning("Custom item name is empty?");
+            GeyserLogger.get().warning("Custom item name is empty?");
         } else if (Character.isDigit(name.charAt(0))) {
             // As of 1.19.31
-            GeyserImpl.getInstance().getLogger().warning("Custom item name (" + name + ") begins with a digit. This may cause issues!");
+            GeyserLogger.get().warning("Custom item name (" + name + ") begins with a digit. This may cause issues!");
         }
         return true;
     }

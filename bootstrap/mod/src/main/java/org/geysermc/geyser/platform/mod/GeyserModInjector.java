@@ -37,7 +37,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerConnectionListener;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.geysermc.geyser.GeyserBootstrap;
-import org.geysermc.geyser.GeyserImpl;
+import org.geysermc.geyser.GeyserLogger;
 import org.geysermc.geyser.network.netty.GeyserInjector;
 import org.geysermc.geyser.network.netty.LocalServerChannelWrapper;
 import org.geysermc.geyser.platform.mod.platform.GeyserModPlatform;
@@ -149,7 +149,7 @@ public class GeyserModInjector extends GeyserInjector {
                 eventLoopGroup.shutdownGracefully().sync();
                 eventLoopGroup = null;
             } catch (Exception e) {
-                GeyserImpl.getInstance().getLogger().error("Unable to shut down injector! " + e.getMessage());
+                GeyserLogger.get().error("Unable to shut down injector! " + e.getMessage());
                 e.printStackTrace();
             }
         }

@@ -31,8 +31,18 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.geysermc.geyser.command.GeyserCommandSource;
 
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 
 public interface GeyserLogger extends GeyserCommandSource {
+
+    AtomicReference<GeyserLogger> INSTANCE = new AtomicReference<>();
+
+    /**
+     * Returns the current GeyserLogger instance.
+     */
+    static GeyserLogger get() {
+        return INSTANCE.get();
+    }
 
     /**
      * Logs a severe message to console
@@ -101,6 +111,18 @@ public interface GeyserLogger extends GeyserCommandSource {
      */
     default void debug(@Nullable Object object) {
         debug(String.valueOf(object));
+    }
+
+    /**
+     * Logs a message with parameters if debug mode is enabled.
+     *
+     * @param message the message with placeholders for the objects
+     * @param parameters the parameters for the message
+     */
+    default void debug(String message, Object... parameters) {
+        if (isDebug()) {
+            debug(String.format(message, parameters));
+        }
     }
 
     /**

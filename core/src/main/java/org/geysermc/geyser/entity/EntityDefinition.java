@@ -29,6 +29,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.geysermc.geyser.GeyserImpl;
+import org.geysermc.geyser.GeyserLogger;
 import org.geysermc.geyser.entity.factory.EntityFactory;
 import org.geysermc.geyser.entity.properties.GeyserEntityProperties;
 import org.geysermc.geyser.entity.type.Entity;
@@ -70,9 +71,9 @@ public record EntityDefinition<T extends Entity>(EntityFactory<T> factory, Entit
         }
 
         if (translator.acceptedType() != metadata.getType()) {
-            GeyserImpl.getInstance().getLogger().warning("Metadata ID " + metadata.getId() + " was received with type " + metadata.getType() + " but we expected " + translator.acceptedType() + " for " + entity.getDefinition().entityType());
+            GeyserLogger.get().warning("Metadata ID " + metadata.getId() + " was received with type " + metadata.getType() + " but we expected " + translator.acceptedType() + " for " + entity.getDefinition().entityType());
             if (GeyserImpl.getInstance().getConfig().isDebugMode()) {
-                GeyserImpl.getInstance().getLogger().debug(metadata.toString());
+                GeyserLogger.get().debug(metadata.toString());
             }
             return;
         }

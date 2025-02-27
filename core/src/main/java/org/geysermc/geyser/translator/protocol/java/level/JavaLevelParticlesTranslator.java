@@ -25,6 +25,25 @@
 
 package org.geysermc.geyser.translator.protocol.java.level;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.cloudburstmc.math.vector.Vector3f;
+import org.cloudburstmc.nbt.NbtMap;
+import org.cloudburstmc.protocol.bedrock.data.LevelEvent;
+import org.cloudburstmc.protocol.bedrock.data.ParticleType;
+import org.cloudburstmc.protocol.bedrock.data.inventory.ItemData;
+import org.cloudburstmc.protocol.bedrock.packet.BedrockPacket;
+import org.cloudburstmc.protocol.bedrock.packet.LevelEventGenericPacket;
+import org.cloudburstmc.protocol.bedrock.packet.LevelEventPacket;
+import org.cloudburstmc.protocol.bedrock.packet.SpawnParticleEffectPacket;
+import org.geysermc.geyser.GeyserLogger;
+import org.geysermc.geyser.entity.type.Entity;
+import org.geysermc.geyser.registry.Registries;
+import org.geysermc.geyser.registry.type.ParticleMapping;
+import org.geysermc.geyser.session.GeyserSession;
+import org.geysermc.geyser.translator.item.ItemTranslator;
+import org.geysermc.geyser.translator.protocol.PacketTranslator;
+import org.geysermc.geyser.translator.protocol.Translator;
+import org.geysermc.geyser.util.DimensionUtils;
 import org.geysermc.mcprotocollib.protocol.data.game.item.ItemStack;
 import org.geysermc.mcprotocollib.protocol.data.game.level.particle.BlockParticleData;
 import org.geysermc.mcprotocollib.protocol.data.game.level.particle.DustParticleData;
@@ -34,24 +53,6 @@ import org.geysermc.mcprotocollib.protocol.data.game.level.particle.VibrationPar
 import org.geysermc.mcprotocollib.protocol.data.game.level.particle.positionsource.BlockPositionSource;
 import org.geysermc.mcprotocollib.protocol.data.game.level.particle.positionsource.EntityPositionSource;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.level.ClientboundLevelParticlesPacket;
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.cloudburstmc.nbt.NbtMap;
-import org.cloudburstmc.math.vector.Vector3f;
-import org.cloudburstmc.protocol.bedrock.data.LevelEvent;
-import org.cloudburstmc.protocol.bedrock.data.ParticleType;
-import org.cloudburstmc.protocol.bedrock.data.inventory.ItemData;
-import org.cloudburstmc.protocol.bedrock.packet.BedrockPacket;
-import org.cloudburstmc.protocol.bedrock.packet.LevelEventGenericPacket;
-import org.cloudburstmc.protocol.bedrock.packet.LevelEventPacket;
-import org.cloudburstmc.protocol.bedrock.packet.SpawnParticleEffectPacket;
-import org.geysermc.geyser.entity.type.Entity;
-import org.geysermc.geyser.registry.Registries;
-import org.geysermc.geyser.registry.type.ParticleMapping;
-import org.geysermc.geyser.session.GeyserSession;
-import org.geysermc.geyser.translator.item.ItemTranslator;
-import org.geysermc.geyser.translator.protocol.PacketTranslator;
-import org.geysermc.geyser.translator.protocol.Translator;
-import org.geysermc.geyser.util.DimensionUtils;
 
 import java.util.Optional;
 import java.util.Random;
@@ -84,7 +85,7 @@ public class JavaLevelParticlesTranslator extends PacketTranslator<ClientboundLe
             }
         } else {
             // Null is only returned when no particle of this type is found
-            session.getGeyser().getLogger().debug("Unhandled particle packet: " + packet);
+            GeyserLogger.get().debug("Unhandled particle packet: " + packet);
         }
     }
 
@@ -152,11 +153,11 @@ public class JavaLevelParticlesTranslator extends PacketTranslator<ClientboundLe
                     if (entity != null) {
                         target = entity.getPosition().up(entityPositionSource.getYOffset());
                     } else {
-                        session.getGeyser().getLogger().debug("Unable to find entity with Java Id: " + entityPositionSource.getEntityId() + " for vibration particle.");
+                        GeyserLogger.get().debug("Unable to find entity with Java Id: " + entityPositionSource.getEntityId() + " for vibration particle.");
                         return null;
                     }
                 } else {
-                    session.getGeyser().getLogger().debug("Unknown position source " + data.getPositionSource() + " for vibration particle.");
+                    GeyserLogger.get().debug("Unknown position source " + data.getPositionSource() + " for vibration particle.");
                     return null;
                 }
 

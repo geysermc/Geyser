@@ -28,7 +28,7 @@ package org.geysermc.geyser.skin;
 import org.cloudburstmc.protocol.bedrock.data.skin.ImageData;
 import org.cloudburstmc.protocol.bedrock.data.skin.SerializedSkin;
 import org.cloudburstmc.protocol.bedrock.packet.PlayerSkinPacket;
-import org.geysermc.geyser.GeyserImpl;
+import org.geysermc.geyser.GeyserLogger;
 import org.geysermc.geyser.api.skin.Skin;
 import org.geysermc.geyser.api.skin.SkinData;
 import org.geysermc.geyser.entity.type.player.SkullPlayerEntity;
@@ -67,7 +67,7 @@ public class SkullSkinManager extends SkinManager {
                 packet.setTrustedSkin(true);
                 session.sendUpstreamPacket(packet);
             } catch (Exception e) {
-                GeyserImpl.getInstance().getLogger().error(GeyserLocale.getLocaleStringLog("geyser.skin.fail", entity.getUuid()), e);
+                GeyserLogger.get().error(GeyserLocale.getLocaleStringLog("geyser.skin.fail", entity.getUuid()), e);
             }
 
             if (skinConsumer != null) {
@@ -77,7 +77,7 @@ public class SkullSkinManager extends SkinManager {
 
         GameProfileData data = GameProfileData.from(entity);
         if (data == null) {
-            GeyserImpl.getInstance().getLogger().debug("Using fallback skin for skull at " + entity.getSkullPosition() +
+            GeyserLogger.get().debug("Using fallback skin for skull at " + entity.getSkullPosition() +
                     " with texture value: " + entity.getTexturesProperty() + " and UUID: " + entity.getSkullUUID());
             // No texture available, fallback using the UUID
             SkinData fallback = SkinProvider.determineFallbackSkinData(entity.getSkullUUID());

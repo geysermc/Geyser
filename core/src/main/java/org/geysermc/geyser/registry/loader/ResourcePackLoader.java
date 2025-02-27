@@ -26,6 +26,7 @@
 package org.geysermc.geyser.registry.loader;
 
 import org.geysermc.geyser.GeyserImpl;
+import org.geysermc.geyser.GeyserLogger;
 import org.geysermc.geyser.api.event.lifecycle.GeyserLoadResourcePacksEvent;
 import org.geysermc.geyser.api.pack.ResourcePack;
 import org.geysermc.geyser.pack.GeyserResourcePack;
@@ -72,7 +73,7 @@ public class ResourcePackLoader implements RegistryLoader<Path, Map<UUID, Resour
             try {
                 Files.createDirectory(directory);
             } catch (IOException e) {
-                GeyserImpl.getInstance().getLogger().error("Could not create packs directory", e);
+                GeyserLogger.get().error("Could not create packs directory", e);
             }
         }
 
@@ -81,7 +82,7 @@ public class ResourcePackLoader implements RegistryLoader<Path, Map<UUID, Resour
             resourcePacks = stream.filter(PACK_MATCHER::matches)
                     .collect(Collectors.toCollection(ArrayList::new)); // toList() does not guarantee mutability
         } catch (Exception e) {
-            GeyserImpl.getInstance().getLogger().error("Could not list packs directory", e);
+            GeyserLogger.get().error("Could not list packs directory", e);
 
             // Ensure the event is fired even if there was an issue reading
             // from our own resource pack directory. External projects may have
@@ -129,7 +130,7 @@ public class ResourcePackLoader implements RegistryLoader<Path, Map<UUID, Resour
             stream.forEach(x -> {
                 String name = x.getName();
                 if (SHOW_RESOURCE_PACK_LENGTH_WARNING && name.length() >= 80) {
-                    GeyserImpl.getInstance().getLogger().warning("The resource pack " + path.getFileName()
+                    GeyserLogger.get().warning("The resource pack " + path.getFileName()
                             + " has a file in it that meets or exceeds 80 characters in its path (" + name
                             + ", " + name.length() + " characters long). This will cause problems on some Bedrock platforms." +
                             " Please rename it to be shorter, or reduce the amount of folders needed to get to the file.");

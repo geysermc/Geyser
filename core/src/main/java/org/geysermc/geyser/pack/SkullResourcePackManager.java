@@ -30,6 +30,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.geysermc.geyser.Constants;
 import org.geysermc.geyser.GeyserImpl;
+import org.geysermc.geyser.GeyserLogger;
 import org.geysermc.geyser.api.pack.ResourcePackManifest;
 import org.geysermc.geyser.registry.BlockRegistries;
 import org.geysermc.geyser.registry.type.CustomSkull;
@@ -39,7 +40,11 @@ import org.geysermc.geyser.util.FileUtils;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -71,7 +76,7 @@ public class SkullResourcePackManager {
         try {
             Files.createDirectories(cachePath);
         } catch (IOException e) {
-            GeyserImpl.getInstance().getLogger().severe("Unable to create directories for player skull resource pack!", e);
+            GeyserLogger.get().severe("Unable to create directories for player skull resource pack!", e);
             return null;
         }
         cleanSkullSkinCache();
@@ -83,22 +88,22 @@ public class SkullResourcePackManager {
             return null;
         }
         if (packFile.exists() && canReusePack(packFile)) {
-            GeyserImpl.getInstance().getLogger().info("Reusing cached player skull resource pack.");
+            GeyserLogger.get().info("Reusing cached player skull resource pack.");
             return packPath;
         }
 
         // We need to create the resource pack from scratch
-        GeyserImpl.getInstance().getLogger().info("Creating skull resource pack.");
+        GeyserLogger.get().info("Creating skull resource pack.");
         packFile.delete();
         try (ZipOutputStream zipOS = new ZipOutputStream(Files.newOutputStream(packPath, StandardOpenOption.WRITE, StandardOpenOption.CREATE))) {
             addBaseResources(zipOS);
             addSkinTextures(zipOS);
             addAttachables(zipOS);
-            GeyserImpl.getInstance().getLogger().info("Finished creating skull resource pack.");
+            GeyserLogger.get().info("Finished creating skull resource pack.");
             return packPath;
         } catch (IOException e) {
-            GeyserImpl.getInstance().getLogger().severe("Unable to create player skull resource pack!", e);
-            GeyserImpl.getInstance().getLogger().severe("Bedrock players will see dirt blocks instead of custom skull blocks.");
+            GeyserLogger.get().severe("Unable to create player skull resource pack!", e);
+            GeyserLogger.get().severe("Bedrock players will see dirt blocks instead of custom skull blocks.");
             packFile.delete();
         }
         return null;
@@ -138,7 +143,7 @@ public class SkullResourcePackManager {
 
         ImageIO.write(skullTexture, "png", skinPath.toFile());
         SKULL_SKINS.put(skinHash, skinPath);
-        GeyserImpl.getInstance().getLogger().debug("Cached player skull to " + skinPath + " for " + skinHash);
+        GeyserLogger.get().debug("Cached player skull to " + skinPath + " for " + skinHash);
     }
 
     public static void cleanSkullSkinCache() {
@@ -157,10 +162,10 @@ public class SkullResourcePackManager {
                 }
             }
             if (removeCount != 0) {
-                GeyserImpl.getInstance().getLogger().debug("Removed " + removeCount + " unnecessary skull skins.");
+                GeyserLogger.get().debug("Removed " + removeCount + " unnecessary skull skins.");
             }
         } catch (IOException e) {
-            GeyserImpl.getInstance().getLogger().debug("Unable to clean up skull skin cache.");
+            GeyserLogger.get().debug("Unable to clean up skull skin cache.");
             if (GeyserImpl.getInstance().getConfig().isDebugMode()) {
                 e.printStackTrace();
             }
@@ -279,7 +284,7 @@ public class SkullResourcePackManager {
             uuid1 = new UUID(skinHashes.getLong(), skinHashes.getLong());
             uuid2 = new UUID(skinHashes.getLong(), skinHashes.getLong());
         } catch (NoSuchAlgorithmException e) {
-            GeyserImpl.getInstance().getLogger().severe("Unable to get SHA-256 Message Digest instance! Bedrock players will have to re-downloaded the player skull resource pack after each server restart.", e);
+            GeyserLogger.get().severe("Unable to get SHA-256 Message Digest instance! Bedrock players will have to re-downloaded the player skull resource pack after each server restart.", e);
         }
 
         return Pair.of(uuid1, uuid2);
@@ -303,7 +308,7 @@ public class SkullResourcePackManager {
                 return resourceUUID.isPresent() && uuids.second().equals(resourceUUID.get());
             }
         } catch (IOException e) {
-            GeyserImpl.getInstance().getLogger().debug("Cached player skull resource pack was invalid! The pack will be recreated.");
+            GeyserLogger.get().debug("Cached player skull resource pack was invalid! The pack will be recreated.");
         }
         return false;
     }

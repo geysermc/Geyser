@@ -29,6 +29,7 @@ import org.cloudburstmc.math.vector.Vector3d;
 import org.cloudburstmc.math.vector.Vector3f;
 import org.cloudburstmc.protocol.bedrock.data.PlayerAuthInputData;
 import org.cloudburstmc.protocol.bedrock.packet.PlayerAuthInputPacket;
+import org.geysermc.geyser.GeyserLogger;
 import org.geysermc.geyser.entity.EntityDefinitions;
 import org.geysermc.geyser.entity.type.player.SessionPlayerEntity;
 import org.geysermc.geyser.level.physics.CollisionResult;
@@ -171,7 +172,7 @@ final class BedrockMovePlayer {
                 }
             } else {
                 // Not a valid move
-                session.getGeyser().getLogger().debug("Recalculating position...");
+                GeyserLogger.get().debug("Recalculating position...");
                 session.getCollisionManager().recalculatePosition();
             }
         } else if (horizontalCollision != session.getInputCache().lastHorizontalCollision() || isOnGround != entity.isOnGround()) {
@@ -199,7 +200,7 @@ final class BedrockMovePlayer {
             return false;
         }
         if (currentPosition.distanceSquared(newPosition) > 300) {
-            session.getGeyser().getLogger().debug(ChatColor.RED + session.bedrockUsername() + " moved too quickly." +
+            GeyserLogger.get().debug(ChatColor.RED + session.bedrockUsername() + " moved too quickly." +
                     " current position: " + currentPosition + ", new position: " + newPosition);
 
             return false;

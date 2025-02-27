@@ -58,6 +58,7 @@ import org.cloudburstmc.protocol.bedrock.data.inventory.ItemVersion;
 import org.geysermc.geyser.Constants;
 import org.geysermc.geyser.GeyserBootstrap;
 import org.geysermc.geyser.GeyserImpl;
+import org.geysermc.geyser.GeyserLogger;
 import org.geysermc.geyser.api.block.custom.CustomBlockData;
 import org.geysermc.geyser.api.block.custom.CustomBlockState;
 import org.geysermc.geyser.api.block.custom.NonVanillaCustomBlockData;
@@ -493,7 +494,7 @@ public class ItemRegistryPopulator {
                 if (javaOnlyItems.contains(javaItem)) {
                     // These items don't exist on Bedrock, so set up a variable that indicates they should have custom names
                     mappingBuilder = mappingBuilder.translationString((javaItem instanceof BlockItem ? "block." : "item.") + entry.getKey().replace(":", "."));
-                    GeyserImpl.getInstance().getLogger().debug("Adding " + entry.getKey() + " as an item that needs to be translated.");
+                    GeyserLogger.get().debug("Adding " + entry.getKey() + " as an item that needs to be translated.");
                 }
 
                 // Add the custom item properties, if applicable
@@ -508,7 +509,7 @@ public class ItemRegistryPopulator {
                         String customItemName = customItem instanceof NonVanillaCustomItemData nonVanillaItem ? nonVanillaItem.identifier() : Constants.GEYSER_CUSTOM_NAMESPACE + ":" + customItem.name();
                         if (!registeredItemNames.add(customItemName)) {
                             if (firstMappingsPass) {
-                                GeyserImpl.getInstance().getLogger().error("Custom item name '" + customItemName + "' already exists and was registered again! Skipping...");
+                                GeyserLogger.get().error("Custom item name '" + customItemName + "' already exists and was registered again! Skipping...");
                             }
                             continue;
                         }
@@ -616,7 +617,7 @@ public class ItemRegistryPopulator {
                 for (NonVanillaCustomItemData customItem : nonVanillaCustomItems) {
                     if (!registeredJavaIds.add(customItem.javaId())) {
                         if (firstMappingsPass) {
-                            GeyserImpl.getInstance().getLogger().error("Custom item java id " + customItem.javaId() + " already exists and was registered again! Skipping...");
+                            GeyserLogger.get().error("Custom item java id " + customItem.javaId() + " already exists and was registered again! Skipping...");
                         }
                         continue;
                     }

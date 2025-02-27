@@ -30,6 +30,7 @@ import org.cloudburstmc.math.vector.Vector3f;
 import org.cloudburstmc.protocol.bedrock.packet.ChunkRadiusUpdatedPacket;
 import org.cloudburstmc.protocol.bedrock.packet.MovePlayerPacket;
 import org.cloudburstmc.protocol.bedrock.packet.RespawnPacket;
+import org.geysermc.geyser.GeyserLogger;
 import org.geysermc.geyser.entity.EntityDefinitions;
 import org.geysermc.geyser.entity.type.player.SessionPlayerEntity;
 import org.geysermc.geyser.session.GeyserSession;
@@ -100,7 +101,7 @@ public class JavaPlayerPositionTranslator extends PacketTranslator<ClientboundPl
             ChunkUtils.updateChunkPosition(session, pos.toInt());
 
             if (session.getGeyser().getConfig().isDebugMode()) {
-                session.getGeyser().getLogger().debug("Spawned player at " + packet.getPosition());
+                GeyserLogger.get().debug("Spawned player at " + packet.getPosition());
             }
             return;
         }
@@ -118,14 +119,14 @@ public class JavaPlayerPositionTranslator extends PacketTranslator<ClientboundPl
 
         int id = packet.getId();
 
-        session.getGeyser().getLogger().debug("Teleport (" + id + ") from " + entity.getPosition().getX() + " " + (entity.getPosition().getY() - EntityDefinitions.PLAYER.offset()) + " " + entity.getPosition().getZ());
+        GeyserLogger.get().debug("Teleport (" + id + ") from " + entity.getPosition().getX() + " " + (entity.getPosition().getY() - EntityDefinitions.PLAYER.offset()) + " " + entity.getPosition().getZ());
 
         Vector3f lastPlayerPosition = entity.getPosition().down(EntityDefinitions.PLAYER.offset());
         float lastPlayerPitch = entity.getPitch();
         Vector3f teleportDestination = Vector3f.from(newX, newY, newZ);
         entity.moveAbsolute(teleportDestination, newYaw, newPitch, true, true);
 
-        session.getGeyser().getLogger().debug("to " + entity.getPosition().getX() + " " + (entity.getPosition().getY() - EntityDefinitions.PLAYER.offset()) + " " + entity.getPosition().getZ());
+        GeyserLogger.get().debug("to " + entity.getPosition().getX() + " " + (entity.getPosition().getY() - EntityDefinitions.PLAYER.offset()) + " " + entity.getPosition().getZ());
 
         // Bedrock ignores teleports that are extremely close to the player's original position and orientation,
         // so check if we need to cache the teleport

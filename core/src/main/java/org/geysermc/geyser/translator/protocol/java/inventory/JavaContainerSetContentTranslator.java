@@ -49,7 +49,7 @@ public class JavaContainerSetContentTranslator extends PacketTranslator<Clientbo
         int inventorySize = inventory.getSize();
         for (int i = 0; i < packet.getItems().length; i++) {
             if (i >= inventorySize) {
-                GeyserLogger logger = session.getGeyser().getLogger();
+                GeyserLogger logger = GeyserLogger.get();
                 logger.warning("ClientboundContainerSetContentPacket sent to " + session.bedrockUsername()
                         + " that exceeds inventory size!");
                 if (logger.isDebug()) {

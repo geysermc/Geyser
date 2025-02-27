@@ -30,6 +30,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.geysermc.geyser.GeyserImpl;
+import org.geysermc.geyser.GeyserLogger;
 import org.geysermc.geyser.api.item.custom.CustomItemData;
 import org.geysermc.geyser.registry.mappings.util.CustomBlockMapping;
 import org.geysermc.geyser.registry.mappings.versions.MappingsReader;
@@ -66,7 +67,7 @@ public class MappingsConfigReader {
                 Files.createDirectories(mappingsDirectory);
                 return true;
             } catch (IOException e) {
-                GeyserImpl.getInstance().getLogger().error("Failed to create mappings directory", e);
+                GeyserLogger.get().error("Failed to create mappings directory", e);
                 return false;
             }
         }
@@ -100,12 +101,12 @@ public class MappingsConfigReader {
         try {
             mappingsRoot = GeyserImpl.JSON_MAPPER.readTree(file.toFile());
         } catch (IOException e) {
-            GeyserImpl.getInstance().getLogger().error("Failed to read custom mapping file: " + file, e);
+            GeyserLogger.get().error("Failed to read custom mapping file: " + file, e);
             return null;
         }
 
         if (!mappingsRoot.has("format_version")) {
-            GeyserImpl.getInstance().getLogger().error("Mappings file " + file + " is missing the format version field!");
+            GeyserLogger.get().error("Mappings file " + file + " is missing the format version field!");
             return null;
         }
 
@@ -115,7 +116,7 @@ public class MappingsConfigReader {
     public int getFormatVersion(JsonNode mappingsRoot, Path file) {
         int formatVersion =  mappingsRoot.get("format_version").asInt();
         if (!this.mappingReaders.containsKey(formatVersion)) {
-            GeyserImpl.getInstance().getLogger().error("Mappings file " + file + " has an unknown format version: " + formatVersion);
+            GeyserLogger.get().error("Mappings file " + file + " has an unknown format version: " + formatVersion);
             return -1;
         }
         return formatVersion;

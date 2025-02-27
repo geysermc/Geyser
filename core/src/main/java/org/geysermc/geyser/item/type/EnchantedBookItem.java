@@ -30,7 +30,7 @@ import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.cloudburstmc.nbt.NbtMap;
 import org.cloudburstmc.nbt.NbtType;
-import org.geysermc.geyser.GeyserImpl;
+import org.geysermc.geyser.GeyserLogger;
 import org.geysermc.geyser.inventory.item.BedrockEnchantment;
 import org.geysermc.geyser.item.enchantment.Enchantment;
 import org.geysermc.geyser.registry.type.ItemMapping;
@@ -90,7 +90,7 @@ public class EnchantedBookItem extends Item {
                         }
                     }
                 } else {
-                    GeyserImpl.getInstance().getLogger().debug("Unknown bedrock enchantment: " + bedrockId);
+                    GeyserLogger.get().debug("Unknown bedrock enchantment: " + bedrockId);
                 }
             }
             if (!javaEnchantments.isEmpty()) {

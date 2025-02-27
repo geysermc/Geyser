@@ -25,16 +25,16 @@
 
 package org.geysermc.geyser.session.cache;
 
-import org.cloudburstmc.protocol.bedrock.packet.ModalFormRequestPacket;
-import org.cloudburstmc.protocol.bedrock.packet.ModalFormResponsePacket;
-import org.cloudburstmc.protocol.bedrock.packet.NetworkStackLatencyPacket;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import lombok.RequiredArgsConstructor;
+import org.cloudburstmc.protocol.bedrock.packet.ModalFormRequestPacket;
+import org.cloudburstmc.protocol.bedrock.packet.ModalFormResponsePacket;
+import org.cloudburstmc.protocol.bedrock.packet.NetworkStackLatencyPacket;
 import org.geysermc.cumulus.form.Form;
 import org.geysermc.cumulus.form.SimpleForm;
 import org.geysermc.cumulus.form.impl.FormDefinitions;
-import org.geysermc.geyser.GeyserImpl;
+import org.geysermc.geyser.GeyserLogger;
 import org.geysermc.geyser.session.GeyserSession;
 
 import java.util.concurrent.TimeUnit;
@@ -104,7 +104,7 @@ public class FormCache {
             formDefinitions.definitionFor(form)
                     .handleFormResponse(form, response.getFormData());
         } catch (Exception e) {
-            GeyserImpl.getInstance().getLogger().error("Error while processing form response!", e);
+            GeyserLogger.get().error("Error while processing form response!", e);
         }
     }
 }

@@ -602,7 +602,7 @@ public class GeyserImpl implements GeyserApi, EventRegistrar {
         }
 
         if (config.isNotifyOnNewBedrockUpdate()) {
-            VersionCheckUtils.checkForGeyserUpdate(this::getLogger);
+            VersionCheckUtils.checkForGeyserUpdate(GeyserLogger::get);
         }
     }
 
@@ -795,7 +795,7 @@ public class GeyserImpl implements GeyserApi, EventRegistrar {
 
     @Override
     public @NonNull CommandSource consoleCommandSource() {
-        return getLogger();
+        return GeyserLogger.get();
     }
 
     public int buildNumber() {
@@ -826,10 +826,6 @@ public class GeyserImpl implements GeyserApi, EventRegistrar {
             instance.initialize();
         }
         instance.setEnabled(true);
-    }
-
-    public GeyserLogger getLogger() {
-        return bootstrap.getGeyserLogger();
     }
 
     public GeyserConfiguration getConfig() {
@@ -874,7 +870,7 @@ public class GeyserImpl implements GeyserApi, EventRegistrar {
                         .withDefaultPrettyPrinter()
                         .writeValue(writer, this.savedAuthChains);
             } catch (IOException e) {
-                getLogger().error("Unable to write saved refresh tokens!", e);
+                GeyserLogger.get().error("Unable to write saved refresh tokens!", e);
             }
         });
     }

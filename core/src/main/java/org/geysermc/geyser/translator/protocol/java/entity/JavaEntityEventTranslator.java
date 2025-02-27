@@ -37,7 +37,7 @@ import org.cloudburstmc.protocol.bedrock.packet.LevelSoundEvent2Packet;
 import org.cloudburstmc.protocol.bedrock.packet.PlaySoundPacket;
 import org.cloudburstmc.protocol.bedrock.packet.SetEntityDataPacket;
 import org.cloudburstmc.protocol.bedrock.packet.SetEntityMotionPacket;
-import org.geysermc.geyser.GeyserImpl;
+import org.geysermc.geyser.GeyserLogger;
 import org.geysermc.geyser.entity.EntityDefinitions;
 import org.geysermc.geyser.entity.type.Entity;
 import org.geysermc.geyser.entity.type.EvokerFangsEntity;
@@ -255,7 +255,7 @@ public class JavaEntityEventTranslator extends PacketTranslator<ClientboundEntit
                     livingEntity.updateMainHand(session);
                     livingEntity.updateOffHand(session);
                 } else {
-                    session.getGeyser().getLogger().debug("Got status message to swap hands for a non-living entity.");
+                    GeyserLogger.get().debug("Got status message to swap hands for a non-living entity.");
                 }
                 return;
             case GOAT_LOWERING_HEAD:
@@ -299,7 +299,7 @@ public class JavaEntityEventTranslator extends PacketTranslator<ClientboundEntit
                 // unused, but spams a bit
                 break;
             default:
-                GeyserImpl.getInstance().getLogger().debug("unhandled entity event: " + packet);
+                GeyserLogger.get().debug("unhandled entity event: " + packet);
         }
 
         if (entityEventPacket.getType() != null) {

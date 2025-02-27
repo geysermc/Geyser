@@ -26,12 +26,12 @@
 package org.geysermc.geyser.registry.loader;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import org.geysermc.mcprotocollib.protocol.data.game.level.particle.ParticleType;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import org.cloudburstmc.protocol.bedrock.data.LevelEvent;
 import org.cloudburstmc.protocol.bedrock.data.LevelEventType;
-import org.geysermc.geyser.GeyserImpl;
+import org.geysermc.geyser.GeyserLogger;
 import org.geysermc.geyser.registry.type.ParticleMapping;
+import org.geysermc.mcprotocollib.protocol.data.game.level.particle.ParticleType;
 
 import java.util.Iterator;
 import java.util.Locale;
@@ -55,7 +55,7 @@ public class ParticleTypesRegistryLoader extends EffectRegistryLoader<Map<Partic
                 JsonNode bedrockId = entry.getValue().get("bedrockId");
                 JsonNode eventType = entry.getValue().get("eventType");
                 if (eventType == null && bedrockId == null) {
-                    GeyserImpl.getInstance().getLogger().debug("Skipping particle mapping " + key + " because no Bedrock equivalent exists.");
+                    GeyserLogger.get().debug("Skipping particle mapping " + key + " because no Bedrock equivalent exists.");
                     continue;
                 }
 

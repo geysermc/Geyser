@@ -29,7 +29,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
 import org.bukkit.Bukkit;
-import org.geysermc.geyser.GeyserImpl;
+import org.geysermc.geyser.GeyserLogger;
 
 /**
  * Disables the compression packet (and the compression handlers from being added to the pipeline) for Geyser clients
@@ -56,7 +56,7 @@ public class GeyserSpigotCompressionDisabler extends ChannelOutboundHandlerAdapt
             loginSuccessPacketClass = findLoginSuccessPacket();
             enabled = true;
         } catch (Exception e) {
-            GeyserImpl.getInstance().getLogger().error("Could not initialize compression disabler!", e);
+            GeyserLogger.get().error("Could not initialize compression disabler!", e);
         }
         COMPRESSION_PACKET_CLASS = compressionPacketClass;
         LOGIN_SUCCESS_PACKET_CLASS = loginSuccessPacketClass;

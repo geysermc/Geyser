@@ -28,7 +28,7 @@ package org.geysermc.geyser.platform.velocity;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
-import org.geysermc.geyser.GeyserImpl;
+import org.geysermc.geyser.GeyserLogger;
 
 import java.lang.reflect.Method;
 
@@ -61,7 +61,7 @@ public class GeyserVelocityCompressionDisabler extends ChannelDuplexHandler {
                     .getMethod("setCompressionThreshold", int.class);
             enabled = true;
         } catch (Exception e) {
-            GeyserImpl.getInstance().getLogger().error("Could not initialize compression disabler!", e);
+            GeyserLogger.get().error("Could not initialize compression disabler!", e);
         }
 
         ENABLED = enabled;

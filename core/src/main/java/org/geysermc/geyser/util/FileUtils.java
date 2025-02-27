@@ -32,8 +32,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import org.geysermc.geyser.GeyserBootstrap;
 import org.geysermc.geyser.GeyserImpl;
+import org.geysermc.geyser.GeyserLogger;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.annotation.Annotation;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -246,7 +252,7 @@ public class FileUtils {
                 try {
                     return Class.forName(className);
                 } catch (ClassNotFoundException ex) {
-                    GeyserImpl.getInstance().getLogger().error("Failed to find class " + className, ex);
+                    GeyserLogger.get().error("Failed to find class " + className, ex);
                     throw new RuntimeException(ex);
                 }
             }).collect(Collectors.toSet());

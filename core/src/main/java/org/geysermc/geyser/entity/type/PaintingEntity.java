@@ -27,6 +27,7 @@ package org.geysermc.geyser.entity.type;
 
 import org.cloudburstmc.math.vector.Vector3f;
 import org.cloudburstmc.protocol.bedrock.packet.AddPaintingPacket;
+import org.geysermc.geyser.GeyserLogger;
 import org.geysermc.geyser.entity.EntityDefinition;
 import org.geysermc.geyser.level.PaintingType;
 import org.geysermc.geyser.session.GeyserSession;
@@ -76,7 +77,7 @@ public class PaintingEntity extends Entity {
 
         valid = true;
 
-        session.getGeyser().getLogger().debug("Spawned painting on " + position);
+        GeyserLogger.get().debug("Spawned painting on " + position);
     }
 
     @Override

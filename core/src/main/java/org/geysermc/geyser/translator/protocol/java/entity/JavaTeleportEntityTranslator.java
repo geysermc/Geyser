@@ -25,6 +25,7 @@
 
 package org.geysermc.geyser.translator.protocol.java.entity;
 
+import org.geysermc.geyser.GeyserLogger;
 import org.geysermc.geyser.session.GeyserSession;
 import org.geysermc.geyser.translator.protocol.PacketTranslator;
 import org.geysermc.geyser.translator.protocol.Translator;
@@ -35,6 +36,6 @@ public class JavaTeleportEntityTranslator extends PacketTranslator<ClientboundTe
 
     @Override
     public void translate(GeyserSession session, ClientboundTeleportEntityPacket packet) {
-        session.getGeyser().getLogger().debug(packet.toString());
+        GeyserLogger.get().debug(packet.toString());
     }
 }

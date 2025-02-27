@@ -25,6 +25,7 @@
 
 package org.geysermc.geyser.translator.protocol.java.entity;
 
+import org.geysermc.geyser.GeyserLogger;
 import org.geysermc.geyser.entity.type.Entity;
 import org.geysermc.geyser.entity.type.LivingEntity;
 import org.geysermc.geyser.entity.type.player.PlayerEntity;
@@ -49,7 +50,7 @@ public class JavaSetEquipmentTranslator extends PacketTranslator<ClientboundSetE
             return;
 
         if (!(entity instanceof LivingEntity livingEntity)) {
-            session.getGeyser().getLogger().debug("Attempted to add armor to a non-living entity type (" +
+            GeyserLogger.get().debug("Attempted to add armor to a non-living entity type (" +
                     entity.getDefinition().entityType().name() + ").");
             return;
         }

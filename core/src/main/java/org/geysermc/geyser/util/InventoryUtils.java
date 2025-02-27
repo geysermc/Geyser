@@ -35,6 +35,7 @@ import org.cloudburstmc.protocol.bedrock.data.inventory.ContainerId;
 import org.cloudburstmc.protocol.bedrock.data.inventory.ItemData;
 import org.cloudburstmc.protocol.bedrock.packet.InventorySlotPacket;
 import org.geysermc.geyser.GeyserImpl;
+import org.geysermc.geyser.GeyserLogger;
 import org.geysermc.geyser.inventory.Container;
 import org.geysermc.geyser.inventory.GeyserItemStack;
 import org.geysermc.geyser.inventory.Inventory;
@@ -217,10 +218,10 @@ public class InventoryUtils {
         DataComponents components2 = item2.getComponents();
         if (components1 != null && components2 != null) {
             if (components1.hashCode() == components2.hashCode() && !components1.equals(components2)) {
-                GeyserImpl.getInstance().getLogger().error("DEBUG: DataComponents hash collision");
-                GeyserImpl.getInstance().getLogger().error("hash: " + components1.hashCode());
-                GeyserImpl.getInstance().getLogger().error("components1: " + components1);
-                GeyserImpl.getInstance().getLogger().error("components2: " + components2);
+                GeyserLogger.get().error("DEBUG: DataComponents hash collision");
+                GeyserLogger.get().error("hash: " + components1.hashCode());
+                GeyserLogger.get().error("components1: " + components1);
+                GeyserLogger.get().error("components2: " + components2);
             }
         }
     }
@@ -261,7 +262,7 @@ public class InventoryUtils {
         ItemDefinition itemDefinition = mappings.getDefinition(unusableSpaceBlock);
 
         if (itemDefinition == null) {
-            GeyserImpl.getInstance().getLogger().error("Invalid value " + unusableSpaceBlock + ". Resorting to barrier block.");
+            GeyserLogger.get().error("Invalid value " + unusableSpaceBlock + ". Resorting to barrier block.");
             return mappings.getStoredItems().barrier().getBedrockDefinition();
         } else {
             return itemDefinition;
@@ -324,7 +325,7 @@ public class InventoryUtils {
         if (slotDisplay instanceof TagSlotDisplay tagSlotDisplay) {
             return session.getTagCache().is(new Tag<>(JavaRegistries.ITEM, tagSlotDisplay.tag()), itemStack.asItem());
         }
-        session.getGeyser().getLogger().warning("Unknown slot display type: " + slotDisplay);
+        GeyserLogger.get().warning("Unknown slot display type: " + slotDisplay);
         return false;
     }
 

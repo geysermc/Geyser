@@ -64,7 +64,7 @@ public final class TagCache {
 
     public void loadPacket(GeyserSession session, ClientboundUpdateTagsPacket packet) {
         Map<Key, Map<Key, int[]>> allTags = packet.getTags();
-        GeyserLogger logger = session.getGeyser().getLogger();
+        GeyserLogger logger = GeyserLogger.get();
 
         this.tags.clear();
 

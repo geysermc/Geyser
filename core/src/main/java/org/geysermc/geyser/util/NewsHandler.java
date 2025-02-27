@@ -47,7 +47,7 @@ import java.util.concurrent.TimeUnit;
 
 public class NewsHandler {
     private final ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1);
-    private final GeyserLogger logger = GeyserImpl.getInstance().getLogger();
+    private final GeyserLogger logger = GeyserLogger.get();
     private final Gson gson = new Gson();
 
     private final Map<Integer, NewsItem> activeNewsItems = new HashMap<>();

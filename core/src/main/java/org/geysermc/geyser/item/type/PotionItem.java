@@ -28,7 +28,7 @@ package org.geysermc.geyser.item.type;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.cloudburstmc.protocol.bedrock.data.definitions.ItemDefinition;
 import org.cloudburstmc.protocol.bedrock.data.inventory.ItemData;
-import org.geysermc.geyser.GeyserImpl;
+import org.geysermc.geyser.GeyserLogger;
 import org.geysermc.geyser.inventory.GeyserItemStack;
 import org.geysermc.geyser.inventory.item.Potion;
 import org.geysermc.geyser.registry.type.ItemMapping;
@@ -58,7 +58,7 @@ public class PotionItem extends Item {
                             .damage(potion.getBedrockId())
                             .count(count);
                 }
-                GeyserImpl.getInstance().getLogger().debug("Unknown Java potion: " + potionContents.getPotionId());
+                GeyserLogger.get().debug("Unknown Java potion: " + potionContents.getPotionId());
             } else {
                 return ItemData.builder()
                         .definition(customItemDefinition)

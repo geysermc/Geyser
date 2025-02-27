@@ -39,6 +39,7 @@ import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.protocol.ProtocolConstants;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.geysermc.geyser.GeyserImpl;
+import org.geysermc.geyser.GeyserLogger;
 import org.geysermc.geyser.ping.GeyserPingInfo;
 import org.geysermc.geyser.ping.IGeyserPingPassthrough;
 
@@ -70,7 +71,7 @@ public class GeyserBungeePingPassthrough implements IGeyserPingPassthrough, List
             event = future.get(100, TimeUnit.MILLISECONDS);
         } catch (Throwable cause) {
             String address = GeyserImpl.getInstance().getConfig().isLogPlayerIpAddresses() ? inetSocketAddress.toString() : "<IP address withheld>";
-            GeyserImpl.getInstance().getLogger().error("Failed to get ping information for " + address, cause);
+            GeyserLogger.get().error("Failed to get ping information for " + address, cause);
             return null;
         }
 

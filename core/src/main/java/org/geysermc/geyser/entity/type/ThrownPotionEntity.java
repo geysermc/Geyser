@@ -28,7 +28,7 @@ package org.geysermc.geyser.entity.type;
 import org.cloudburstmc.math.vector.Vector3f;
 import org.cloudburstmc.protocol.bedrock.data.entity.EntityDataTypes;
 import org.cloudburstmc.protocol.bedrock.data.entity.EntityFlag;
-import org.geysermc.geyser.GeyserImpl;
+import org.geysermc.geyser.GeyserLogger;
 import org.geysermc.geyser.entity.EntityDefinition;
 import org.geysermc.geyser.inventory.item.Potion;
 import org.geysermc.geyser.item.Items;
@@ -69,7 +69,7 @@ public class ThrownPotionEntity extends ThrowableItemEntity {
                         setFlag(EntityFlag.ENCHANTED, !NON_ENCHANTED_POTIONS.contains(potion));
                     } else {
                         dirtyMetadata.put(EntityDataTypes.AUX_VALUE_DATA, (short) 0);
-                        GeyserImpl.getInstance().getLogger().debug("Unknown java potion: " + potionContents.getPotionId());
+                        GeyserLogger.get().debug("Unknown java potion: " + potionContents.getPotionId());
                     }
                 }
 

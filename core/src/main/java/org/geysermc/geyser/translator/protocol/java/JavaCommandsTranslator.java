@@ -37,9 +37,15 @@ import lombok.ToString;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
-import org.cloudburstmc.protocol.bedrock.data.command.*;
+import org.cloudburstmc.protocol.bedrock.data.command.CommandData;
+import org.cloudburstmc.protocol.bedrock.data.command.CommandEnumConstraint;
+import org.cloudburstmc.protocol.bedrock.data.command.CommandEnumData;
+import org.cloudburstmc.protocol.bedrock.data.command.CommandOverloadData;
+import org.cloudburstmc.protocol.bedrock.data.command.CommandParam;
+import org.cloudburstmc.protocol.bedrock.data.command.CommandParamData;
+import org.cloudburstmc.protocol.bedrock.data.command.CommandPermission;
 import org.cloudburstmc.protocol.bedrock.packet.AvailableCommandsPacket;
-import org.geysermc.geyser.GeyserImpl;
+import org.geysermc.geyser.GeyserLogger;
 import org.geysermc.geyser.api.event.java.ServerDefineCommandsEvent;
 import org.geysermc.geyser.api.util.PlatformType;
 import org.geysermc.geyser.command.CommandRegistry;
@@ -56,7 +62,16 @@ import org.geysermc.mcprotocollib.protocol.data.game.command.properties.Resource
 import org.geysermc.mcprotocollib.protocol.data.game.entity.attribute.AttributeType;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.ClientboundCommandsPacket;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Supplier;
 
 @SuppressWarnings("removal") // We know. This is our doing.
@@ -124,7 +139,7 @@ public class JavaCommandsTranslator extends PacketTranslator<ClientboundCommands
     public void translate(GeyserSession session, ClientboundCommandsPacket packet) {
         // Don't send command suggestions if they are disabled
         if (!session.getGeyser().getConfig().isCommandSuggestions()) {
-            session.getGeyser().getLogger().debug("Not sending translated command suggestions as they are disabled.");
+            GeyserLogger.get().debug("Not sending translated command suggestions as they are disabled.");
 
             // Send a mostly empty packet so Bedrock doesn't override /help with its own, built-in help command.
             AvailableCommandsPacket emptyPacket = new AvailableCommandsPacket();
@@ -222,7 +237,7 @@ public class JavaCommandsTranslator extends PacketTranslator<ClientboundCommands
         AvailableCommandsPacket availableCommandsPacket = new AvailableCommandsPacket();
         availableCommandsPacket.getCommands().addAll(commandData);
 
-        session.getGeyser().getLogger().debug("Sending command packet of " + commandData.size() + " commands");
+        GeyserLogger.get().debug("Sending command packet of " + commandData.size() + " commands");
 
         // Finally, send the commands to the client
         session.sendUpstreamPacket(availableCommandsPacket);
@@ -240,7 +255,7 @@ public class JavaCommandsTranslator extends PacketTranslator<ClientboundCommands
         // Check if the command is an alias and redirect it
         if (commandNode.getRedirectIndex().isPresent()) {
             int redirectIndex = commandNode.getRedirectIndex().getAsInt();
-            GeyserImpl.getInstance().getLogger().debug("Redirecting command " + commandNode.getName() + " to " + allNodes[redirectIndex].getName());
+            GeyserLogger.get().debug("Redirecting command " + commandNode.getName() + " to " + allNodes[redirectIndex].getName());
             commandNode = allNodes[redirectIndex];
         }
 

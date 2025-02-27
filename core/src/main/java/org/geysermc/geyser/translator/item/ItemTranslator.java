@@ -37,7 +37,7 @@ import org.cloudburstmc.nbt.NbtMapBuilder;
 import org.cloudburstmc.protocol.bedrock.data.definitions.BlockDefinition;
 import org.cloudburstmc.protocol.bedrock.data.definitions.ItemDefinition;
 import org.cloudburstmc.protocol.bedrock.data.inventory.ItemData;
-import org.geysermc.geyser.GeyserImpl;
+import org.geysermc.geyser.GeyserLogger;
 import org.geysermc.geyser.api.block.custom.CustomBlockData;
 import org.geysermc.geyser.entity.attribute.GeyserAttributeType;
 import org.geysermc.geyser.inventory.GeyserItemStack;
@@ -143,7 +143,7 @@ public final class ItemTranslator {
     public static ItemData.@NonNull Builder translateToBedrock(GeyserSession session, int javaId, int count, DataComponents components) {
         ItemMapping bedrockItem = session.getItemMappings().getMapping(javaId);
         if (bedrockItem == ItemMapping.AIR) {
-            session.getGeyser().getLogger().debug("ItemMapping returned air: " + javaId);
+            GeyserLogger.get().debug("ItemMapping returned air: " + javaId);
             return ItemData.builder();
         }
         return translateToBedrock(session, Registries.JAVA_ITEMS.get().get(javaId), bedrockItem, count, components);
@@ -157,7 +157,7 @@ public final class ItemTranslator {
 
         ItemMapping bedrockItem = session.getItemMappings().getMapping(stack);
         if (bedrockItem == ItemMapping.AIR) {
-            session.getGeyser().getLogger().debug("ItemMapping returned air: " + stack);
+            GeyserLogger.get().debug("ItemMapping returned air: " + stack);
             return ItemData.AIR;
         }
         // Java item needs to be loaded separately. The mapping for tipped arrow would
@@ -606,7 +606,7 @@ public final class ItemTranslator {
         try {
             textures = profile.getTextures(false);
         } catch (IllegalStateException e) {
-            GeyserImpl.getInstance().getLogger().debug("Could not decode player head from profile %s, got: %s".formatted(profile, e.getMessage()));
+            GeyserLogger.get().debug("Could not decode player head from profile %s, got: %s".formatted(profile, e.getMessage()));
             return null;
         }
 

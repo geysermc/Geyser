@@ -27,7 +27,7 @@ package org.geysermc.geyser.extension;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import org.geysermc.geyser.GeyserImpl;
+import org.geysermc.geyser.GeyserLogger;
 import org.geysermc.geyser.api.extension.Extension;
 import org.geysermc.geyser.api.extension.ExtensionDescription;
 import org.geysermc.geyser.api.extension.exception.InvalidExtensionException;
@@ -90,7 +90,7 @@ public class GeyserExtensionClassLoader extends URLClassLoader {
                 // This is used for classes that are not in the extension, but are in other extensions
                 if (checkGlobal) {
                     if (!warnedForExternalClassAccess) {
-                        GeyserImpl.getInstance().getLogger().warning("Extension " + this.description.name() + " loads class " + name + " from an external source. " +
+                        GeyserLogger.get().warning("Extension " + this.description.name() + " loads class " + name + " from an external source. " +
                                 "This can change at any time and break the extension, additionally to potentially causing unexpected behaviour!");
                         warnedForExternalClassAccess = true;
                     }

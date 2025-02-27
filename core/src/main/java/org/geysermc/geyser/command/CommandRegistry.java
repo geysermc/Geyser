@@ -35,6 +35,7 @@ import org.cloudburstmc.protocol.bedrock.data.command.CommandParam;
 import org.cloudburstmc.protocol.bedrock.data.command.CommandParamData;
 import org.cloudburstmc.protocol.bedrock.data.command.CommandPermission;
 import org.geysermc.geyser.GeyserImpl;
+import org.geysermc.geyser.GeyserLogger;
 import org.geysermc.geyser.api.command.Command;
 import org.geysermc.geyser.api.event.EventRegistrar;
 import org.geysermc.geyser.api.event.lifecycle.GeyserDefineCommandsEvent;
@@ -236,7 +237,7 @@ public class CommandRegistry implements EventRegistrar {
 
         command.register(cloud);
         commands.put(name, command);
-        geyser.getLogger().debug(GeyserLocale.getLocaleStringLog("geyser.commands.registered", root + " " + name));
+        GeyserLogger.get().debug(GeyserLocale.getLocaleStringLog("geyser.commands.registered", root + " " + name));
 
         for (String alias : command.aliases()) {
             commands.put(alias, command);
@@ -249,7 +250,7 @@ public class CommandRegistry implements EventRegistrar {
             TriState existingDefault = permissionDefaults.get(permission);
             // Extensions might be using the same permission for two different commands
             if (existingDefault != null && existingDefault != defaultValue) {
-                geyser.getLogger().debug("Overriding permission default %s:%s with %s".formatted(permission, existingDefault, defaultValue));
+                GeyserLogger.get().debug("Overriding permission default %s:%s with %s".formatted(permission, existingDefault, defaultValue));
             }
 
             permissionDefaults.put(permission, defaultValue);

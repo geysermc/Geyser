@@ -27,7 +27,7 @@ package org.geysermc.geyser.pack.path;
 
 import lombok.RequiredArgsConstructor;
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.geysermc.geyser.GeyserImpl;
+import org.geysermc.geyser.GeyserLogger;
 import org.geysermc.geyser.api.pack.PathPackCodec;
 import org.geysermc.geyser.api.pack.ResourcePack;
 import org.geysermc.geyser.registry.loader.ResourcePackLoader;
@@ -97,7 +97,7 @@ public class GeyserPathPackCodec extends PathPackCodec {
             }
 
             if (lastModified.toInstant().isAfter(this.lastModified.toInstant())) {
-                GeyserImpl.getInstance().getLogger().warning("Detected a change in the resource pack " + path + ". This is likely to cause undefined behavior for new clients joining. It is suggested you restart Geyser.");
+                GeyserLogger.get().warning("Detected a change in the resource pack " + path + ". This is likely to cause undefined behavior for new clients joining. It is suggested you restart Geyser.");
                 this.lastModified = lastModified;
                 this.sha256 = null;
                 this.size = -1;

@@ -41,6 +41,7 @@ import org.cloudburstmc.protocol.bedrock.packet.MoveEntityAbsolutePacket;
 import org.cloudburstmc.protocol.bedrock.packet.MoveEntityDeltaPacket;
 import org.cloudburstmc.protocol.bedrock.packet.RemoveEntityPacket;
 import org.cloudburstmc.protocol.bedrock.packet.SetEntityDataPacket;
+import org.geysermc.geyser.GeyserLogger;
 import org.geysermc.geyser.api.entity.type.GeyserEntity;
 import org.geysermc.geyser.entity.EntityDefinition;
 import org.geysermc.geyser.entity.GeyserDirtyMetadata;
@@ -207,7 +208,7 @@ public class Entity implements GeyserEntity {
         if (session.getGeyser().getConfig().isDebugMode() && PRINT_ENTITY_SPAWN_DEBUG) {
             EntityType type = definition.entityType();
             String name = type != null ? type.name() : getClass().getSimpleName();
-            session.getGeyser().getLogger().debug("Spawned entity " + name + " at location " + position + " with id " + geyserId + " (java id " + entityId + ")");
+            GeyserLogger.get().debug("Spawned entity " + name + " at location " + position + " with id " + geyserId + " (java id " + entityId + ")");
         }
     }
 

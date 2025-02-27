@@ -34,6 +34,7 @@ import org.cloudburstmc.protocol.bedrock.data.inventory.ItemData;
 import org.cloudburstmc.protocol.bedrock.packet.ContainerRegistryCleanupPacket;
 import org.cloudburstmc.protocol.bedrock.packet.InventoryContentPacket;
 import org.cloudburstmc.protocol.bedrock.packet.InventorySlotPacket;
+import org.geysermc.geyser.GeyserLogger;
 import org.geysermc.geyser.inventory.GeyserItemStack;
 import org.geysermc.geyser.inventory.Inventory;
 import org.geysermc.geyser.inventory.PlayerInventory;
@@ -67,10 +68,10 @@ public final class BundleCache {
         // Now irrelevant, but keeping as-is for the time being.
         if (session.getTagCache().is(ItemTag.BUNDLES, itemStack)) {
             if (itemStack.getBundleData() != null) {
-                session.getGeyser().getLogger().warning("Stack has bundle data already! It should not!");
-                if (session.getGeyser().getConfig().isDebugMode()) {
-                    session.getGeyser().getLogger().debug("Player: " + session.javaUsername());
-                    session.getGeyser().getLogger().debug("Stack: " + itemStack);
+                GeyserLogger.get().warning("Stack has bundle data already! It should not!");
+                if (GeyserLogger.get().isDebug()) {
+                    GeyserLogger.get().debug("Player: " + session.javaUsername());
+                    GeyserLogger.get().debug("Stack: " + itemStack);
                 }
             }
 
@@ -113,7 +114,7 @@ public final class BundleCache {
         int containerId = itemStack.getBundleId();
 
         if (containerId == -1) {
-            session.getGeyser().getLogger().warning("Bundle ID should not be -1!");
+            GeyserLogger.get().warning("Bundle ID should not be -1!");
         }
 
         NbtMap nbt = itemData.build().getTag();

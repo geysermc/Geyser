@@ -35,6 +35,7 @@ import org.cloudburstmc.nbt.NbtMap;
 import org.cloudburstmc.nbt.NbtType;
 import org.cloudburstmc.nbt.NbtUtils;
 import org.geysermc.geyser.GeyserImpl;
+import org.geysermc.geyser.GeyserLogger;
 import org.geysermc.geyser.level.block.type.BlockState;
 import org.geysermc.geyser.level.physics.BoundingBox;
 import org.geysermc.geyser.registry.BlockRegistries;
@@ -46,7 +47,11 @@ import org.geysermc.geyser.util.FileUtils;
 
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 /**
@@ -58,7 +63,7 @@ public class CollisionRegistryLoader extends MultiResourceRegistryLoader<String,
     public List<BlockCollision> load(Pair<String, String> input) {
         Map<Class<?>, CollisionInfo> annotationMap = new IdentityHashMap<>();
         for (Class<?> clazz : FileUtils.getGeneratedClassesForAnnotation(CollisionRemapper.class.getName())) {
-            GeyserImpl.getInstance().getLogger().debug("Found annotated collision translator: " + clazz.getCanonicalName());
+            GeyserLogger.get().debug("Found annotated collision translator: " + clazz.getCanonicalName());
 
             CollisionRemapper collisionRemapper = clazz.getAnnotation(CollisionRemapper.class);
             annotationMap.put(clazz, new CollisionInfo(collisionRemapper, Pattern.compile(collisionRemapper.regex())));
@@ -84,7 +89,7 @@ public class CollisionRegistryLoader extends MultiResourceRegistryLoader<String,
         for (int i = 0; i < blockStates.size(); i++) {
             BlockState state = blockStates.get(i);
             if (state == null) {
-                GeyserImpl.getInstance().getLogger().warning("Missing block state for Java block " + i);
+                GeyserLogger.get().warning("Missing block state for Java block " + i);
                 continue;
             }
 

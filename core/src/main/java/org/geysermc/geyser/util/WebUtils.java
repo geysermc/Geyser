@@ -28,10 +28,15 @@ package org.geysermc.geyser.util;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.geysermc.geyser.GeyserImpl;
+import org.geysermc.geyser.GeyserLogger;
 
 import javax.naming.directory.Attribute;
 import javax.naming.directory.InitialDirContext;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -219,7 +224,7 @@ public class WebUtils {
 
             return connectionToString(con).lines();
         } catch (Exception e) {
-            GeyserImpl.getInstance().getLogger().error("Error while trying to get a stream from " + reqURL, e);
+            GeyserLogger.get().error("Error while trying to get a stream from " + reqURL, e);
             return Stream.empty();
         }
     }

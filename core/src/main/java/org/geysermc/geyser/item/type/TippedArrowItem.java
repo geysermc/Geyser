@@ -26,7 +26,7 @@
 package org.geysermc.geyser.item.type;
 
 import org.cloudburstmc.protocol.bedrock.data.inventory.ItemData;
-import org.geysermc.geyser.GeyserImpl;
+import org.geysermc.geyser.GeyserLogger;
 import org.geysermc.geyser.inventory.item.Potion;
 import org.geysermc.geyser.registry.type.ItemMapping;
 import org.geysermc.geyser.registry.type.ItemMappings;
@@ -52,7 +52,7 @@ public class TippedArrowItem extends ArrowItem {
                             .damage(potion.tippedArrowId())
                             .count(count);
                 }
-                GeyserImpl.getInstance().getLogger().debug("Unknown Java potion (tipped arrow): " + potionContents.getPotionId());
+                GeyserLogger.get().debug("Unknown Java potion (tipped arrow): " + potionContents.getPotionId());
             }
         }
         return super.translateToBedrock(session, count, components, mapping, mappings);

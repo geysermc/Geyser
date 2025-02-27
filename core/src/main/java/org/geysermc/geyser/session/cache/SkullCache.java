@@ -34,6 +34,7 @@ import org.cloudburstmc.math.vector.Vector3f;
 import org.cloudburstmc.math.vector.Vector3i;
 import org.cloudburstmc.protocol.bedrock.data.definitions.BlockDefinition;
 import org.geysermc.geyser.GeyserImpl;
+import org.geysermc.geyser.GeyserLogger;
 import org.geysermc.geyser.api.block.custom.CustomBlockState;
 import org.geysermc.geyser.entity.type.player.SkullPlayerEntity;
 import org.geysermc.geyser.level.block.property.Properties;
@@ -45,7 +46,12 @@ import org.geysermc.geyser.session.GeyserSession;
 import org.geysermc.geyser.skin.SkinManager;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 public class SkullCache {
     private final int maxVisibleSkulls;
@@ -86,10 +92,10 @@ public class SkullCache {
                     String skinUrl = gameProfileData.skinUrl();
                     skull.skinHash = skinUrl.substring(skinUrl.lastIndexOf('/') + 1);
                 } else {
-                    session.getGeyser().getLogger().debug("Player skull with invalid Skin tag: " + position + " Textures: " + texturesProperty);
+                    GeyserLogger.get().debug("Player skull with invalid Skin tag: " + position + " Textures: " + texturesProperty);
                 }
             } catch (IOException e) {
-                session.getGeyser().getLogger().debug("Player skull with invalid Skin tag: " + position + " Textures: " + texturesProperty);
+                GeyserLogger.get().debug("Player skull with invalid Skin tag: " + position + " Textures: " + texturesProperty);
                 if (GeyserImpl.getInstance().getConfig().isDebugMode()) {
                     e.printStackTrace();
                 }

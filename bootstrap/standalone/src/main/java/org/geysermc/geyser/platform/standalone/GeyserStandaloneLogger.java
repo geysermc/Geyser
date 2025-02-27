@@ -116,6 +116,11 @@ public class GeyserStandaloneLogger extends SimpleTerminalConsole implements Gey
     }
 
     @Override
+    public void debug(String message, Object... parameters) {
+        log.debug(ChatColor.GRAY + message, parameters);
+    }
+
+    @Override
     public void setDebug(boolean debug) {
         Configurator.setLevel(log.getName(), debug ? Level.DEBUG : Level.INFO);
     }

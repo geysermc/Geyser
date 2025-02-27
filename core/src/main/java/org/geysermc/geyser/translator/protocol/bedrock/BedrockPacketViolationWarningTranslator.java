@@ -26,6 +26,7 @@
 package org.geysermc.geyser.translator.protocol.bedrock;
 
 import org.cloudburstmc.protocol.bedrock.packet.PacketViolationWarningPacket;
+import org.geysermc.geyser.GeyserLogger;
 import org.geysermc.geyser.session.GeyserSession;
 import org.geysermc.geyser.translator.protocol.PacketTranslator;
 import org.geysermc.geyser.translator.protocol.Translator;
@@ -36,6 +37,6 @@ public class BedrockPacketViolationWarningTranslator extends PacketTranslator<Pa
     @Override
     public void translate(GeyserSession session, PacketViolationWarningPacket packet) {
         // Not translated since this is something that the developers need to know
-        session.getGeyser().getLogger().error("Packet violation warning sent from client! " + packet.toString());
+        GeyserLogger.get().error("Packet violation warning sent from client! " + packet.toString());
     }
 }

@@ -42,6 +42,7 @@ import org.cloudburstmc.protocol.bedrock.data.inventory.descriptor.ItemDescripto
 import org.cloudburstmc.protocol.bedrock.data.inventory.descriptor.ItemTagDescriptor;
 import org.cloudburstmc.protocol.bedrock.packet.CraftingDataPacket;
 import org.cloudburstmc.protocol.bedrock.packet.UnlockedRecipesPacket;
+import org.geysermc.geyser.GeyserLogger;
 import org.geysermc.geyser.inventory.recipe.GeyserRecipe;
 import org.geysermc.geyser.inventory.recipe.GeyserShapedRecipe;
 import org.geysermc.geyser.inventory.recipe.GeyserShapelessRecipe;
@@ -285,7 +286,7 @@ public class JavaRecipeBookAddTranslator extends PacketTranslator<ClientboundRec
                 });
             }
         }
-        session.getGeyser().getLogger().warning("Unimplemented slot display type for input: " + slotDisplay);
+        GeyserLogger.get().warning("Unimplemented slot display type for input: " + slotDisplay);
         return null;
     }
 
@@ -301,7 +302,7 @@ public class JavaRecipeBookAddTranslator extends PacketTranslator<ClientboundRec
             ItemStack stack = itemStackSlot.itemStack();
             return Pair.of(Registries.JAVA_ITEMS.get(stack.getId()), ItemTranslator.translateToBedrock(session, stack));
         }
-        session.getGeyser().getLogger().warning("Unimplemented slot display type for output: " + slotDisplay);
+        GeyserLogger.get().warning("Unimplemented slot display type for output: " + slotDisplay);
         return null;
     }
 

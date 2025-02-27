@@ -28,6 +28,7 @@ package org.geysermc.geyser.text;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.geysermc.geyser.GeyserImpl;
+import org.geysermc.geyser.GeyserLogger;
 import org.geysermc.geyser.util.AssetUtils;
 import org.geysermc.geyser.util.FileUtils;
 import org.geysermc.geyser.util.WebUtils;
@@ -79,7 +80,7 @@ public class MinecraftLocale {
         locale = locale.toLowerCase(Locale.ROOT);
 
         if (isLocaleLoaded(locale)) {
-            GeyserImpl.getInstance().getLogger().debug("Locale already loaded: " + locale);
+            GeyserLogger.get().debug("Locale already loaded: " + locale);
             return;
         }
 
@@ -91,18 +92,18 @@ public class MinecraftLocale {
         // Check the locale isn't already loaded
         if (!AssetUtils.isAssetKnown("minecraft/lang/" + locale + ".json") && !locale.equals("en_us")) {
             if (loadLocale(locale)) {
-                GeyserImpl.getInstance().getLogger().debug("Loaded locale locally while not being in asset map: " + locale);
+                GeyserLogger.get().debug("Loaded locale locally while not being in asset map: " + locale);
             } else {
-                GeyserImpl.getInstance().getLogger().warning(GeyserLocale.getLocaleStringLog("geyser.locale.fail.invalid", locale));
+                GeyserLogger.get().warning(GeyserLocale.getLocaleStringLog("geyser.locale.fail.invalid", locale));
             }
             return;
         }
 
-        GeyserImpl.getInstance().getLogger().debug("Downloading and loading locale: " + locale);
+        GeyserLogger.get().debug("Downloading and loading locale: " + locale);
 
         downloadLocale(locale);
         if (!loadLocale(locale)) {
-            GeyserImpl.getInstance().getLogger().warning(GeyserLocale.getLocaleStringLog("geyser.locale.fail.missing", locale));
+            GeyserLogger.get().warning(GeyserLocale.getLocaleStringLog("geyser.locale.fail.missing", locale));
         }
     }
 
@@ -123,9 +124,9 @@ public class MinecraftLocale {
             String targetHash = AssetUtils.getAsset("minecraft/lang/" + locale + ".json").getHash();
 
             if (!curHash.equals(targetHash)) {
-                GeyserImpl.getInstance().getLogger().debug("Locale out of date; re-downloading: " + locale);
+                GeyserLogger.get().debug("Locale out of date; re-downloading: " + locale);
             } else {
-                GeyserImpl.getInstance().getLogger().debug("Locale already downloaded and up-to date: " + locale);
+                GeyserLogger.get().debug("Locale already downloaded and up-to date: " + locale);
                 return;
             }
         }
@@ -135,7 +136,7 @@ public class MinecraftLocale {
             String hash = AssetUtils.getAsset("minecraft/lang/" + locale + ".json").getHash();
             WebUtils.downloadFile("https://resources.download.minecraft.net/" + hash.substring(0, 2) + "/" + hash, localeFile.toString());
         } catch (Exception e) {
-            GeyserImpl.getInstance().getLogger().error("Unable to download locale file hash", e);
+            GeyserLogger.get().error("Unable to download locale file hash", e);
         }
     }
 
@@ -219,7 +220,7 @@ public class MinecraftLocale {
             localeStrings = LOCALE_MAPPINGS.get(GeyserLocale.getDefaultLocale());
             if (localeStrings == null) {
                 // Don't cause a NPE if the locale is STILL missing
-                GeyserImpl.getInstance().getLogger().debug("MISSING DEFAULT LOCALE: " + GeyserLocale.getDefaultLocale());
+                GeyserLogger.get().debug("MISSING DEFAULT LOCALE: " + GeyserLocale.getDefaultLocale());
                 return messageText;
             }
         }

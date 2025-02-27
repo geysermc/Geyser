@@ -47,7 +47,7 @@ public class InvalidPacketHandler extends ChannelInboundHandlerAdapter {
                 .findFirst()
                 .orElse(cause);
 
-        GeyserLogger logger = GeyserImpl.getInstance().getLogger();
+        GeyserLogger logger = GeyserLogger.get();
 
         if (!(rootCause instanceof IllegalArgumentException)) {
             // Kick users that cause exceptions

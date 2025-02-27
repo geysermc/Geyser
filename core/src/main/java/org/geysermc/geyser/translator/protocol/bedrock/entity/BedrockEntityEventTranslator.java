@@ -25,13 +25,14 @@
 
 package org.geysermc.geyser.translator.protocol.bedrock.entity;
 
-import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.inventory.ServerboundSelectTradePacket;
 import org.cloudburstmc.protocol.bedrock.packet.EntityEventPacket;
+import org.geysermc.geyser.GeyserLogger;
 import org.geysermc.geyser.inventory.Inventory;
 import org.geysermc.geyser.inventory.MerchantContainer;
 import org.geysermc.geyser.session.GeyserSession;
 import org.geysermc.geyser.translator.protocol.PacketTranslator;
 import org.geysermc.geyser.translator.protocol.Translator;
+import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.inventory.ServerboundSelectTradePacket;
 
 import java.util.concurrent.TimeUnit;
 
@@ -60,6 +61,6 @@ public class BedrockEntityEventTranslator extends PacketTranslator<EntityEventPa
                 return;
             }
         }
-        session.getGeyser().getLogger().debug("Did not translate incoming EntityEventPacket: " + packet);
+        GeyserLogger.get().debug("Did not translate incoming EntityEventPacket: " + packet);
     }
 }

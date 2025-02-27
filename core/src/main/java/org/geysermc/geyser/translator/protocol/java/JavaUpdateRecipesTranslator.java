@@ -39,7 +39,7 @@ import org.cloudburstmc.protocol.bedrock.data.inventory.descriptor.DefaultDescri
 import org.cloudburstmc.protocol.bedrock.data.inventory.descriptor.ItemDescriptorWithCount;
 import org.cloudburstmc.protocol.bedrock.packet.CraftingDataPacket;
 import org.cloudburstmc.protocol.bedrock.packet.TrimDataPacket;
-import org.geysermc.geyser.GeyserImpl;
+import org.geysermc.geyser.GeyserLogger;
 import org.geysermc.geyser.inventory.recipe.GeyserStonecutterData;
 import org.geysermc.geyser.inventory.recipe.TrimRecipe;
 import org.geysermc.geyser.item.Items;
@@ -114,7 +114,7 @@ public class JavaUpdateRecipesTranslator extends PacketTranslator<ClientboundUpd
             craftingDataPacket.getCraftingData().add(SmithingTrimRecipeData.of(TrimRecipe.ID,
                     TrimRecipe.BASE, TrimRecipe.ADDITION, TrimRecipe.TEMPLATE, "smithing_table", netId++));
         }
-        session.getGeyser().getLogger().debug("Using old smithing table workaround? " + oldSmithingTable);
+        GeyserLogger.get().debug("Using old smithing table workaround? " + oldSmithingTable);
         session.setOldSmithingTable(oldSmithingTable);
 
         Int2ObjectMap<List<SelectableRecipe>> rawStonecutterData = new Int2ObjectOpenHashMap<>();
@@ -123,7 +123,7 @@ public class JavaUpdateRecipesTranslator extends PacketTranslator<ClientboundUpd
         for (SelectableRecipe recipe : stonecutterRecipes) {
             // Hardcoding the heck out of this until we see different examples of how this works.
             if (!(recipe.recipe() instanceof ItemStackSlotDisplay)) {
-                session.getGeyser().getLogger().warning("Ignoring stonecutter recipe for weird output: " + recipe);
+                GeyserLogger.get().warning("Ignoring stonecutter recipe for weird output: " + recipe);
                 continue;
             }
 
@@ -196,7 +196,7 @@ public class JavaUpdateRecipesTranslator extends PacketTranslator<ClientboundUpd
         if (bedrockDefinition != null) {
             return ItemDescriptorWithCount.fromItem(ItemData.builder().definition(bedrockDefinition).count(1).build());
         }
-        GeyserImpl.getInstance().getLogger().debug("Unable to find item with identifier " + bedrockId);
+        GeyserLogger.get().debug("Unable to find item with identifier " + bedrockId);
         return ItemDescriptorWithCount.EMPTY;
     }
 }

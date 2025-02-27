@@ -28,6 +28,7 @@ package org.geysermc.geyser.command.standalone;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.geysermc.geyser.GeyserImpl;
+import org.geysermc.geyser.GeyserLogger;
 import org.geysermc.geyser.api.event.lifecycle.GeyserRegisterPermissionCheckersEvent;
 import org.geysermc.geyser.api.event.lifecycle.GeyserRegisterPermissionsEvent;
 import org.geysermc.geyser.api.permission.PermissionChecker;
@@ -75,7 +76,7 @@ public class StandaloneCloudCommandManager extends CommandManager<GeyserCommandS
             PermissionConfiguration config = FileUtils.loadConfig(permissionsFile, PermissionConfiguration.class);
             basePermissions.addAll(config.getDefaultPermissions());
         } catch (Exception e) {
-            geyser.getLogger().error("Failed to load permissions.yml - proceeding without it", e);
+            GeyserLogger.get().error("Failed to load permissions.yml - proceeding without it", e);
         }
     }
 

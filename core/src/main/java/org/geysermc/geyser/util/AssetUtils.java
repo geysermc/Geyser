@@ -30,13 +30,24 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.Getter;
 import org.geysermc.geyser.GeyserImpl;
+import org.geysermc.geyser.GeyserLogger;
 import org.geysermc.geyser.network.GameProtocol;
 import org.geysermc.geyser.text.GeyserLocale;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
 import java.util.concurrent.CompletableFuture;
 import java.util.zip.ZipFile;
 
@@ -104,9 +115,9 @@ public final class AssetUtils {
                 VersionInfo versionInfo = GeyserImpl.JSON_MAPPER.readValue(WebUtils.getBody(latestInfoURL), VersionInfo.class);
 
                 // Get the client jar for use when downloading the en_us locale
-                GeyserImpl.getInstance().getLogger().debug(GeyserImpl.JSON_MAPPER.writeValueAsString(versionInfo.getDownloads()));
+                GeyserLogger.get().debug(GeyserImpl.JSON_MAPPER.writeValueAsString(versionInfo.getDownloads()));
                 CLIENT_JAR_INFO = versionInfo.getDownloads().get("client");
-                GeyserImpl.getInstance().getLogger().debug(GeyserImpl.JSON_MAPPER.writeValueAsString(CLIENT_JAR_INFO));
+                GeyserLogger.get().debug(GeyserImpl.JSON_MAPPER.writeValueAsString(CLIENT_JAR_INFO));
 
                 // Get the assets list
                 JsonNode assets = GeyserImpl.JSON_MAPPER.readTree(WebUtils.getBody(versionInfo.getAssetIndex().getUrl())).get("objects");
@@ -125,7 +136,7 @@ public final class AssetUtils {
                 }
 
             } catch (Exception e) {
-                GeyserImpl.getInstance().getLogger().error(GeyserLocale.getLocaleStringLog("geyser.locale.fail.asset_cache", (!e.getMessage().isEmpty() ? e.getMessage() : e.getStackTrace())));
+                GeyserLogger.get().error(GeyserLocale.getLocaleStringLog("geyser.locale.fail.asset_cache", (!e.getMessage().isEmpty() ? e.getMessage() : e.getStackTrace())));
             }
             return null;
         });
@@ -134,7 +145,7 @@ public final class AssetUtils {
     public static void downloadAndRunClientJarTasks() {
         if (CLIENT_JAR_INFO == null) {
             // Likely failed to download
-            GeyserImpl.getInstance().getLogger().debug("Skipping en_US hash check as client jar is null.");
+            GeyserLogger.get().debug("Skipping en_US hash check as client jar is null.");
             return;
         }
 
@@ -161,8 +172,8 @@ public final class AssetUtils {
 
         try {
             // Let the user know we are downloading the JAR
-            GeyserImpl.getInstance().getLogger().info(GeyserLocale.getLocaleStringLog("geyser.locale.download.en_us"));
-            GeyserImpl.getInstance().getLogger().debug("Download URL: " + CLIENT_JAR_INFO.getUrl());
+            GeyserLogger.get().info(GeyserLocale.getLocaleStringLog("geyser.locale.download.en_us"));
+            GeyserLogger.get().debug("Download URL: " + CLIENT_JAR_INFO.getUrl());
 
             Path tmpFilePath = GeyserImpl.getInstance().getBootstrap().getConfigFolder().resolve("tmp_locale.jar");
             WebUtils.downloadFile(CLIENT_JAR_INFO.getUrl(), tmpFilePath.toString());
@@ -186,9 +197,9 @@ public final class AssetUtils {
             // Delete the nolonger needed client/server jar
             Files.delete(tmpFilePath);
 
-            GeyserImpl.getInstance().getLogger().info(GeyserLocale.getLocaleStringLog("geyser.locale.download.en_us.done"));
+            GeyserLogger.get().info(GeyserLocale.getLocaleStringLog("geyser.locale.download.en_us.done"));
         } catch (Exception e) {
-            GeyserImpl.getInstance().getLogger().error(GeyserLocale.getLocaleStringLog("geyser.locale.fail.en_us"), e);
+            GeyserLogger.get().error(GeyserLocale.getLocaleStringLog("geyser.locale.fail.en_us"), e);
         }
     }
 

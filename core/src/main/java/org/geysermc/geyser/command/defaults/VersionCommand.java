@@ -28,6 +28,7 @@ package org.geysermc.geyser.command.defaults;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.cloudburstmc.protocol.bedrock.codec.BedrockCodec;
 import org.geysermc.geyser.GeyserImpl;
+import org.geysermc.geyser.GeyserLogger;
 import org.geysermc.geyser.api.util.PlatformType;
 import org.geysermc.geyser.api.util.TriState;
 import org.geysermc.geyser.command.GeyserCommand;
@@ -98,7 +99,7 @@ public class VersionCommand extends GeyserCommand {
                     source.locale(), (latestBuildNumber - buildNumber), "https://geysermc.org/download"
             ));
         } catch (IOException e) {
-            GeyserImpl.getInstance().getLogger().error(GeyserLocale.getLocaleStringLog("geyser.commands.version.failed"), e);
+            GeyserLogger.get().error(GeyserLocale.getLocaleStringLog("geyser.commands.version.failed"), e);
             source.sendMessage(ChatColor.RED + GeyserLocale.getPlayerLocaleString("geyser.commands.version.failed", source.locale()));
         }
     }

@@ -34,6 +34,7 @@ import org.cloudburstmc.protocol.bedrock.packet.ChunkRadiusUpdatedPacket;
 import org.cloudburstmc.protocol.bedrock.packet.MobEffectPacket;
 import org.cloudburstmc.protocol.bedrock.packet.PlayerActionPacket;
 import org.cloudburstmc.protocol.bedrock.packet.StopSoundPacket;
+import org.geysermc.geyser.GeyserLogger;
 import org.geysermc.geyser.entity.type.Entity;
 import org.geysermc.geyser.level.BedrockDimension;
 import org.geysermc.geyser.level.JavaDimension;
@@ -111,7 +112,7 @@ public class DimensionUtils {
             // The client locks up when switching dimensions, expecting more chunks than it's getting
             // To solve this, we cap at 32 unless we know that the render distance actually exceeds 32
             // Also, as of 1.19: PS4 crashes with a ChunkRadiusUpdatedPacket too large
-            session.getGeyser().getLogger().debug("Applying dimension switching workaround for Bedrock render distance of "
+            GeyserLogger.get().debug("Applying dimension switching workaround for Bedrock render distance of "
                 + session.getServerRenderDistance());
             ChunkRadiusUpdatedPacket chunkRadiusUpdatedPacket = new ChunkRadiusUpdatedPacket();
             chunkRadiusUpdatedPacket.setRadius(32);

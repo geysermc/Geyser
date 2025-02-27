@@ -25,14 +25,14 @@
 
 package org.geysermc.geyser.inventory;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.geysermc.geyser.GeyserLogger;
 import org.geysermc.geyser.session.GeyserSession;
 import org.geysermc.geyser.translator.inventory.CrafterInventoryTranslator;
 import org.geysermc.geyser.translator.inventory.InventoryTranslator;
 import org.geysermc.mcprotocollib.protocol.data.game.inventory.ContainerType;
-import lombok.Getter;
-import lombok.Setter;
-import org.geysermc.geyser.GeyserImpl;
 import org.jetbrains.annotations.Range;
 
 @Getter
@@ -82,7 +82,7 @@ public class CrafterContainer extends Container {
 
     public void setSlot(int slot, boolean enabled) {
         if (!isCraftingGrid(slot)) {
-            GeyserImpl.getInstance().getLogger().warning("Crafter slot out of bounds: " + slot);
+            GeyserLogger.get().warning("Crafter slot out of bounds: " + slot);
             return;
         }
 

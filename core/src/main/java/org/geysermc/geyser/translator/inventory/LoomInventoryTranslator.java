@@ -38,7 +38,7 @@ import org.cloudburstmc.protocol.bedrock.data.inventory.itemstack.request.action
 import org.cloudburstmc.protocol.bedrock.data.inventory.itemstack.request.action.ItemStackRequestAction;
 import org.cloudburstmc.protocol.bedrock.data.inventory.itemstack.request.action.ItemStackRequestActionType;
 import org.cloudburstmc.protocol.bedrock.data.inventory.itemstack.response.ItemStackResponse;
-import org.geysermc.geyser.GeyserImpl;
+import org.geysermc.geyser.GeyserLogger;
 import org.geysermc.geyser.inventory.BedrockContainerSlot;
 import org.geysermc.geyser.inventory.GeyserItemStack;
 import org.geysermc.geyser.inventory.Inventory;
@@ -102,7 +102,7 @@ public class LoomInventoryTranslator extends AbstractBlockInventoryTranslator {
 
         BannerPattern requestedPattern = BannerPattern.getByBedrockIdentifier(bedrockPattern);
         if (requestedPattern == null) {
-            GeyserImpl.getInstance().getLogger().warning("Unknown Bedrock pattern id: " + bedrockPattern);
+            GeyserLogger.get().warning("Unknown Bedrock pattern id: " + bedrockPattern);
             return rejectRequest(request);
         }
 

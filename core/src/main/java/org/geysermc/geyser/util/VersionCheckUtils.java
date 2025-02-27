@@ -33,7 +33,6 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.geysermc.geyser.Constants;
-import org.geysermc.geyser.GeyserImpl;
 import org.geysermc.geyser.GeyserLogger;
 import org.geysermc.geyser.command.GeyserCommandSource;
 import org.geysermc.geyser.network.GameProtocol;
@@ -121,7 +120,7 @@ public final class VersionCheckUtils {
                         .build();
                 sender.sendMessage(message);
             } catch (Exception e) {
-                GeyserImpl.getInstance().getLogger().error("Error whilst checking for Geyser update!", e);
+                GeyserLogger.get().error("Error whilst checking for Geyser update!", e);
             }
         });
     }

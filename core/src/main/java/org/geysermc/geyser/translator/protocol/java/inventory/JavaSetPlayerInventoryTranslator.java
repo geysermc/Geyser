@@ -45,7 +45,7 @@ public class JavaSetPlayerInventoryTranslator extends PacketTranslator<Clientbou
         }
 
         if (slot >= session.getPlayerInventory().getSize()) {
-            GeyserLogger logger = session.getGeyser().getLogger();
+            GeyserLogger logger = GeyserLogger.get();
             logger.warning("ClientboundSetPlayerInventoryPacket sent to " + session.bedrockUsername()
                 + " that exceeds inventory size!");
             if (logger.isDebug()) {

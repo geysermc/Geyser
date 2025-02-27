@@ -30,6 +30,7 @@ import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.geysermc.geyser.GeyserImpl;
+import org.geysermc.geyser.GeyserLogger;
 import org.geysermc.geyser.api.util.TriState;
 import org.geysermc.geyser.command.GeyserCommand;
 import org.geysermc.geyser.command.GeyserCommandSource;
@@ -125,7 +126,7 @@ public class DumpCommand extends GeyserCommand {
             }
         } catch (IOException e) {
             source.sendMessage(ChatColor.RED + GeyserLocale.getPlayerLocaleString("geyser.commands.dump.collect_error", source.locale()));
-            geyser.getLogger().error(GeyserLocale.getLocaleStringLog("geyser.commands.dump.collect_error_short"), e);
+            GeyserLogger.get().error(GeyserLocale.getLocaleStringLog("geyser.commands.dump.collect_error_short"), e);
             return;
         }
 
@@ -140,7 +141,7 @@ public class DumpCommand extends GeyserCommand {
                 outputStream.close();
             } catch (IOException e) {
                 source.sendMessage(ChatColor.RED + GeyserLocale.getPlayerLocaleString("geyser.commands.dump.write_error", source.locale()));
-                geyser.getLogger().error(GeyserLocale.getLocaleStringLog("geyser.commands.dump.write_error_short"), e);
+                GeyserLogger.get().error(GeyserLocale.getLocaleStringLog("geyser.commands.dump.write_error_short"), e);
                 return;
             }
 
@@ -155,7 +156,7 @@ public class DumpCommand extends GeyserCommand {
                 responseNode = MAPPER.readTree(response);
             } catch (IOException e) {
                 source.sendMessage(ChatColor.RED + GeyserLocale.getPlayerLocaleString("geyser.commands.dump.upload_error", source.locale()));
-                geyser.getLogger().error(GeyserLocale.getLocaleStringLog("geyser.commands.dump.upload_error_short"), e);
+                GeyserLogger.get().error(GeyserLocale.getLocaleStringLog("geyser.commands.dump.upload_error_short"), e);
                 return;
             }
 
@@ -169,7 +170,7 @@ public class DumpCommand extends GeyserCommand {
 
         source.sendMessage(GeyserLocale.getPlayerLocaleString("geyser.commands.dump.message", source.locale()) + " " + ChatColor.DARK_AQUA + uploadedDumpUrl);
         if (!source.isConsole()) {
-            geyser.getLogger().info(GeyserLocale.getLocaleStringLog("geyser.commands.dump.created", source.name(), uploadedDumpUrl));
+            GeyserLogger.get().info(GeyserLocale.getLocaleStringLog("geyser.commands.dump.created", source.name(), uploadedDumpUrl));
         }
     }
 }

@@ -30,6 +30,7 @@ import lombok.Data;
 import net.kyori.adventure.key.Key;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.geysermc.geyser.GeyserLogger;
 import org.geysermc.geyser.session.GeyserSession;
 import org.geysermc.geyser.session.cache.TagCache;
 import org.geysermc.geyser.session.cache.registry.JavaRegistryKey;
@@ -122,7 +123,7 @@ public final class GeyserHolderSet<T> {
             // Assume the list is a list of strings
             return new GeyserHolderSet<>(registry, list.stream().map(o -> (String) o).map(Key::key).mapToInt(keyIdMapping).toArray());
         }
-        session.getGeyser().getLogger().warning("Failed parsing HolderSet for registry + " + registry + "! Expected either a tag, a string ID or a list of string IDs, found " + holderSet);
+        GeyserLogger.get().warning("Failed parsing HolderSet for registry + " + registry + "! Expected either a tag, a string ID or a list of string IDs, found " + holderSet);
         return new GeyserHolderSet<>(registry, IntArrays.EMPTY_ARRAY);
     }
 }

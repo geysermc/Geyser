@@ -36,7 +36,7 @@ import org.cloudburstmc.protocol.bedrock.data.inventory.CreativeItemData;
 import org.cloudburstmc.protocol.bedrock.data.inventory.CreativeItemGroup;
 import org.cloudburstmc.protocol.bedrock.data.inventory.ItemData;
 import org.cloudburstmc.protocol.common.DefinitionRegistry;
-import org.geysermc.geyser.GeyserImpl;
+import org.geysermc.geyser.GeyserLogger;
 import org.geysermc.geyser.api.block.custom.CustomBlockData;
 import org.geysermc.geyser.inventory.item.StoredItemMappings;
 import org.geysermc.geyser.item.Items;
@@ -167,7 +167,7 @@ public class ItemMappings implements DefinitionRegistry<ItemDefinition> {
             }
         }
 
-        GeyserImpl.getInstance().getLogger().debug("Missing mapping for bedrock item " + data);
+        GeyserLogger.get().debug("Missing mapping for bedrock item " + data);
         return ItemMapping.AIR;
     }
 

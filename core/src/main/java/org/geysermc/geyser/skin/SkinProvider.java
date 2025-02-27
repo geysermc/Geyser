@@ -32,6 +32,7 @@ import it.unimi.dsi.fastutil.bytes.ByteArrays;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.geysermc.geyser.GeyserImpl;
+import org.geysermc.geyser.GeyserLogger;
 import org.geysermc.geyser.api.event.bedrock.SessionSkinApplyEvent;
 import org.geysermc.geyser.api.network.AuthType;
 import org.geysermc.geyser.api.skin.Cape;
@@ -56,7 +57,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.concurrent.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
 public class SkinProvider {
@@ -165,7 +170,7 @@ public class SkinProvider {
                 }
 
                 if (count > 0) {
-                    GeyserImpl.getInstance().getLogger().debug(String.format("Removed %d cached image files as they have expired", count));
+                    GeyserLogger.get().debug(String.format("Removed %d cached image files as they have expired", count));
                 }
             }, 10, 1440, TimeUnit.MINUTES);
         }
@@ -286,7 +291,7 @@ public class SkinProvider {
 
                         return eventSkinData.skinData();
                     } catch (Exception e) {
-                        GeyserImpl.getInstance().getLogger().error(GeyserLocale.getLocaleStringLog("geyser.skin.fail", entity.getUuid()), e);
+                        GeyserLogger.get().error(GeyserLocale.getLocaleStringLog("geyser.skin.fail", entity.getUuid()), e);
                     }
 
                     return new SkinData(skinAndCape.skin(), skinAndCape.cape(), null);
@@ -302,7 +307,7 @@ public class SkinProvider {
                     getOrDefault(requestCape(capeUrl, false), EMPTY_CAPE, 5)
             );
 
-            GeyserImpl.getInstance().getLogger().debug("Took " + (System.currentTimeMillis() - time) + "ms for " + playerId);
+            GeyserLogger.get().debug("Took " + (System.currentTimeMillis() - time) + "ms for " + playerId);
             return skinAndCape;
         }, getExecutorService());
     }
@@ -413,7 +418,7 @@ public class SkinProvider {
         File imageFile = GeyserImpl.getInstance().getBootstrap().getConfigFolder().resolve("cache").resolve("images").resolve(UUID.nameUUIDFromBytes(imageUrl.getBytes()) + ".png").toFile();
         if (imageFile.exists()) {
             try {
-                GeyserImpl.getInstance().getLogger().debug("Reading cached image from file " + imageFile.getPath() + " for " + imageUrl);
+                GeyserLogger.get().debug("Reading cached image from file " + imageFile.getPath() + " for " + imageUrl);
                 imageFile.setLastModified(System.currentTimeMillis());
                 image = ImageIO.read(imageFile);
             } catch (IOException ignored) {}
@@ -422,16 +427,16 @@ public class SkinProvider {
         // If no image we download it
         if (image == null) {
             image = downloadImage(imageUrl);
-            GeyserImpl.getInstance().getLogger().debug("Downloaded " + imageUrl);
+            GeyserLogger.get().debug("Downloaded " + imageUrl);
 
             // Write to cache if we are allowed
             if (GeyserImpl.getInstance().getConfig().getCacheImages() > 0) {
                 imageFile.getParentFile().mkdirs();
                 try {
                     ImageIO.write(image, "png", imageFile);
-                    GeyserImpl.getInstance().getLogger().debug("Writing cached skin to file " + imageFile.getPath() + " for " + imageUrl);
+                    GeyserLogger.get().debug("Writing cached skin to file " + imageFile.getPath() + " for " + imageUrl);
                 } catch (IOException e) {
-                    GeyserImpl.getInstance().getLogger().error("Failed to write cached skin to file " + imageFile.getPath() + " for " + imageUrl);
+                    GeyserLogger.get().error("Failed to write cached skin to file " + imageFile.getPath() + " for " + imageUrl);
                 }
             }
         }
@@ -488,12 +493,12 @@ public class SkinProvider {
                 JsonNode node = WebUtils.getJson("https://sessionserver.mojang.com/session/minecraft/profile/" + uuid);
                 JsonNode properties = node.get("properties");
                 if (properties == null) {
-                    GeyserImpl.getInstance().getLogger().debug("No properties found in Mojang response for " + uuid);
+                    GeyserLogger.get().debug("No properties found in Mojang response for " + uuid);
                     return null;
                 }
                 return node.get("properties").get(0).get("value").asText();
             } catch (Exception e) {
-                GeyserImpl.getInstance().getLogger().debug("Unable to request textures for " + uuid);
+                GeyserLogger.get().debug("Unable to request textures for " + uuid);
                 if (GeyserImpl.getInstance().getConfig().isDebugMode()) {
                     e.printStackTrace();
                 }
@@ -515,7 +520,7 @@ public class SkinProvider {
                 JsonNode node = WebUtils.getJson("https://api.mojang.com/users/profiles/minecraft/" + username);
                 JsonNode id = node.get("id");
                 if (id == null) {
-                    GeyserImpl.getInstance().getLogger().debug("No UUID found in Mojang response for " + username);
+                    GeyserLogger.get().debug("No UUID found in Mojang response for " + username);
                     return null;
                 }
                 return id.asText();

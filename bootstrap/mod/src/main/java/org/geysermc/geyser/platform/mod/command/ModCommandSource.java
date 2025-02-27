@@ -33,6 +33,7 @@ import net.minecraft.server.level.ServerPlayer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.geysermc.geyser.GeyserImpl;
+import org.geysermc.geyser.GeyserLogger;
 import org.geysermc.geyser.command.GeyserCommandSource;
 import org.geysermc.geyser.text.ChatColor;
 
@@ -58,7 +59,7 @@ public class ModCommandSource implements GeyserCommandSource {
         if (source.getEntity() instanceof ServerPlayer) {
             ((ServerPlayer) source.getEntity()).displayClientMessage(Component.literal(message), false);
         } else {
-            GeyserImpl.getInstance().getLogger().info(ChatColor.toANSI(message + ChatColor.RESET));
+            GeyserLogger.get().info(ChatColor.toANSI(message + ChatColor.RESET));
         }
     }
 

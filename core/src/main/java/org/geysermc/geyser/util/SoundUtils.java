@@ -33,7 +33,7 @@ import org.cloudburstmc.protocol.bedrock.data.SoundEvent;
 import org.cloudburstmc.protocol.bedrock.packet.LevelEventPacket;
 import org.cloudburstmc.protocol.bedrock.packet.LevelSoundEventPacket;
 import org.cloudburstmc.protocol.bedrock.packet.PlaySoundPacket;
-import org.geysermc.geyser.GeyserImpl;
+import org.geysermc.geyser.GeyserLogger;
 import org.geysermc.geyser.level.block.type.Block;
 import org.geysermc.geyser.registry.BlockRegistries;
 import org.geysermc.geyser.registry.Registries;
@@ -71,7 +71,7 @@ public final class SoundUtils {
         SoundMapping soundMapping = Registries.SOUNDS.get(soundIdentifier);
         if (soundMapping == null || soundMapping.getPlaysound() == null) {
             // no mapping
-            GeyserImpl.getInstance().getLogger().debug("[PlaySound] Defaulting to sound server gave us for " + javaIdentifier);
+            GeyserLogger.get().debug("[PlaySound] Defaulting to sound server gave us for " + javaIdentifier);
             return soundIdentifier;
         }
         return soundMapping.getPlaysound();
@@ -107,7 +107,7 @@ public final class SoundUtils {
 
         SoundMapping soundMapping = Registries.SOUNDS.get(soundIdentifier);
         if (soundMapping == null) {
-            session.getGeyser().getLogger().debug("[Builtin] Sound mapping for " + soundIdentifier + " not found; assuming custom.");
+            GeyserLogger.get().debug("[Builtin] Sound mapping for " + soundIdentifier + " not found; assuming custom.");
             playSound(session, soundIdentifier, position, volume, pitch);
             return;
         }
@@ -133,7 +133,7 @@ public final class SoundUtils {
             sound = SoundUtils.toSoundEvent(soundIdentifier);
         }
         if (sound == null) {
-            session.getGeyser().getLogger().debug("[Builtin] Sound for original '" + soundIdentifier + "' to mappings '" + soundMapping.getBedrock()
+            GeyserLogger.get().debug("[Builtin] Sound for original '" + soundIdentifier + "' to mappings '" + soundMapping.getBedrock()
                 + "' was not a playable level sound, or has yet to be mapped to an enum in SoundEvent.");
             return;
         }
@@ -151,7 +151,7 @@ public final class SoundUtils {
                 int javaId = BlockRegistries.JAVA_IDENTIFIER_TO_ID.get().getOrDefault(soundMapping.getIdentifier(), Block.JAVA_AIR_ID);
                 soundPacket.setExtraData(session.getBlockMappings().getBedrockBlockId(javaId));
             } else {
-                session.getGeyser().getLogger().debug("PLACE sound mapping identifier was invalid! Please report: " + soundMapping);
+                GeyserLogger.get().debug("PLACE sound mapping identifier was invalid! Please report: " + soundMapping);
             }
             soundPacket.setIdentifier(":");
         } else {
@@ -172,7 +172,7 @@ public final class SoundUtils {
             soundEvent = string;
         } else {
             soundEvent = "";
-            GeyserImpl.getInstance().getLogger().debug("Sound event for " + context + " was of an unexpected type! Expected string or NBT map, got " + soundEventObject);
+            GeyserLogger.get().debug("Sound event for " + context + " was of an unexpected type! Expected string or NBT map, got " + soundEventObject);
         }
         return soundEvent;
     }

@@ -31,6 +31,7 @@ import org.cloudburstmc.nbt.NbtMapBuilder;
 import org.cloudburstmc.nbt.NbtType;
 import org.cloudburstmc.protocol.bedrock.packet.BlockEntityDataPacket;
 import org.cloudburstmc.protocol.bedrock.packet.BlockEventPacket;
+import org.geysermc.geyser.GeyserLogger;
 import org.geysermc.geyser.api.util.PlatformType;
 import org.geysermc.geyser.level.block.Blocks;
 import org.geysermc.geyser.level.block.property.Properties;
@@ -63,7 +64,7 @@ public class JavaBlockEventTranslator extends PacketTranslator<ClientboundBlockE
         BlockValue value = packet.getValue();
 
         if (value == null) {
-            session.getGeyser().getLogger().debug("Unable to handle packet %s - null value! ".formatted(packet.toString()));
+            GeyserLogger.get().debug("Unable to handle packet %s - null value! ".formatted(packet.toString()));
             return;
         }
 
@@ -164,8 +165,8 @@ public class JavaBlockEventTranslator extends PacketTranslator<ClientboundBlockE
                 blockEntityPacket.setData(builder.build());
                 session.sendUpstreamPacket(blockEntityPacket);
             });
-        } else if (session.getGeyser().getLogger().isDebug()) {
-            session.getGeyser().getLogger().debug("Unhandled block event packet: " + packet);
+        } else if (GeyserLogger.get().isDebug()) {
+            GeyserLogger.get().debug("Unhandled block event packet: " + packet);
         }
     }
 

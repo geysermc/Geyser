@@ -25,21 +25,25 @@
 
 package org.geysermc.geyser.translator.protocol.bedrock;
 
-import org.geysermc.mcprotocollib.protocol.data.game.item.ItemStack;
-import org.geysermc.mcprotocollib.protocol.data.game.item.component.DataComponentTypes;
-import org.geysermc.mcprotocollib.protocol.data.game.item.component.DataComponents;
-import org.geysermc.mcprotocollib.protocol.data.game.item.component.Filterable;
-import org.geysermc.mcprotocollib.protocol.data.game.item.component.WritableBookContent;
-import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.inventory.ServerboundEditBookPacket;
 import org.cloudburstmc.protocol.bedrock.packet.BookEditPacket;
+import org.geysermc.geyser.GeyserLogger;
 import org.geysermc.geyser.inventory.GeyserItemStack;
 import org.geysermc.geyser.item.type.WrittenBookItem;
 import org.geysermc.geyser.session.GeyserSession;
 import org.geysermc.geyser.translator.protocol.PacketTranslator;
 import org.geysermc.geyser.translator.protocol.Translator;
 import org.geysermc.geyser.translator.text.MessageTranslator;
+import org.geysermc.mcprotocollib.protocol.data.game.item.ItemStack;
+import org.geysermc.mcprotocollib.protocol.data.game.item.component.DataComponentTypes;
+import org.geysermc.mcprotocollib.protocol.data.game.item.component.DataComponents;
+import org.geysermc.mcprotocollib.protocol.data.game.item.component.Filterable;
+import org.geysermc.mcprotocollib.protocol.data.game.item.component.WritableBookContent;
+import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.inventory.ServerboundEditBookPacket;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 
 @Translator(packet = BookEditPacket.class)
 public class BedrockBookEditTranslator extends PacketTranslator<BookEditPacket> {
@@ -47,7 +51,7 @@ public class BedrockBookEditTranslator extends PacketTranslator<BookEditPacket> 
     @Override
     public void translate(GeyserSession session, BookEditPacket packet) {
         if (packet.getText() != null && !packet.getText().isEmpty() && packet.getText().length() > WrittenBookItem.MAXIMUM_PAGE_EDIT_LENGTH) {
-            session.getGeyser().getLogger().warning("Page length greater than server allowed!");
+            GeyserLogger.get().warning("Page length greater than server allowed!");
             return;
         }
 
@@ -66,7 +70,7 @@ public class BedrockBookEditTranslator extends PacketTranslator<BookEditPacket> 
 
             int page = packet.getPageNumber();
             if (page < 0 || WrittenBookItem.MAXIMUM_PAGE_COUNT <= page) {
-                session.getGeyser().getLogger().warning("Edited page is out of acceptable bounds!");
+                GeyserLogger.get().warning("Edited page is out of acceptable bounds!");
                 return;
             }
             switch (packet.getAction()) {
@@ -136,7 +140,7 @@ public class BedrockBookEditTranslator extends PacketTranslator<BookEditPacket> 
                 // Add title to packet so the server knows we're signing
                 title = MessageTranslator.convertToPlainText(packet.getTitle());
                 if (title.length() > WrittenBookItem.MAXIMUM_TITLE_LENGTH) {
-                    session.getGeyser().getLogger().warning("Book title larger than server allows!");
+                    GeyserLogger.get().warning("Book title larger than server allows!");
                     return;
                 }
             } else {
