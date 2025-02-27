@@ -192,7 +192,41 @@ public class MessageTranslator {
                 lastFormatReset = next == 'r';
             }
 
-            return finalLegacy.toString();
+            String finalLegacyString = finalLegacy.toString();
+
+            // Remove duplicate resets and trailing resets
+            finalLegacyString = finalLegacyString.replaceAll("(" + RESET + "){2,}", RESET);
+            if (finalLegacyString.endsWith(RESET)) {
+                finalLegacyString = finalLegacyString.substring(0, finalLegacyString.length() - 2);
+            }
+
+            // If the message contains \n then go through and re-set the color after each by caching the last color
+            // Bedrock is dumb and resets the color after a newline
+            if (finalLegacyString.contains("\n")) {
+                StringBuilder output = new StringBuilder();
+
+                StringBuilder lastColors = new StringBuilder();
+                for (int i = 0; i < finalLegacyString.length(); i++) {
+                    char c = finalLegacyString.charAt(i);
+
+                    output.append(c);
+
+                    if (c == ChatColor.ESCAPE) {
+                        char newColor = finalLegacyString.charAt(i + 1);
+                        if (newColor == 'r') {
+                            lastColors = new StringBuilder();
+                        } else {
+                            lastColors.append(ChatColor.ESCAPE).append(newColor);
+                        }
+                    } else if (c == '\n' && !lastColors.isEmpty()) {
+                        output.append(lastColors);
+                    }
+                }
+
+                return output.toString();
+            } else {
+                return finalLegacyString;
+            }
         } catch (Exception e) {
             GeyserImpl.getInstance().getLogger().debug(GSON_SERIALIZER.serialize(message));
             GeyserImpl.getInstance().getLogger().error("Failed to parse message", e);
