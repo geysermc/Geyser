@@ -70,7 +70,6 @@ final class BedrockBlockActions {
         PlayerActionType action = blockActionData.getAction();
         Vector3i vector = blockActionData.getBlockPosition();
         int blockFace = blockActionData.getFace();
-
         switch (action) {
             case DROP_ITEM -> {
                 ServerboundPlayerActionPacket dropItemPacket = new ServerboundPlayerActionPacket(PlayerAction.DROP_ITEM,
