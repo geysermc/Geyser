@@ -68,7 +68,7 @@ public class GeyserSessionAdapter extends SessionAdapter {
 
     @Override
     public void packetSending(PacketSendingEvent event) {
-        if (event.getPacket() instanceof ClientIntentionPacket) {
+        if (event.getPacket() instanceof ClientIntentionPacket intentionPacket) {
             BedrockClientData clientData = geyserSession.getClientData();
 
             String addressSuffix;
@@ -108,8 +108,6 @@ public class GeyserSessionAdapter extends SessionAdapter {
             } else {
                 addressSuffix = "";
             }
-
-            ClientIntentionPacket intentionPacket = event.getPacket();
 
             String address;
             if (geyser.getConfig().getRemote().isForwardHost()) {
@@ -226,6 +224,7 @@ public class GeyserSessionAdapter extends SessionAdapter {
 
     @Override
     public void packetReceived(Session session, Packet packet) {
+        System.out.println("Received packet: " + packet.getClass().getSimpleName());
         Registries.JAVA_PACKET_TRANSLATORS.translate(packet.getClass(), packet, geyserSession, true);
     }
 
