@@ -25,14 +25,16 @@
 
 package org.geysermc.geyser.registry.loader;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.type.TypeReference;
+import com.google.gson.annotations.SerializedName;
+import com.google.gson.reflect.TypeToken;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import org.geysermc.geyser.GeyserImpl;
+import org.geysermc.geyser.util.JsonUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Type;
 import java.util.Map;
 
 public class BiomeIdentifierRegistryLoader implements RegistryLoader<String, Object2IntMap<String>> {
@@ -44,11 +46,11 @@ public class BiomeIdentifierRegistryLoader implements RegistryLoader<String, Obj
         // The server sends the corresponding Java network IDs, so we don't need to worry about that now.
 
         // Reference variable for Jackson to read off of
-        TypeReference<Map<String, BiomeEntry>> biomeEntriesType = new TypeReference<>() { };
+        Type biomeEntriesType = new TypeToken<Map<String, BiomeEntry>>() { }.getType();
         Map<String, BiomeEntry> biomeEntries;
 
         try (InputStream stream = GeyserImpl.getInstance().getBootstrap().getResourceOrThrow("mappings/biomes.json")) {
-            biomeEntries = GeyserImpl.JSON_MAPPER.readValue(stream, biomeEntriesType);
+            biomeEntries = JsonUtils.fromJson(stream, biomeEntriesType);
         } catch (IOException e) {
             throw new AssertionError("Unable to load Bedrock runtime biomes", e);
         }
@@ -66,7 +68,7 @@ public class BiomeIdentifierRegistryLoader implements RegistryLoader<String, Obj
         /**
          * The Bedrock network ID for this biome.
          */
-        @JsonProperty("bedrock_id")
+        @SerializedName("bedrock_id")
         private int bedrockId;
     }
 }

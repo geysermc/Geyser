@@ -50,7 +50,7 @@ public abstract class GeyserInjector {
      * @param bootstrap the bootstrap of the Geyser instance.
      */
     public void initializeLocalChannel(GeyserBootstrap bootstrap) {
-        if (!bootstrap.getGeyserConfig().isUseDirectConnection()) {
+        if (!bootstrap.config().advanced().useDirectConnection()) {
             bootstrap.getGeyserLogger().debug("Disabling direct injection!");
             return;
         }

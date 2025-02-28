@@ -25,18 +25,16 @@
 
 package org.geysermc.geyser.command.standalone;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
+import org.spongepowered.configurate.objectmapping.ConfigSerializable;
 
 import java.util.Collections;
 import java.util.Set;
 
 @Getter
-@JsonIgnoreProperties(ignoreUnknown = true)
-@SuppressWarnings("FieldMayBeFinal") // Jackson requires that the fields are not final
+@ConfigSerializable
+@SuppressWarnings("FieldMayBeFinal")
 public class PermissionConfiguration {
 
-    @JsonProperty("default-permissions")
     private Set<String> defaultPermissions = Collections.emptySet();
 }

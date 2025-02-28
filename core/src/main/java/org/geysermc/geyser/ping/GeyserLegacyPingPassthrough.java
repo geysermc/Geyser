@@ -25,8 +25,7 @@
 
 package org.geysermc.geyser.ping;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
+import com.google.gson.JsonSyntaxException;
 import io.netty.handler.codec.haproxy.HAProxyCommand;
 import io.netty.handler.codec.haproxy.HAProxyProxiedProtocol;
 import io.netty.util.NetUtil;
@@ -34,9 +33,19 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.cloudburstmc.nbt.util.VarInts;
 import org.geysermc.geyser.GeyserImpl;
 import org.geysermc.geyser.network.GameProtocol;
+import org.geysermc.geyser.util.JsonUtils;
 
-import java.io.*;
-import java.net.*;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.EOFException;
+import java.io.IOException;
+import java.net.ConnectException;
+import java.net.Inet4Address;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 import java.util.concurrent.TimeUnit;
 
 public class GeyserLegacyPingPassthrough implements IGeyserPingPassthrough, Runnable {
@@ -56,10 +65,10 @@ public class GeyserLegacyPingPassthrough implements IGeyserPingPassthrough, Runn
      * @return GeyserPingPassthrough, or null if not initialized
      */
     public static @Nullable IGeyserPingPassthrough init(GeyserImpl geyser) {
-        if (geyser.getConfig().isPassthroughMotd() || geyser.getConfig().isPassthroughPlayerCounts()) {
+        if (geyser.config().passthroughMotd() || geyser.config().passthroughPlayerCounts()) {
             GeyserLegacyPingPassthrough pingPassthrough = new GeyserLegacyPingPassthrough(geyser);
             // Ensure delay is not zero
-            int interval = (geyser.getConfig().getPingPassthroughInterval() == 0) ? 1 : geyser.getConfig().getPingPassthroughInterval();
+            int interval = (geyser.config().pingPassthroughInterval() == 0) ? 1 : geyser.config().pingPassthroughInterval();
             geyser.getLogger().debug("Scheduling ping passthrough at an interval of " + interval + " second(s).");
             geyser.getScheduledThread().scheduleAtFixedRate(pingPassthrough, 1, interval, TimeUnit.SECONDS);
             return pingPassthrough;
@@ -75,8 +84,8 @@ public class GeyserLegacyPingPassthrough implements IGeyserPingPassthrough, Runn
     @Override
     public void run() {
         try (Socket socket = new Socket()) {
-            String address = geyser.getConfig().getRemote().address();
-            int port = geyser.getConfig().getRemote().port();
+            String address = geyser.config().java().address();
+            int port = geyser.config().java().port();
             InetSocketAddress endpoint = new InetSocketAddress(address, port);
             socket.connect(endpoint, 5000);
 
@@ -93,7 +102,7 @@ public class GeyserLegacyPingPassthrough implements IGeyserPingPassthrough, Runn
             byte[] buffer;
 
             try (DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream())) {
-                if (geyser.getConfig().getRemote().isUseProxyProtocol()) {
+                if (geyser.config().java().useProxyProtocol()) {
                     // HAProxy support
                     // Based on https://github.com/netty/netty/blob/d8ad931488f6b942dabe28ecd6c399b4438da0a8/codec-haproxy/src/main/java/io/netty/handler/codec/haproxy/HAProxyMessageEncoder.java#L78
                     dataOutputStream.write(HAPROXY_BINARY_PREFIX);
@@ -130,11 +139,11 @@ public class GeyserLegacyPingPassthrough implements IGeyserPingPassthrough, Runn
                 }
             }
 
-            this.pingInfo = GeyserImpl.JSON_MAPPER.readValue(buffer, GeyserPingInfo.class);
+            this.pingInfo = JsonUtils.fromJson(buffer, GeyserPingInfo.class);
         } catch (SocketTimeoutException | ConnectException ex) {
             this.pingInfo = null;
             this.geyser.getLogger().debug("Connection timeout for ping passthrough.");
-        } catch (JsonParseException | JsonMappingException ex) {
+        } catch (JsonSyntaxException ex) {
             this.geyser.getLogger().error("Failed to parse json when pinging server!", ex);
         } catch (EOFException e) {
             this.pingInfo = null;

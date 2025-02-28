@@ -96,7 +96,7 @@ public class GeyserModInjector extends GeyserInjector {
                         int index = ch.pipeline().names().indexOf("encoder");
                         String baseName = index != -1 ? "encoder" : "outbound_config";
 
-                        if (bootstrap.getGeyserConfig().isDisableCompression()) {
+                        if (bootstrap.config().advanced().disableCompression()) {
                             ch.pipeline().addAfter(baseName, "geyser-compression-disabler", new GeyserModCompressionDisabler());
                         }
                     }
@@ -125,7 +125,7 @@ public class GeyserModInjector extends GeyserInjector {
                 childHandler = (ChannelInitializer<Channel>) childHandlerField.get(handler);
                 break;
             } catch (Exception e) {
-                if (bootstrap.getGeyserConfig().isDebugMode()) {
+                if (bootstrap.config().debugMode()) {
                     bootstrap.getGeyserLogger().debug("The handler " + name + " isn't a ChannelInitializer. THIS ERROR IS SAFE TO IGNORE!");
                     e.printStackTrace();
                 }

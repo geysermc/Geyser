@@ -25,6 +25,7 @@
 
 package org.geysermc.geyser.dump;
 
+import com.google.gson.annotations.JsonAdapter;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.geysermc.geyser.GeyserImpl;
@@ -38,7 +39,7 @@ public class BootstrapDumpInfo {
     private final PlatformType platform;
 
     public BootstrapDumpInfo() {
-        this.platform = GeyserImpl.getInstance().getPlatformType();
+        this.platform = GeyserImpl.getInstance().platformType();
     }
 
     @Getter
@@ -55,7 +56,7 @@ public class BootstrapDumpInfo {
     @AllArgsConstructor
     public static class ListenerInfo {
 
-        @AsteriskSerializer.Asterisk(isIp = true)
+        @JsonAdapter(value = AsteriskSerializer.class)
         public String ip;
         public int port;
     }

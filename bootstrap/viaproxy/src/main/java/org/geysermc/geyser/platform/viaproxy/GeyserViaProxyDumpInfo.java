@@ -24,6 +24,7 @@
  */
 package org.geysermc.geyser.platform.viaproxy;
 
+import com.google.gson.annotations.JsonAdapter;
 import lombok.Getter;
 import net.raphimc.viaproxy.ViaProxy;
 import net.raphimc.viaproxy.plugins.ViaProxyPlugin;
@@ -41,7 +42,7 @@ public class GeyserViaProxyDumpInfo extends BootstrapDumpInfo {
     private final String platformVersion;
     private final boolean onlineMode;
 
-    @AsteriskSerializer.Asterisk(isIp = true)
+    @JsonAdapter(value = AsteriskSerializer.class)
     private final String serverIP;
     private final int serverPort;
     private final List<PluginInfo> plugins;

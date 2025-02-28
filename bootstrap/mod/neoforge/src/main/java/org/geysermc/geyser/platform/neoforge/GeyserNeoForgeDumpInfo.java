@@ -25,6 +25,7 @@
 
 package org.geysermc.geyser.platform.neoforge;
 
+import com.google.gson.annotations.JsonAdapter;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import net.minecraft.server.MinecraftServer;
@@ -47,7 +48,7 @@ public class GeyserNeoForgeDumpInfo extends BootstrapDumpInfo {
     private final String minecraftVersion;
     private final Dist dist;
 
-    @AsteriskSerializer.Asterisk(isIp = true)
+    @JsonAdapter(value = AsteriskSerializer.class)
     private final String serverIP;
     private final int serverPort;
     private final boolean onlineMode;

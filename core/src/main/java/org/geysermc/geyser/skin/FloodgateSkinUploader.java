@@ -25,11 +25,9 @@
 
 package org.geysermc.geyser.skin;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonSyntaxException;
 import lombok.Getter;
 import org.geysermc.floodgate.pluginmessage.PluginMessageChannels;
 import org.geysermc.floodgate.util.WebsocketEventType;
@@ -37,6 +35,7 @@ import org.geysermc.geyser.Constants;
 import org.geysermc.geyser.GeyserImpl;
 import org.geysermc.geyser.GeyserLogger;
 import org.geysermc.geyser.session.GeyserSession;
+import org.geysermc.geyser.util.JsonUtils;
 import org.geysermc.geyser.util.PluginMessageUtils;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
@@ -52,7 +51,6 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
 public final class FloodgateSkinUploader {
-    private final ObjectMapper JACKSON = new ObjectMapper();
     private final List<String> skinQueue = new ArrayList<>();
 
     private final GeyserLogger logger;
@@ -79,15 +77,14 @@ public final class FloodgateSkinUploader {
 
             @Override
             public void onMessage(String message) {
-                // The reason why I don't like Jackson
                 try {
-                    JsonNode node = JACKSON.readTree(message);
+                    JsonObject node = JsonUtils.parseJson(message);
                     if (node.has("error")) {
-                        logger.error("Got an error: " + node.get("error").asText());
+                        logger.error("Got an error: " + node.get("error").getAsString());
                         return;
                     }
 
-                    int typeId = node.get("event_id").asInt();
+                    int typeId = node.get("event_id").getAsInt();
                     WebsocketEventType type = WebsocketEventType.fromId(typeId);
                     if (type == null) {
                         logger.warning(String.format(
@@ -98,11 +95,11 @@ public final class FloodgateSkinUploader {
 
                     switch (type) {
                         case SUBSCRIBER_CREATED:
-                            id = node.get("id").asInt();
-                            verifyCode = node.get("verify_code").asText();
+                            id = node.get("id").getAsInt();
+                            verifyCode = node.get("verify_code").getAsString();
                             break;
                         case SUBSCRIBER_COUNT:
-                            subscribersCount = node.get("subscribers_count").asInt();
+                            subscribersCount = node.get("subscribers_count").getAsInt();
                             break;
                         case SKIN_UPLOADED:
                             // if Geyser is the only subscriber we have send it to the server manually
@@ -111,19 +108,19 @@ public final class FloodgateSkinUploader {
                                 break;
                             }
 
-                            String xuid = node.get("xuid").asText();
+                            String xuid = node.get("xuid").getAsString();
                             GeyserSession session = geyser.connectionByXuid(xuid);
 
                             if (session != null) {
-                                if (!node.get("success").asBoolean()) {
+                                if (!node.get("success").getAsBoolean()) {
                                     logger.info("Failed to upload skin for " + session.bedrockUsername());
                                     return;
                                 }
 
-                                JsonNode data = node.get("data");
+                                JsonObject data = node.getAsJsonObject("data");
 
-                                String value = data.get("value").asText();
-                                String signature = data.get("signature").asText();
+                                String value = data.get("value").getAsString();
+                                String signature = data.get("signature").getAsString();
 
                                 byte[] bytes = (value + '\0' + signature)
                                         .getBytes(StandardCharsets.UTF_8);
@@ -131,8 +128,8 @@ public final class FloodgateSkinUploader {
                             }
                             break;
                         case LOG_MESSAGE:
-                            String logMessage = node.get("message").asText();
-                            switch (node.get("priority").asInt()) {
+                            String logMessage = node.get("message").getAsString();
+                            switch (node.get("priority").getAsInt()) {
                                 case -1 -> logger.debug("Got a message from skin uploader: " + logMessage);
                                 case 0 -> logger.info("Got a message from skin uploader: " + logMessage);
                                 case 1 -> logger.error("Got a message from skin uploader: " + logMessage);
@@ -150,20 +147,19 @@ public final class FloodgateSkinUploader {
             @Override
             public void onClose(int code, String reason, boolean remote) {
                 if (reason != null && !reason.isEmpty()) {
-                    // The reason why I don't like Jackson
                     try {
-                        JsonNode node = JACKSON.readTree(reason);
+                        JsonObject node = JsonUtils.parseJson(reason);
                         // info means that the uploader itself did nothing wrong
                         if (node.has("info")) {
-                            String info = node.get("info").asText();
+                            String info = node.get("info").getAsString();
                             logger.debug("Got disconnected from the skin uploader: " + info);
                         }
                         // error means that the uploader did something wrong
                         if (node.has("error")) {
-                            String error = node.get("error").asText();
+                            String error = node.get("error").getAsString();
                             logger.info("Got disconnected from the skin uploader: " + error);
                         }
-                    } catch (JsonProcessingException ignored) {
+                    } catch (JsonSyntaxException ignored) {
                         // ignore invalid json
                     } catch (Exception e) {
                         logger.error("Error while handling onClose", e);
@@ -195,20 +191,13 @@ public final class FloodgateSkinUploader {
             return;
         }
 
-        ObjectNode node = JACKSON.createObjectNode();
-        ArrayNode chainDataNode = JACKSON.createArrayNode();
+        JsonObject node = new JsonObject();
+        JsonArray chainDataNode = new JsonArray();
         chainData.forEach(chainDataNode::add);
-        node.set("chain_data", chainDataNode);
-        node.put("client_data", clientData);
+        node.add("chain_data", chainDataNode);
+        node.addProperty("client_data", clientData);
 
-        // The reason why I don't like Jackson
-        String jsonString;
-        try {
-            jsonString = JACKSON.writeValueAsString(node);
-        } catch (Exception e) {
-            logger.error("Failed to upload skin", e);
-            return;
-        }
+        String jsonString = node.toString();
 
         if (client.isOpen()) {
             client.send(jsonString);

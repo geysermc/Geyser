@@ -25,12 +25,13 @@
 
 package org.geysermc.geyser.command.defaults;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import org.geysermc.geyser.GeyserImpl;
 import org.geysermc.geyser.api.util.TriState;
 import org.geysermc.geyser.command.GeyserCommand;
 import org.geysermc.geyser.command.GeyserCommandSource;
-import org.geysermc.geyser.configuration.GeyserConfiguration;
+import org.geysermc.geyser.configuration.GeyserConfig;
 import org.geysermc.geyser.util.LoopbackUtil;
 import org.geysermc.geyser.util.WebUtils;
 import org.incendo.cloud.CommandManager;
@@ -79,7 +80,7 @@ public class ConnectionTestCommand extends GeyserCommand {
 
         // Replace "<" and ">" symbols if they are present to avoid the common issue of people including them
         final String ip = ipArgument.replace("<", "").replace(">", "");
-        final int port = portArgument != null ? portArgument : geyser.getConfig().getBedrock().broadcastPort(); // default bedrock port
+        final int port = portArgument != null ? portArgument : geyser.config().bedrock().broadcastPort(); // default bedrock port
 
         // Issue: people commonly checking placeholders
         if (ip.equals("ip")) {
@@ -105,41 +106,41 @@ public class ConnectionTestCommand extends GeyserCommand {
             return;
         }
 
-        GeyserConfiguration config = geyser.getConfig();
+        GeyserConfig config = geyser.config();
 
         // Issue: do the ports not line up? We only check this if players don't override the broadcast port - if they do, they (hopefully) know what they're doing
-        if (config.getBedrock().broadcastPort() == config.getBedrock().port()) {
-            if (port != config.getBedrock().port()) {
+        if (config.bedrock().broadcastPort() == config.bedrock().port()) {
+            if (port != config.bedrock().port()) {
                 if (portArgument != null) {
                     source.sendMessage("The port you are testing with (" + port + ") is not the same as you set in your Geyser configuration ("
-                            + config.getBedrock().port() + ")");
+                            + config.bedrock().port() + ")");
                     source.sendMessage("Re-run the command with the port in the config, or change the `bedrock` `port` in the config.");
-                    if (config.getBedrock().isCloneRemotePort()) {
+                    if (config.bedrock().cloneRemotePort()) {
                         source.sendMessage("You have `clone-remote-port` enabled. This option ignores the `bedrock` `port` in the config, and uses the Java server port instead.");
                     }
                 } else {
                     source.sendMessage("You did not specify the port to check (add it with \":<port>\"), " +
                             "and the default port 19132 does not match the port in your Geyser configuration ("
-                            + config.getBedrock().port() + ")!");
+                            + config.bedrock().port() + ")!");
                     source.sendMessage("Re-run the command with that port, or change the port in the config under `bedrock` `port`.");
                 }
             }
         } else {
-            if (config.getBedrock().broadcastPort() != port) {
+            if (config.bedrock().broadcastPort() != port) {
                 source.sendMessage("The port you are testing with (" + port + ") is not the same as the broadcast port set in your Geyser configuration ("
-                        + config.getBedrock().broadcastPort() + "). ");
+                        + config.bedrock().broadcastPort() + "). ");
                 source.sendMessage("You ONLY need to change the broadcast port if clients connects with a port different from the port Geyser is running on.");
                 source.sendMessage("Re-run the command with the port in the config, or change the `bedrock` `broadcast-port` in the config.");
             }
         }
 
         // Issue: is the `bedrock` `address` in the config different?
-        if (!config.getBedrock().address().equals("0.0.0.0")) {
+        if (!config.bedrock().address().equals("0.0.0.0")) {
             source.sendMessage("The address specified in `bedrock` `address` is not \"0.0.0.0\" - this may cause issues unless this is deliberate and intentional.");
         }
 
         // Issue: did someone turn on enable-proxy-protocol, and they didn't mean it?
-        if (config.getBedrock().isEnableProxyProtocol()) {
+        if (config.bedrock().enableProxyProtocol()) {
             source.sendMessage("You have the `enable-proxy-protocol` setting enabled. " +
                     "Unless you're deliberately using additional software that REQUIRES this setting, you may not need it enabled.");
         }
@@ -171,7 +172,7 @@ public class ConnectionTestCommand extends GeyserCommand {
                 CONNECTION_TEST_MOTD = connectionTestMotd;
 
                 source.sendMessage("Testing server connection to " + ip + " with port: " + port + " now. Please wait...");
-                JsonNode output;
+                JsonObject output;
                 try {
                     String hostname = URLEncoder.encode(ip, StandardCharsets.UTF_8);
                     output = WebUtils.getJson("https://checker.geysermc.org/ping?hostname=" + hostname + "&port=" + port);
@@ -179,18 +180,18 @@ public class ConnectionTestCommand extends GeyserCommand {
                     CONNECTION_TEST_MOTD = null;
                 }
 
-                if (output.get("success").asBoolean()) {
-                    JsonNode cache = output.get("cache");
+                if (output.get("success").getAsBoolean()) {
+                    JsonObject cache = output.getAsJsonObject("cache");
                     String when;
-                    if (cache.get("fromCache").asBoolean()) {
-                        when = cache.get("secondsSince").asInt() + " seconds ago";
+                    if (cache.get("fromCache").isJsonPrimitive()) {
+                        when = cache.get("secondsSince").getAsBoolean() + " seconds ago";
                     } else {
                         when = "now";
                     }
 
-                    JsonNode ping = output.get("ping");
-                    JsonNode pong = ping.get("pong");
-                    String remoteMotd = pong.get("motd").asText();
+                    JsonObject ping = output.getAsJsonObject("ping");
+                    JsonObject pong = ping.getAsJsonObject("pong");
+                    String remoteMotd = pong.get("motd").getAsString();
                     if (!connectionTestMotd.equals(remoteMotd)) {
                         source.sendMessage("The MOTD did not match when we pinged the server (we got '" + remoteMotd + "'). " +
                                 "Did you supply the correct IP and port of your server?");
@@ -198,7 +199,7 @@ public class ConnectionTestCommand extends GeyserCommand {
                         return;
                     }
 
-                    if (ping.get("tcpFirst").asBoolean()) {
+                    if (ping.get("tcpFirst").getAsBoolean()) {
                         source.sendMessage("Your server hardware likely has some sort of firewall preventing people from joining easily. See https://geysermc.link/ovh-firewall for more information.");
                         sendLinks(source);
                         return;
@@ -210,9 +211,9 @@ public class ConnectionTestCommand extends GeyserCommand {
                 }
 
                 source.sendMessage("Your server is likely unreachable from outside the network!");
-                JsonNode message = output.get("message");
-                if (message != null && !message.asText().isEmpty()) {
-                    source.sendMessage("Got the error message: " + message.asText());
+                JsonElement message = output.get("message");
+                if (message != null && !message.getAsString().isEmpty()) {
+                    source.sendMessage("Got the error message: " + message.getAsString());
                 }
                 sendLinks(source);
             } catch (Exception e) {

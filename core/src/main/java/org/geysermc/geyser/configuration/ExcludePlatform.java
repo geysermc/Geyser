@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2022 GeyserMC. http://geysermc.org
+ * Copyright (c) 2024 GeyserMC. http://geysermc.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,20 +23,15 @@
  * @link https://github.com/GeyserMC/Geyser
  */
 
-package org.geysermc.geyser.platform.standalone;
+package org.geysermc.geyser.configuration;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import lombok.Getter;
-import org.geysermc.geyser.configuration.GeyserJacksonConfiguration;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
-@Getter
-@JsonIgnoreProperties(ignoreUnknown = true)
-public final class GeyserStandaloneConfiguration extends GeyserJacksonConfiguration {
-    @Override
-    public Path getFloodgateKeyPath() {
-        return Paths.get(getFloodgateKeyFile());
-    }
+@Target({ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface ExcludePlatform {
+    String[] platforms();
 }

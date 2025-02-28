@@ -205,7 +205,7 @@ public class InventoryUtils {
     }
 
     public static boolean canStack(GeyserItemStack item1, GeyserItemStack item2) {
-        if (GeyserImpl.getInstance().getConfig().isDebugMode())
+        if (GeyserImpl.getInstance().config().debugMode())
             canStackDebug(item1, item2);
         if (item1.isEmpty() || item2.isEmpty())
             return false;
@@ -257,7 +257,7 @@ public class InventoryUtils {
 
     private static ItemDefinition getUnusableSpaceBlockDefinition(int protocolVersion) {
         ItemMappings mappings = Registries.ITEMS.forVersion(protocolVersion);
-        String unusableSpaceBlock = GeyserImpl.getInstance().getConfig().getUnusableSpaceBlock();
+        String unusableSpaceBlock = GeyserImpl.getInstance().config().advanced().unusableSpaceBlock();
         ItemDefinition itemDefinition = mappings.getDefinition(unusableSpaceBlock);
 
         if (itemDefinition == null) {

@@ -25,21 +25,25 @@
 
 package org.geysermc.geyser.ping;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonSetter;
-import com.fasterxml.jackson.databind.JsonNode;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
+import com.google.gson.annotations.JsonAdapter;
 import lombok.Data;
 import org.checkerframework.checker.nullness.qual.Nullable;
+
+import java.lang.reflect.Type;
 
 /**
  * The structure of this class and its nested classes are specifically
  * designed for the format received by {@link GeyserLegacyPingPassthrough}.
  */
 @Data
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class GeyserPingInfo {
 
     @Nullable
+    @JsonAdapter(DescriptionDeserializer.class)
     private String description;
 
     private Players players;
@@ -58,13 +62,7 @@ public class GeyserPingInfo {
         this.players = new Players(maxPlayers, onlinePlayers);
     }
 
-    @JsonSetter("description")
-    void setDescription(JsonNode description) {
-        this.description = description.toString();
-    }
-
     @Data
-    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Players {
 
         private int max;
@@ -77,6 +75,16 @@ public class GeyserPingInfo {
         public Players(int max, int online) {
             this.max = max;
             this.online = online;
+        }
+    }
+
+    /**
+     * So GSON does not complain how we are treating Description - it will be converted to a proper Component later.
+     */
+    private static final class DescriptionDeserializer implements JsonDeserializer<String> {
+        @Override
+        public String deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+            return json.toString();
         }
     }
 }

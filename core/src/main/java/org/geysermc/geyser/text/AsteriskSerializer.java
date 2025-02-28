@@ -25,84 +25,67 @@
 
 package org.geysermc.geyser.text;
 
-import com.fasterxml.jackson.annotation.JacksonAnnotationsInside;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.BeanProperty;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.databind.ser.ContextualSerializer;
-import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.JsonSerializer;
+import org.spongepowered.configurate.objectmapping.meta.Processor;
+import org.spongepowered.configurate.serialize.SerializationException;
 
-import java.io.IOException;
-import java.io.Serial;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.util.Optional;
+import java.lang.reflect.Type;
+import java.net.InetAddress;
 
-public class AsteriskSerializer extends StdSerializer<Object> implements ContextualSerializer {
-
-    @Serial
-    private static final long serialVersionUID = 1L;
-
+public class AsteriskSerializer implements JsonSerializer<String> {
     public static final String[] NON_SENSITIVE_ADDRESSES = {"", "0.0.0.0", "localhost", "127.0.0.1", "auto", "unknown"};
 
     public static boolean showSensitive = false;
 
-    @Target({ElementType.FIELD})
-    @Retention(RetentionPolicy.RUNTIME)
-    @JacksonAnnotationsInside
-    @JsonSerialize(using = AsteriskSerializer.class)
-    public @interface Asterisk {
-        String value() default "***";
-        /**
-         * If true, this value will be shown if {@link #showSensitive} is true, or if the IP is determined to not be a public IP
-         * 
-         * @return true if this should be analyzed and treated as an IP
-         */
-        boolean isIp() default false;
-    }
-
-    String asterisk;
-    boolean isIp;
-
-    @SuppressWarnings("unused") // Used by Jackson for Geyser dumps
-    public AsteriskSerializer() {
-        super(Object.class);
-    }
-
-    public AsteriskSerializer(String asterisk, boolean isIp) {
-        super(Object.class);
-        this.asterisk = asterisk;
-        this.isIp = isIp;
-    }
-
     @Override
-    public JsonSerializer<?> createContextual(SerializerProvider serializerProvider, BeanProperty property) {
-        Optional<Asterisk> anno = Optional.ofNullable(property)
-                .map(prop -> prop.getAnnotation(Asterisk.class));
-
-        return new AsteriskSerializer(anno.map(Asterisk::value).orElse(null), anno.map(Asterisk::isIp).orElse(false));
-    }
-
-    @Override
-    public void serialize(Object obj, JsonGenerator gen, SerializerProvider prov) throws IOException {
-        if (isIp && (showSensitive || !isSensitiveIp((String) obj))) {
-            gen.writeObject(obj);
-            return;
+    public JsonElement serialize(String src, Type typeOfSrc, JsonSerializationContext context) {
+        if (showSensitive || !isSensitiveIp(src)) {
+            return new JsonPrimitive(src);
         }
 
-        gen.writeString(asterisk);
+        return new JsonPrimitive("***");
     }
 
-    private boolean isSensitiveIp(String ip) {
+    private static boolean isSensitiveIp(String ip) {
         for (String address : NON_SENSITIVE_ADDRESSES) {
             if (address.equalsIgnoreCase(ip)) {
                 return false;
             }
         }
+
+        try {
+            InetAddress address = InetAddress.getByName(ip);
+            if (address.isSiteLocalAddress() || address.isLoopbackAddress()) {
+                return false;
+            }
+        } catch (Exception e) {
+            // Ignore
+        }
+
         return true;
+    }
+
+    public static Processor.Factory<Asterisk, String> CONFIGURATE_SERIALIZER = (data, fieldType) -> (value, destination) -> {
+        if (showSensitive || !isSensitiveIp(value)) {
+            return;
+        }
+        try {
+            destination.set("***");
+        } catch (SerializationException e) {
+            throw new RuntimeException("Unable to censor IP address", e); // Error over silently printing an IP address.
+        }
+    };
+
+    @Target({ElementType.FIELD, ElementType.METHOD})
+    @Retention(RetentionPolicy.RUNTIME)
+    public @interface Asterisk {
+
     }
 }

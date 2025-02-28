@@ -25,7 +25,9 @@
 
 package org.geysermc.geyser.registry.populator;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.cloudburstmc.nbt.NbtMap;
 import org.cloudburstmc.nbt.NbtMapBuilder;
@@ -40,6 +42,7 @@ import org.geysermc.geyser.GeyserImpl;
 import org.geysermc.geyser.registry.BlockRegistries;
 import org.geysermc.geyser.registry.type.BlockMappings;
 import org.geysermc.geyser.registry.type.GeyserBedrockBlock;
+import org.geysermc.geyser.util.JsonUtils;
 import org.geysermc.geyser.registry.type.GeyserMappingItem;
 
 import java.io.ByteArrayInputStream;
@@ -62,20 +65,21 @@ public class CreativeItemRegistryPopulator {
     static List<CreativeItemGroup> readCreativeItemGroups(ItemRegistryPopulator.PaletteVersion palette, List<CreativeItemData> creativeItemData) {
         GeyserBootstrap bootstrap = GeyserImpl.getInstance().getBootstrap();
 
-        JsonNode creativeItemEntries;
+        JsonArray creativeItemEntries;
         try (InputStream stream = bootstrap.getResourceOrThrow(String.format("bedrock/creative_items.%s.json", palette.version()))) {
-            creativeItemEntries = GeyserImpl.JSON_MAPPER.readTree(stream).get("groups");
+            creativeItemEntries = JsonUtils.fromJson(stream).getAsJsonArray("groups");
         } catch (Exception e) {
             throw new AssertionError("Unable to load creative item groups", e);
         }
 
         List<CreativeItemGroup> creativeItemGroups = new ArrayList<>();
-        for (JsonNode creativeItemEntry : creativeItemEntries) {
-            CreativeItemCategory category = CreativeItemCategory.valueOf(creativeItemEntry.get("category").asText().toUpperCase(Locale.ROOT));
-            String name = creativeItemEntry.get("name").asText();
+        for (JsonElement creativeItemEntry : creativeItemEntries) {
+            JsonObject creativeItemEntryObject = creativeItemEntry.getAsJsonObject();
+            CreativeItemCategory category = CreativeItemCategory.valueOf(creativeItemEntryObject.get("category").getAsString().toUpperCase(Locale.ROOT));
+            String name = creativeItemEntryObject.get("name").getAsString();
 
-            JsonNode icon = creativeItemEntry.get("icon");
-            String identifier = icon.get("id").asText();
+            JsonElement icon = creativeItemEntryObject.get("icon");
+            String identifier = icon.getAsJsonObject().get("id").getAsString();
 
             ItemData itemData;
             if (identifier.equals("minecraft:air")) {
@@ -98,32 +102,33 @@ public class CreativeItemRegistryPopulator {
         GeyserBootstrap bootstrap = GeyserImpl.getInstance().getBootstrap();
 
         // Load creative items
-        JsonNode creativeItemEntries;
+        JsonArray creativeItemEntries;
         try (InputStream stream = bootstrap.getResourceOrThrow(String.format("bedrock/creative_items.%s.json", palette.version()))) {
-            creativeItemEntries = GeyserImpl.JSON_MAPPER.readTree(stream).get("items");
+            creativeItemEntries = JsonUtils.fromJson(stream).getAsJsonArray("items");
         } catch (Exception e) {
             throw new AssertionError("Unable to load creative items", e);
         }
 
         BlockMappings blockMappings = BlockRegistries.BLOCKS.forVersion(palette.protocolVersion());
-        for (JsonNode itemNode : creativeItemEntries) {
-            ItemData.Builder itemBuilder = createItemData(itemNode, items, blockMappings, definitions);
+        for (JsonElement itemNode : creativeItemEntries) {
+            ItemData.Builder itemBuilder = createItemData((JsonObject) itemNode, items, blockMappings, definitions);
             if (itemBuilder == null) {
                 continue;
             }
 
-            int groupId = itemNode.get("groupId") != null ? itemNode.get("groupId").asInt() : 0;
+            var groupIdElement = itemNode.getAsJsonObject().get("groupId");
+            int groupId = groupIdElement != null ? groupIdElement.getAsInt() : 0;
 
             itemConsumer.accept(itemBuilder, groupId);
         }
     }
 
-    private static ItemData.@Nullable Builder createItemData(JsonNode itemNode, Map<String, GeyserMappingItem> items, BlockMappings blockMappings, Map<String, ItemDefinition> definitions) {
+    private static ItemData.@Nullable Builder createItemData(JsonObject itemNode, Map<String, GeyserMappingItem> items, BlockMappings blockMappings, Map<String, ItemDefinition> definitions) {
         int count = 1;
         int damage = 0;
         NbtMap tag = null;
 
-        String identifier = itemNode.get("id").textValue();
+        String identifier = itemNode.get("id").getAsString();
         for (BiPredicate<String, Integer> predicate : JAVA_ONLY_ITEM_FILTER) {
             if (predicate.test(identifier, damage)) {
                 return null;
@@ -147,20 +152,20 @@ public class CreativeItemRegistryPopulator {
             }
         }
 
-        JsonNode damageNode = itemNode.get("damage");
+        JsonElement damageNode = itemNode.get("damage");
         if (damageNode != null) {
-            damage = damageNode.asInt();
+            damage = damageNode.getAsInt();
         }
 
-        JsonNode countNode = itemNode.get("count");
+        JsonElement countNode = itemNode.get("count");
         if (countNode != null) {
-            count = countNode.asInt();
+            count = countNode.getAsInt();
         }
 
         GeyserBedrockBlock blockDefinition = null;
-        JsonNode blockStateNode;
+        JsonElement blockStateNode;
         if ((blockStateNode = itemNode.get("block_state_b64")) != null) {
-            byte[] bytes = Base64.getDecoder().decode(blockStateNode.asText());
+            byte[] bytes = Base64.getDecoder().decode(blockStateNode.getAsString());
             ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
             try {
                 NbtMap stateTag = (NbtMap) NbtUtils.createReaderLE(bais).readTag();
@@ -179,9 +184,9 @@ public class CreativeItemRegistryPopulator {
             }
         }
 
-        JsonNode nbtNode = itemNode.get("nbt_b64");
+        JsonElement nbtNode = itemNode.get("nbt_b64");
         if (nbtNode != null) {
-            byte[] bytes = Base64.getDecoder().decode(nbtNode.asText());
+            byte[] bytes = Base64.getDecoder().decode(nbtNode.getAsString());
             ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
             try {
                 tag = (NbtMap) NbtUtils.createReaderLE(bais).readTag();

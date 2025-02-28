@@ -25,8 +25,8 @@
 
 package org.geysermc.geyser.registry.loader;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import org.geysermc.mcprotocollib.protocol.data.game.level.event.LevelEvent;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import org.cloudburstmc.protocol.bedrock.data.LevelEventType;
 import org.geysermc.geyser.GeyserImpl;
@@ -34,8 +34,8 @@ import org.geysermc.geyser.translator.level.event.LevelEventTranslator;
 import org.geysermc.geyser.translator.level.event.PlaySoundEventTranslator;
 import org.geysermc.geyser.translator.level.event.SoundEventEventTranslator;
 import org.geysermc.geyser.translator.level.event.SoundLevelEventTranslator;
+import org.geysermc.mcprotocollib.protocol.data.game.level.event.LevelEvent;
 
-import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -47,37 +47,36 @@ public class SoundEventsRegistryLoader extends EffectRegistryLoader<Map<LevelEve
     public Map<LevelEvent, LevelEventTranslator> load(String input) {
         this.loadFile(input);
 
-        Iterator<Map.Entry<String, JsonNode>> effectsIterator = this.get(input).fields();
+        JsonObject effectsJson = this.loadFile(input);
         Map<LevelEvent, LevelEventTranslator> soundEffects = new Object2ObjectOpenHashMap<>();
-        while (effectsIterator.hasNext()) {
-            Map.Entry<String, JsonNode> entry = effectsIterator.next();
-            JsonNode node = entry.getValue();
+        for (Map.Entry<String, JsonElement> entry : effectsJson.entrySet()) {
+            JsonObject node = entry.getValue().getAsJsonObject();
             try {
-                String type = node.get("type").asText();
+                String type = node.get("type").getAsString();
                 LevelEvent javaEffect = null;
                 LevelEventTranslator transformer = null;
                 switch (type) {
                     case "soundLevel" -> {
                         javaEffect = org.geysermc.mcprotocollib.protocol.data.game.level.event.LevelEventType.valueOf(entry.getKey());
-                        LevelEventType levelEventType = org.cloudburstmc.protocol.bedrock.data.LevelEvent.valueOf(node.get("name").asText());
-                        int data = node.has("data") ? node.get("data").intValue() : 0;
+                        LevelEventType levelEventType = org.cloudburstmc.protocol.bedrock.data.LevelEvent.valueOf(node.get("name").getAsString());
+                        int data = node.has("data") ? node.get("data").getAsInt() : 0;
                         transformer = new SoundLevelEventTranslator(levelEventType, data);
                     }
                     case "soundEvent" -> {
                         javaEffect = org.geysermc.mcprotocollib.protocol.data.game.level.event.LevelEventType.valueOf(entry.getKey());
-                        org.cloudburstmc.protocol.bedrock.data.SoundEvent soundEvent = org.cloudburstmc.protocol.bedrock.data.SoundEvent.valueOf(node.get("name").asText());
-                        String identifier = node.has("identifier") ? node.get("identifier").asText() : "";
-                        int extraData = node.has("extraData") ? node.get("extraData").intValue() : -1;
+                        org.cloudburstmc.protocol.bedrock.data.SoundEvent soundEvent = org.cloudburstmc.protocol.bedrock.data.SoundEvent.valueOf(node.get("name").getAsString());
+                        String identifier = node.has("identifier") ? node.get("identifier").getAsString() : "";
+                        int extraData = node.has("extraData") ? node.get("extraData").getAsInt() : -1;
                         transformer = new SoundEventEventTranslator(soundEvent, identifier, extraData);
                     }
                     case "playSound" -> {
                         javaEffect = org.geysermc.mcprotocollib.protocol.data.game.level.event.LevelEventType.valueOf(entry.getKey());
-                        String name = node.get("name").asText();
-                        float volume = node.has("volume") ? node.get("volume").floatValue() : 1.0f;
-                        boolean pitchSub = node.has("pitch_sub") && node.get("pitch_sub").booleanValue();
-                        float pitchMul = node.has("pitch_mul") ? node.get("pitch_mul").floatValue() : 1.0f;
-                        float pitchAdd = node.has("pitch_add") ? node.get("pitch_add").floatValue() : 0.0f;
-                        boolean relative = !node.has("relative") || node.get("relative").booleanValue();
+                        String name = node.get("name").getAsString();
+                        float volume = node.has("volume") ? node.get("volume").getAsFloat() : 1.0f;
+                        boolean pitchSub = node.has("pitch_sub") && node.get("pitch_sub").getAsBoolean();
+                        float pitchMul = node.has("pitch_mul") ? node.get("pitch_mul").getAsFloat() : 1.0f;
+                        float pitchAdd = node.has("pitch_add") ? node.get("pitch_add").getAsFloat() : 0.0f;
+                        boolean relative = !node.has("relative") || node.get("relative").getAsBoolean();
                         transformer = new PlaySoundEventTranslator(name, volume, pitchSub, pitchMul, pitchAdd, relative);
                     }
                 }

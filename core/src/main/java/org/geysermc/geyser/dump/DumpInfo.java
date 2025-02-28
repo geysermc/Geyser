@@ -25,28 +25,36 @@
 
 package org.geysermc.geyser.dump;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.hash.Hashing;
 import com.google.common.io.ByteSource;
 import com.google.common.io.Files;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonNull;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.annotations.SerializedName;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import lombok.Getter;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.cloudburstmc.protocol.bedrock.codec.BedrockCodec;
 import org.geysermc.floodgate.util.DeviceOs;
-import org.geysermc.floodgate.util.FloodgateInfoHolder;
 import org.geysermc.geyser.GeyserImpl;
 import org.geysermc.geyser.api.GeyserApi;
 import org.geysermc.geyser.api.extension.Extension;
-import org.geysermc.geyser.configuration.GeyserConfiguration;
 import org.geysermc.geyser.network.GameProtocol;
 import org.geysermc.geyser.session.GeyserSession;
 import org.geysermc.geyser.text.AsteriskSerializer;
 import org.geysermc.geyser.util.CpuUtils;
 import org.geysermc.geyser.util.FileUtils;
 import org.geysermc.geyser.util.WebUtils;
+import org.spongepowered.configurate.CommentedConfigurationNode;
+import org.spongepowered.configurate.ConfigurationNode;
+import org.spongepowered.configurate.ConfigurationOptions;
+import org.spongepowered.configurate.interfaces.InterfaceDefaultOptions;
+import org.spongepowered.configurate.serialize.SerializationException;
 
 import java.io.File;
 import java.io.IOException;
@@ -56,12 +64,15 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Getter
 public class DumpInfo {
-    @JsonIgnore
     private static final long MEGABYTE = 1024L * 1024L;
 
     private final DumpInfo.VersionInfo versionInfo;
@@ -70,8 +81,8 @@ public class DumpInfo {
     private final Locale systemLocale;
     private final String systemEncoding;
     private final GitInfo gitInfo;
-    private final GeyserConfiguration config;
-    private final Floodgate floodgate;
+    private Object config;
+    private Object advancedConfig;
     private final Object2IntMap<DeviceOs> userPlatforms;
     private final int connectionAttempts;
     private final HashInfo hashInfo;
@@ -91,8 +102,25 @@ public class DumpInfo {
 
         this.gitInfo = new GitInfo(GeyserImpl.BUILD_NUMBER, GeyserImpl.COMMIT.substring(0, 7), GeyserImpl.COMMIT, GeyserImpl.BRANCH, GeyserImpl.REPOSITORY);
 
-        this.config = geyser.getConfig();
-        this.floodgate = new Floodgate();
+        try {
+            // Workaround for JsonAdapter not being allowed on methods
+            ConfigurationOptions options = InterfaceDefaultOptions.addTo(ConfigurationOptions.defaults(), builder ->
+                    builder.addProcessor(AsteriskSerializer.Asterisk.class, String.class, AsteriskSerializer.CONFIGURATE_SERIALIZER))
+                .shouldCopyDefaults(false);
+
+            ConfigurationNode configNode = CommentedConfigurationNode.root(options);
+            configNode.set(geyser.config());
+            this.config = toGson(configNode);
+
+            ConfigurationNode advancedConfigNode = CommentedConfigurationNode.root(options);
+            advancedConfigNode.set(geyser.config().advanced());
+            this.advancedConfig = toGson(advancedConfigNode);
+        } catch (SerializationException e) {
+            e.printStackTrace();
+            if (geyser.config().debugMode()) {
+                e.printStackTrace();
+            }
+        }
 
         String md5Hash = "unknown";
         String sha256Hash = "unknown";
@@ -107,7 +135,7 @@ public class DumpInfo {
             //noinspection UnstableApiUsage
             sha256Hash = byteSource.hash(Hashing.sha256()).toString();
         } catch (Exception e) {
-            if (this.config.isDebugMode()) {
+            if (geyser.config().debugMode()) {
                 e.printStackTrace();
             }
         }
@@ -138,6 +166,36 @@ public class DumpInfo {
         this.extensionInfo = new ArrayList<>();
         for (Extension extension : GeyserApi.api().extensionManager().extensions()) {
             this.extensionInfo.add(new ExtensionInfo(extension.isEnabled(), extension.name(), extension.description().version(), extension.description().apiVersion(), extension.description().main(), extension.description().authors()));
+        }
+    }
+
+    private JsonElement toGson(ConfigurationNode node) {
+        if (node.isMap()) {
+            JsonObject object = new JsonObject();
+            node.childrenMap().forEach((key, value) -> {
+                JsonElement json = toGson(value);
+                object.add(key.toString(), json);
+            });
+            return object;
+        } else if (node.isList()) {
+            JsonArray array = new JsonArray();
+            node.childrenList().forEach(childNode -> array.add(toGson(childNode)));
+            return array;
+        } else {
+            return convertRawScalar(node);
+        }
+    }
+
+    private JsonElement convertRawScalar(ConfigurationNode node) {
+        final @Nullable Object value = node.rawScalar();
+        if (value == null) {
+            return JsonNull.INSTANCE;
+        } else if (value instanceof Number n) {
+            return new JsonPrimitive(n);
+        } else if (value instanceof Boolean b) {
+            return new JsonPrimitive(b);
+        } else {
+            return new JsonPrimitive(value.toString());
         }
     }
 
@@ -233,17 +291,6 @@ public class DumpInfo {
     }
 
     @Getter
-    public static class Floodgate {
-        private final Properties gitInfo;
-        private final Object config;
-
-        Floodgate() {
-            this.gitInfo = FloodgateInfoHolder.getGitProperties();
-            this.config = FloodgateInfoHolder.getConfig();
-        }
-    }
-
-    @Getter
     public static class LogsInfo {
         private String link;
 
@@ -252,9 +299,9 @@ public class DumpInfo {
                 Map<String, String> fields = new HashMap<>();
                 fields.put("content", FileUtils.readAllLines(geyser.getBootstrap().getLogsPath()).collect(Collectors.joining("\n")));
 
-                JsonNode logData = GeyserImpl.JSON_MAPPER.readTree(WebUtils.postForm("https://api.mclo.gs/1/log", fields));
+                JsonObject logData = new JsonParser().parse(WebUtils.postForm("https://api.mclo.gs/1/log", fields)).getAsJsonObject();
 
-                this.link = logData.get("url").textValue();
+                this.link = logData.get("url").getAsString();
             } catch (IOException ignored) { }
         }
     }
@@ -282,7 +329,7 @@ public class DumpInfo {
     public record ExtensionInfo(boolean enabled, String name, String version, String apiVersion, String main, List<String> authors) {
     }
 
-    public record GitInfo(String buildNumber, @JsonProperty("git.commit.id.abbrev") String commitHashAbbrev, @JsonProperty("git.commit.id") String commitHash,
-                              @JsonProperty("git.branch") String branchName, @JsonProperty("git.remote.origin.url") String originUrl) {
+    public record GitInfo(String buildNumber, @SerializedName("git.commit.id.abbrev") String commitHashAbbrev, @SerializedName("git.commit.id") String commitHash,
+                              @SerializedName("git.branch") String branchName, @SerializedName("git.remote.origin.url") String originUrl) {
     }
 }

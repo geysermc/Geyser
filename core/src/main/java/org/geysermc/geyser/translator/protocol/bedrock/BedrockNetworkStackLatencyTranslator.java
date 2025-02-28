@@ -47,7 +47,7 @@ public class BedrockNetworkStackLatencyTranslator extends PacketTranslator<Netwo
     public void translate(GeyserSession session, NetworkStackLatencyPacket packet) {
         // negative timestamps are used as hack to fix the url image loading bug
         if (packet.getTimestamp() >= 0) {
-            if (session.getGeyser().getConfig().isForwardPlayerPing()) {
+            if (session.getGeyser().config().forwardPlayerPing()) {
                 // use our cached value because
                 // a) bedrock can be inaccurate with the value returned
                 // b) playstation replies with a different magnitude than other platforms

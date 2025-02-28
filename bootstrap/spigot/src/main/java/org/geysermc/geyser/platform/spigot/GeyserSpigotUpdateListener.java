@@ -38,7 +38,7 @@ public final class GeyserSpigotUpdateListener implements Listener {
 
     @EventHandler
     public void onPlayerJoin(final PlayerJoinEvent event) {
-        if (GeyserImpl.getInstance().getConfig().isNotifyOnNewBedrockUpdate()) {
+        if (GeyserImpl.getInstance().config().notifyOnNewBedrockUpdate()) {
             final Player player = event.getPlayer();
             if (player.hasPermission(Permissions.CHECK_UPDATE)) {
                 VersionCheckUtils.checkForGeyserUpdate(() -> new SpigotCommandSource(player));

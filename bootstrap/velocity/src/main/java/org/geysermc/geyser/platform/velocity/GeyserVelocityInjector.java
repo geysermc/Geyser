@@ -27,7 +27,12 @@ package org.geysermc.geyser.platform.velocity;
 
 import com.velocitypowered.api.proxy.ProxyServer;
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.*;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.WriteBufferWaterMark;
 import io.netty.channel.local.LocalAddress;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.geysermc.geyser.GeyserBootstrap;
@@ -80,7 +85,7 @@ public class GeyserVelocityInjector extends GeyserInjector {
                     protected void initChannel(@NonNull Channel ch) throws Exception {
                         initChannel.invoke(channelInitializer, ch);
 
-                        if (bootstrap.getGeyserConfig().isDisableCompression() && GeyserVelocityCompressionDisabler.ENABLED) {
+                        if (bootstrap.config().advanced().disableCompression() && GeyserVelocityCompressionDisabler.ENABLED) {
                             ch.pipeline().addAfter("minecraft-encoder", "geyser-compression-disabler",
                                     new GeyserVelocityCompressionDisabler());
                         }

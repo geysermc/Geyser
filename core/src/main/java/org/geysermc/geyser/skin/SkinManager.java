@@ -25,7 +25,8 @@
 
 package org.geysermc.geyser.skin;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.cloudburstmc.nbt.NbtMap;
 import org.cloudburstmc.nbt.NbtType;
@@ -43,6 +44,7 @@ import org.geysermc.geyser.entity.type.player.SkullPlayerEntity;
 import org.geysermc.geyser.session.GeyserSession;
 import org.geysermc.geyser.session.auth.BedrockClientData;
 import org.geysermc.geyser.text.GeyserLocale;
+import org.geysermc.geyser.util.JsonUtils;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -199,7 +201,7 @@ public class SkinManager {
 
     public static void handleBedrockSkin(PlayerEntity playerEntity, BedrockClientData clientData) {
         GeyserImpl geyser = GeyserImpl.getInstance();
-        if (geyser.getConfig().isDebugMode()) {
+        if (geyser.config().debugMode()) {
             geyser.getLogger().info(GeyserLocale.getLocaleStringLog("geyser.skin.bedrock.register", playerEntity.getUsername(), playerEntity.getUuid()));
         }
 
@@ -213,7 +215,7 @@ public class SkinManager {
             if (skinBytes.length <= (128 * 128 * 4) && !clientData.isPersonaSkin()) {
                 SkinProvider.storeBedrockSkin(playerEntity.getUuid(), clientData.getSkinId(), skinBytes);
                 SkinProvider.storeBedrockGeometry(playerEntity.getUuid(), geometryNameBytes, geometryBytes);
-            } else if (geyser.getConfig().isDebugMode()) {
+            } else if (geyser.config().debugMode()) {
                 geyser.getLogger().info(GeyserLocale.getLocaleStringLog("geyser.skin.bedrock.fail", playerEntity.getUsername()));
                 geyser.getLogger().debug("The size of '" + playerEntity.getUsername() + "' skin is: " + clientData.getSkinImageWidth() + "x" + clientData.getSkinImageHeight());
             }
@@ -251,7 +253,7 @@ public class SkinManager {
                 return loadFromJson(skinDataValue);
             } catch (IOException e) {
                 GeyserImpl.getInstance().getLogger().debug("Something went wrong while processing skin for tag " + tag);
-                if (GeyserImpl.getInstance().getConfig().isDebugMode()) {
+                if (GeyserImpl.getInstance().config().debugMode()) {
                     e.printStackTrace();
                 }
                 return null;
@@ -279,7 +281,7 @@ public class SkinManager {
                 } else {
                     GeyserImpl.getInstance().getLogger().debug("Something went wrong while processing skin for " + entity.getUsername() + " with Value: " + texturesProperty);
                 }
-                if (GeyserImpl.getInstance().getConfig().isDebugMode()) {
+                if (GeyserImpl.getInstance().config().debugMode()) {
                     exception.printStackTrace();
                 }
             }
@@ -287,29 +289,25 @@ public class SkinManager {
         }
 
         public static @Nullable GameProfileData loadFromJson(String encodedJson) throws IOException, IllegalArgumentException {
-            JsonNode skinObject;
+            JsonObject skinObject;
             try {
-                skinObject = GeyserImpl.JSON_MAPPER.readTree(new String(Base64.getDecoder().decode(encodedJson), StandardCharsets.UTF_8));
+                skinObject = JsonUtils.parseJson(new String(Base64.getDecoder().decode(encodedJson), StandardCharsets.UTF_8));
             } catch (IllegalArgumentException e) {
                 GeyserImpl.getInstance().getLogger().debug("Invalid base64 encoded skin entry: " + encodedJson);
                 return null;
             }
 
-            JsonNode textures = skinObject.get("textures");
-
-            if (textures == null) {
+            if (!(skinObject.get("textures") instanceof JsonObject textures)) {
                 return null;
             }
 
-            JsonNode skinTexture = textures.get("SKIN");
-            if (skinTexture == null) {
+            if (!(textures.get("SKIN") instanceof JsonObject skinTexture)) {
                 return null;
             }
 
             String skinUrl;
-            JsonNode skinUrlNode = skinTexture.get("url");
-            if (skinUrlNode != null && skinUrlNode.isTextual()) {
-                skinUrl = skinUrlNode.asText().replace("http://", "https://");
+            if (skinTexture.get("url") instanceof JsonPrimitive skinUrlNode && skinUrlNode.isString()) {
+                skinUrl = skinUrlNode.getAsString().replace("http://", "https://");
             } else {
                 return null;
             }
@@ -326,11 +324,9 @@ public class SkinManager {
             boolean isAlex = skinTexture.has("metadata");
 
             String capeUrl = null;
-            JsonNode capeTexture = textures.get("CAPE");
-            if (capeTexture != null) {
-                JsonNode capeUrlNode = capeTexture.get("url");
-                if (capeUrlNode != null && capeUrlNode.isTextual()) {
-                    capeUrl = capeUrlNode.asText().replace("http://", "https://");
+            if (textures.get("CAPE") instanceof JsonObject capeTexture) {
+                if (capeTexture.get("url") instanceof JsonPrimitive capeUrlNode && capeUrlNode.isString()) {
+                    capeUrl = capeUrlNode.getAsString().replace("http://", "https://");
                 }
             }
 

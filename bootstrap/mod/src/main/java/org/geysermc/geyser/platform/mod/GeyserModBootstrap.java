@@ -31,11 +31,14 @@ import lombok.Setter;
 import net.minecraft.server.MinecraftServer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.geysermc.geyser.FloodgateKeyLoader;
 import org.geysermc.geyser.GeyserBootstrap;
 import org.geysermc.geyser.GeyserImpl;
 import org.geysermc.geyser.GeyserLogger;
+import org.geysermc.geyser.api.util.PlatformType;
 import org.geysermc.geyser.command.CommandRegistry;
-import org.geysermc.geyser.configuration.GeyserConfiguration;
+import org.geysermc.geyser.configuration.ConfigLoader;
+import org.geysermc.geyser.configuration.GeyserPluginConfig;
 import org.geysermc.geyser.dump.BootstrapDumpInfo;
 import org.geysermc.geyser.level.WorldManager;
 import org.geysermc.geyser.ping.GeyserLegacyPingPassthrough;
@@ -43,14 +46,10 @@ import org.geysermc.geyser.ping.IGeyserPingPassthrough;
 import org.geysermc.geyser.platform.mod.platform.GeyserModPlatform;
 import org.geysermc.geyser.platform.mod.world.GeyserModWorldManager;
 import org.geysermc.geyser.text.GeyserLocale;
-import org.geysermc.geyser.util.FileUtils;
 
-import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.SocketAddress;
 import java.nio.file.Path;
-import java.util.UUID;
 
 @RequiredArgsConstructor
 public abstract class GeyserModBootstrap implements GeyserBootstrap {
@@ -69,7 +68,7 @@ public abstract class GeyserModBootstrap implements GeyserBootstrap {
 
     @Setter
     private CommandRegistry commandRegistry;
-    private GeyserModConfiguration geyserConfig;
+    private GeyserPluginConfig geyserConfig;
     private GeyserModInjector geyserInjector;
     private final GeyserModLogger geyserLogger = new GeyserModLogger();
     private IGeyserPingPassthrough geyserPingPassthrough;
@@ -83,9 +82,7 @@ public abstract class GeyserModBootstrap implements GeyserBootstrap {
         if (!loadConfig()) {
             return;
         }
-        this.geyserLogger.setDebug(geyserConfig.isDebugMode());
-        GeyserConfiguration.checkGeyserConfiguration(geyserConfig, geyserLogger);
-        this.geyser = GeyserImpl.load(this.platform.platformType(), this);
+        this.geyser = GeyserImpl.load(this);
     }
 
     public void onGeyserEnable() {
@@ -98,13 +95,11 @@ public abstract class GeyserModBootstrap implements GeyserBootstrap {
             if (!loadConfig()) {
                 return;
             }
-            this.geyserLogger.setDebug(geyserConfig.isDebugMode());
-            GeyserConfiguration.checkGeyserConfiguration(geyserConfig, geyserLogger);
         }
 
         GeyserImpl.start();
 
-        if (geyserConfig.isLegacyPingPassthrough()) {
+        if (!geyserConfig.integratedPingPassthrough()) {
             this.geyserPingPassthrough = GeyserLegacyPingPassthrough.init(geyser);
         } else {
             this.geyserPingPassthrough = new ModPingPassthrough(server, geyserLogger);
@@ -145,7 +140,12 @@ public abstract class GeyserModBootstrap implements GeyserBootstrap {
     }
 
     @Override
-    public GeyserModConfiguration getGeyserConfig() {
+    public PlatformType platformType() {
+        return this.platform.platformType();
+    }
+
+    @Override
+    public GeyserPluginConfig config() {
         return geyserConfig;
     }
 
@@ -199,12 +199,7 @@ public abstract class GeyserModBootstrap implements GeyserBootstrap {
 
     @Override
     public int getServerPort() {
-        if (isServer()) {
-            return ((GeyserServerPortGetter) server).geyser$getServerPort();
-        } else {
-            // Set in the IntegratedServerMixin
-            return geyserConfig.getRemote().port();
-        }
+        return ((GeyserServerPortGetter) server).geyser$getServerPort();
     }
 
     public abstract boolean isServer();
@@ -212,6 +207,17 @@ public abstract class GeyserModBootstrap implements GeyserBootstrap {
     @Override
     public boolean testFloodgatePluginPresent() {
         return this.platform.testFloodgatePluginPresent(this);
+    }
+
+    private Path floodgateKeyPath;
+
+    public void loadFloodgate(Path floodgateDataFolder) {
+        floodgateKeyPath = FloodgateKeyLoader.getKeyPath(geyserConfig, floodgateDataFolder, dataFolder, geyserLogger);
+    }
+
+    @Override
+    public Path getFloodgateKeyPath() {
+        return floodgateKeyPath;
     }
 
     @Nullable
@@ -222,20 +228,7 @@ public abstract class GeyserModBootstrap implements GeyserBootstrap {
 
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     private boolean loadConfig() {
-        try {
-            if (!dataFolder.toFile().exists()) {
-                //noinspection ResultOfMethodCallIgnored
-                dataFolder.toFile().mkdir();
-            }
-
-            File configFile = FileUtils.fileOrCopiedFromResource(dataFolder.resolve("config.yml").toFile(), "config.yml",
-                    (x) -> x.replaceAll("generateduuid", UUID.randomUUID().toString()), this);
-            this.geyserConfig = FileUtils.loadConfig(configFile, GeyserModConfiguration.class);
-            return true;
-        } catch (IOException ex) {
-            geyserLogger.error(GeyserLocale.getLocaleStringLog("geyser.config.failed"), ex);
-            ex.printStackTrace();
-            return false;
-        }
+        this.geyserConfig = new ConfigLoader(this).createFolder().load(GeyserPluginConfig.class);
+        return this.geyserConfig != null;
     }
 }

@@ -12,8 +12,9 @@ platformRelocate("net.kyori")
 platformRelocate("org.yaml")
 platformRelocate("it.unimi.dsi.fastutil")
 platformRelocate("org.cloudburstmc.netty")
+platformRelocate("org.bstats")
 platformRelocate("org.incendo")
-platformRelocate("io.leangen.geantyref") // provided by cloud, should also be relocated
+platformRelocate("io.leangen.geantyref") // provided by cloud and Configurate, should also be relocated
 
 // These dependencies are already present on the platform
 provided(libs.viaproxy)

@@ -100,7 +100,10 @@ public interface GeyserLogger extends GeyserCommandSource {
      * @param object the object to log
      */
     default void debug(@Nullable Object object) {
-        debug(String.valueOf(object));
+        if (isDebug()) {
+            // Don't create String object by default
+            info(String.valueOf(object));
+        }
     }
 
     /**

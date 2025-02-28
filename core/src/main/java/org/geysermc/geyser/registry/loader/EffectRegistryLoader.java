@@ -25,12 +25,12 @@
 
 package org.geysermc.geyser.registry.loader;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import org.geysermc.geyser.GeyserImpl;
 
 import java.io.InputStream;
-import java.util.Map;
-import java.util.WeakHashMap;
+import java.io.InputStreamReader;
 
 /**
  * An abstract registry loader for loading effects from a resource path.
@@ -38,21 +38,12 @@ import java.util.WeakHashMap;
  * @param <T> the value
  */
 public abstract class EffectRegistryLoader<T> implements RegistryLoader<String, T> {
-    private static final Map<String, JsonNode> loadedFiles = new WeakHashMap<>();
 
-    public void loadFile(String input) {
-        if (!loadedFiles.containsKey(input)) {
-            JsonNode effects;
-            try (InputStream stream = GeyserImpl.getInstance().getBootstrap().getResourceOrThrow(input)) {
-                effects = GeyserImpl.JSON_MAPPER.readTree(stream);
-            } catch (Exception e) {
-                throw new AssertionError("Unable to load registrations for " + input, e);
-            }
-            loadedFiles.put(input, effects);
+    public JsonObject loadFile(String input) {
+        try (InputStream stream = GeyserImpl.getInstance().getBootstrap().getResourceOrThrow(input)) {
+            return new JsonParser().parse(new InputStreamReader(stream)).getAsJsonObject();
+        } catch (Exception e) {
+            throw new AssertionError("Unable to load registrations for " + input, e);
         }
-    }
-
-    public JsonNode get(String input) {
-        return loadedFiles.get(input);
     }
 }

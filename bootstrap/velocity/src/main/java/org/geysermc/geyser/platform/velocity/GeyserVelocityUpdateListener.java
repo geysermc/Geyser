@@ -37,7 +37,7 @@ public final class GeyserVelocityUpdateListener {
 
     @Subscribe
     public void onPlayerJoin(PostLoginEvent event) {
-        if (GeyserImpl.getInstance().getConfig().isNotifyOnNewBedrockUpdate()) {
+        if (GeyserImpl.getInstance().config().notifyOnNewBedrockUpdate()) {
             final Player player = event.getPlayer();
             if (player.hasPermission(Permissions.CHECK_UPDATE)) {
                 VersionCheckUtils.checkForGeyserUpdate(() -> new VelocityCommandSource(player));

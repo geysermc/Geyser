@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2022 GeyserMC. http://geysermc.org
+ * Copyright (c) 2024 GeyserMC. http://geysermc.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,28 +23,26 @@
  * @link https://github.com/GeyserMC/Geyser
  */
 
-package org.geysermc.geyser.platform.bungeecord;
+package org.geysermc.geyser.util.metrics;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import lombok.Getter;
-import net.md_5.bungee.api.plugin.Plugin;
-import org.geysermc.geyser.FloodgateKeyLoader;
-import org.geysermc.geyser.configuration.GeyserJacksonConfiguration;
+import org.geysermc.geyser.GeyserImpl;
+import org.geysermc.geyser.api.util.PlatformType;
 
-import java.nio.file.Path;
+public interface MetricsPlatform {
+    boolean enabled();
 
-@Getter
-@JsonIgnoreProperties(ignoreUnknown = true)
-public final class GeyserBungeeConfiguration extends GeyserJacksonConfiguration {
-    @JsonIgnore
-    private Path floodgateKeyPath;
+    String serverUuid();
 
-    public void loadFloodgate(GeyserBungeePlugin plugin) {
-        Plugin floodgate = plugin.getProxy().getPluginManager().getPlugin("floodgate");
-        Path geyserDataFolder = plugin.getDataFolder().toPath();
-        Path floodgateDataFolder = floodgate != null ? floodgate.getDataFolder().toPath() : null;
+    boolean logFailedRequests();
 
-        floodgateKeyPath = FloodgateKeyLoader.getKeyPath(this, floodgateDataFolder, geyserDataFolder, plugin.getGeyserLogger());
+    boolean logSentData();
+
+    boolean logResponseStatusText();
+
+    default boolean disableRelocateCheck() {
+        PlatformType platformType = GeyserImpl.getInstance().platformType();
+        return platformType == PlatformType.FABRIC ||
+            platformType == PlatformType.NEOFORGE ||
+            platformType == PlatformType.STANDALONE;
     }
 }

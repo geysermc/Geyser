@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2022 GeyserMC. http://geysermc.org
+ * Copyright (c) 2024 GeyserMC. http://geysermc.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,26 +25,42 @@
 
 package org.geysermc.geyser.configuration;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
+import org.spongepowered.configurate.interfaces.meta.Exclude;
+import org.spongepowered.configurate.interfaces.meta.Field;
+import org.spongepowered.configurate.objectmapping.ConfigSerializable;
+import org.spongepowered.configurate.objectmapping.meta.Comment;
 
-import java.io.IOException;
+@ConfigSerializable
+public interface GeyserPluginConfig extends GeyserConfig {
+    @Override
+    IntegratedJavaConfig java();
 
-public enum EmoteOffhandWorkaroundOption {
-    NO_EMOTES,
-    EMOTES_AND_OFFHAND,
-    DISABLED;
-
-    public static class Deserializer extends JsonDeserializer<EmoteOffhandWorkaroundOption> {
+    @ConfigSerializable
+    interface IntegratedJavaConfig extends JavaConfig {
         @Override
-        public EmoteOffhandWorkaroundOption deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
-            String value = p.getValueAsString();
-            return switch (value) {
-                case "no-emotes" -> NO_EMOTES;
-                case "emotes-and-offhand" -> EMOTES_AND_OFFHAND;
-                default -> DISABLED;
-            };
+        @Field
+        String address();
+
+        @Override
+        void address(String address);
+
+        @Override
+        @Field
+        int port();
+
+        @Override
+        void port(int port);
+
+        @Override
+        @Exclude
+        default boolean forwardHostname() {
+            return true; // No need to worry about suspicious behavior flagging the server.
         }
     }
+
+    @Comment("""
+            How often to ping the Java server to refresh MOTD and player count, in seconds.
+            Only relevant if integrated-ping-passthrough is disabled.""")
+    @Override
+    int pingPassthroughInterval();
 }

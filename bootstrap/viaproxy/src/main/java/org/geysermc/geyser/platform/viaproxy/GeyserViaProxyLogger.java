@@ -26,6 +26,7 @@ package org.geysermc.geyser.platform.viaproxy;
 
 import net.raphimc.viaproxy.cli.ConsoleFormatter;
 import org.apache.logging.log4j.Logger;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.geysermc.geyser.GeyserLogger;
 import org.geysermc.geyser.command.GeyserCommandSource;
 
@@ -72,6 +73,13 @@ public class GeyserViaProxyLogger implements GeyserLogger, GeyserCommandSource {
     public void debug(String message) {
         if (this.debug) {
             this.logger.debug(ConsoleFormatter.convert(message));
+        }
+    }
+
+    @Override
+    public void debug(@Nullable Object object) {
+        if (this.debug) {
+            this.logger.debug(ConsoleFormatter.convert(String.valueOf(object)));
         }
     }
 

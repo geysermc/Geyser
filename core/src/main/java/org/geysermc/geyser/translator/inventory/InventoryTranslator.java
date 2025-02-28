@@ -236,7 +236,7 @@ public abstract class InventoryTranslator {
                 case PLACE: {
                     TransferItemStackRequestAction transferAction = (TransferItemStackRequestAction) action;
                     if (!(checkNetId(session, inventory, transferAction.getSource()) && checkNetId(session, inventory, transferAction.getDestination()))) {
-                        if (session.getGeyser().getConfig().isDebugMode()) {
+                        if (session.getGeyser().config().debugMode()) {
                             session.getGeyser().getLogger().error("DEBUG: About to reject TAKE/PLACE request made by " + session.bedrockUsername());
                             dumpStackRequestDetails(session, inventory, transferAction.getSource(), transferAction.getDestination());
                         }
@@ -408,7 +408,7 @@ public abstract class InventoryTranslator {
                     ItemStackRequestSlotData destination = swapAction.getDestination();
 
                     if (!(checkNetId(session, inventory, source) && checkNetId(session, inventory, destination))) {
-                        if (session.getGeyser().getConfig().isDebugMode()) {
+                        if (session.getGeyser().config().debugMode()) {
                             session.getGeyser().getLogger().error("DEBUG: About to reject SWAP request made by " + session.bedrockUsername());
                             dumpStackRequestDetails(session, inventory, source, destination);
                         }
@@ -914,7 +914,7 @@ public abstract class InventoryTranslator {
      *                   as bad (false).
      */
     protected static ItemStackResponse rejectRequest(ItemStackRequest request, boolean throwError) {
-        if (throwError && GeyserImpl.getInstance().getConfig().isDebugMode()) {
+        if (throwError && GeyserImpl.getInstance().config().debugMode()) {
             new Throwable("DEBUGGING: ItemStackRequest rejected " + request.toString()).printStackTrace();
         }
         return new ItemStackResponse(ItemStackResponseStatus.ERROR, request.getRequestId(), Collections.emptyList());

@@ -39,7 +39,7 @@ public class JavaKeepAliveTranslator extends PacketTranslator<ClientboundKeepAli
 
     @Override
     public void translate(GeyserSession session, ClientboundKeepAlivePacket packet) {
-        if (!session.getGeyser().getConfig().isForwardPlayerPing()) {
+        if (!session.getGeyser().config().forwardPlayerPing()) {
             return;
         }
         // We use this once the client replies (see BedrockNetworkStackLatencyTranslator)

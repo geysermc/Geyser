@@ -453,7 +453,7 @@ public final class ClickPlan {
             } else if (action.click.actionType == ContainerActionType.MOVE_TO_HOTBAR_SLOT) {
                 stateIdIncrements = 1;
             } else {
-                if (session.getGeyser().getConfig().isDebugMode()) {
+                if (session.getGeyser().config().debugMode()) {
                     session.getGeyser().getLogger().debug("Not sure how to handle state ID hack in crafting table: " + plan);
                 }
                 stateIdIncrements = 1;

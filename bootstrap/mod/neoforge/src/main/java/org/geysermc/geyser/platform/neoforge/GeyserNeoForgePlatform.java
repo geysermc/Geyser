@@ -73,7 +73,7 @@ public class GeyserNeoForgePlatform implements GeyserModPlatform {
     public boolean testFloodgatePluginPresent(@NonNull GeyserModBootstrap bootstrap) {
         if (ModList.get().isLoaded("floodgate")) {
             Path floodgateDataFolder = FMLPaths.CONFIGDIR.get().resolve("floodgate");
-            bootstrap.getGeyserConfig().loadFloodgate(bootstrap, floodgateDataFolder);
+            bootstrap.loadFloodgate(floodgateDataFolder);
             return true;
         }
         return false;

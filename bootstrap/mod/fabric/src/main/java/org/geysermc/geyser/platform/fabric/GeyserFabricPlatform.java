@@ -73,7 +73,7 @@ public class GeyserFabricPlatform implements GeyserModPlatform {
         Optional<ModContainer> floodgate = FabricLoader.getInstance().getModContainer("floodgate");
         if (floodgate.isPresent()) {
             Path floodgateDataFolder = FabricLoader.getInstance().getConfigDir().resolve("floodgate");
-            bootstrap.getGeyserConfig().loadFloodgate(bootstrap, floodgateDataFolder);
+            bootstrap.loadFloodgate(floodgateDataFolder);
             return true;
         }
 

@@ -204,7 +204,7 @@ public class Entity implements GeyserEntity {
 
         flagsDirty = false;
 
-        if (session.getGeyser().getConfig().isDebugMode() && PRINT_ENTITY_SPAWN_DEBUG) {
+        if (session.getGeyser().config().debugMode() && PRINT_ENTITY_SPAWN_DEBUG) {
             EntityType type = definition.entityType();
             String name = type != null ? type.name() : getClass().getSimpleName();
             session.getGeyser().getLogger().debug("Spawned entity " + name + " at location " + position + " with id " + geyserId + " (java id " + entityId + ")");

@@ -107,7 +107,7 @@ public class CustomBlockRegistryPopulator {
      * @param stage the stage to populate
      */
     public static void populate(Stage stage) {
-        if (!GeyserImpl.getInstance().getConfig().isAddNonBedrockItems()) {
+        if (!GeyserImpl.getInstance().config().addNonBedrockItems()) {
             return;
         }
         

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2022 GeyserMC. http://geysermc.org
+ * Copyright (c) 2024 GeyserMC. http://geysermc.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,28 +25,45 @@
 
 package org.geysermc.geyser.platform.velocity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.velocitypowered.api.plugin.PluginContainer;
-import com.velocitypowered.api.proxy.ProxyServer;
-import lombok.Getter;
-import org.geysermc.geyser.FloodgateKeyLoader;
-import org.geysermc.geyser.configuration.GeyserJacksonConfiguration;
+import org.bstats.config.MetricsConfig;
+import org.geysermc.geyser.util.metrics.MetricsPlatform;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Optional;
 
-@Getter
-@JsonIgnoreProperties(ignoreUnknown = true)
-public final class GeyserVelocityConfiguration extends GeyserJacksonConfiguration {
-    @JsonIgnore
-    private Path floodgateKeyPath;
+public final class VelocityMetrics implements MetricsPlatform {
+    private final MetricsConfig config;
 
-    public void loadFloodgate(GeyserVelocityPlugin plugin, ProxyServer proxyServer, File dataFolder) {
-        Optional<PluginContainer> floodgate = proxyServer.getPluginManager().getPlugin("floodgate");
-        Path floodgateDataPath = floodgate.isPresent() ? Paths.get("plugins/floodgate/") : null;
-        floodgateKeyPath = FloodgateKeyLoader.getKeyPath(this, floodgateDataPath, dataFolder.toPath(), plugin.getGeyserLogger());
+    public VelocityMetrics(Path dataDirectory) throws IOException {
+        // https://github.com/Bastian/bstats-metrics/blob/master/velocity/src/main/java/org/bstats/velocity/Metrics.java
+        File configFile = dataDirectory.getParent().resolve("bStats").resolve("config.txt").toFile();
+        this.config = new MetricsConfig(configFile, true);
+        // No logger message is implemented as Velocity should print its own before we do.
+    }
+
+    @Override
+    public boolean enabled() {
+        return config.isEnabled();
+    }
+
+    @Override
+    public String serverUuid() {
+        return config.getServerUUID();
+    }
+
+    @Override
+    public boolean logFailedRequests() {
+        return config.isLogErrorsEnabled();
+    }
+
+    @Override
+    public boolean logSentData() {
+        return config.isLogSentDataEnabled();
+    }
+
+    @Override
+    public boolean logResponseStatusText() {
+        return config.isLogResponseStatusTextEnabled();
     }
 }

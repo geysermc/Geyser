@@ -1,14 +1,17 @@
 [versions]
 base-api = "1.0.1"
+bstats = "3.1.0"
 cumulus = "1.1.2"
+configurate = "4.2.0-GeyserMC-SNAPSHOT"
 erosion = "1.1-20240521.000109-3"
 events = "1.1-SNAPSHOT"
-jackson = "2.17.0"
+yaml = "2.2"
 fastutil = "8.5.2"
 netty = "4.1.107.Final"
 netty-io-uring = "0.0.25.Final-SNAPSHOT"
 guava = "29.0-jre"
-gson = "2.3.1" # Provided by Spigot 1.8.8
+gson = "2.3.1" # Provided by Spigot 1.8.8 TODO bump to 2.8.1 or similar (Spigot 1.16.5 version) after Merge
+gson-runtime = "2.10.1"
 websocket = "1.5.1"
 protocol-connection = "3.0.0.Beta6-20250212.131009-3"
 protocol-common = "3.0.0.Beta6-20250212.131009-3"
@@ -63,10 +66,11 @@ erosion-bukkit-common = { group = "org.geysermc.erosion", name = "bukkit-common"
 erosion-bukkit-nms = { group = "org.geysermc.erosion", name = "bukkit-nms", version.ref = "erosion" }
 erosion-common = { group = "org.geysermc.erosion", name = "common", version.ref = "erosion" }
 
-jackson-annotations = { group = "com.fasterxml.jackson.core", name = "jackson-annotations", version.ref = "jackson" }
-jackson-databind = { group = "com.fasterxml.jackson.core", name = "jackson-databind", version.ref = "jackson" }
-jackson-core = { group = "com.fasterxml.jackson.core", name = "jackson-core", version.ref = "jackson" }
-jackson-dataformat-yaml = { group = "com.fasterxml.jackson.dataformat", name = "jackson-dataformat-yaml", version.ref = "jackson" }
+yaml = { module = "org.yaml:snakeyaml", version.ref = "yaml" }
+
+configurate-interface-ap = { module = "org.spongepowered:configurate-extra-interface-ap", version.ref = "configurate" }
+configurate-interface = { module = "org.spongepowered:configurate-extra-interface", version.ref = "configurate" }
+configurate-yaml = { module = "org.spongepowered:configurate-yaml", version.ref = "configurate" }
 
 fastutil-int-int-maps = { group = "com.nukkitx.fastutil", name = "fastutil-int-int-maps", version.ref = "fastutil" }
 fastutil-int-long-maps = { group = "com.nukkitx.fastutil", name = "fastutil-int-long-maps", version.ref = "fastutil" }
@@ -126,6 +130,8 @@ checker-qual = { group = "org.checkerframework", name = "checker-qual", version.
 commodore = { group = "me.lucko", name = "commodore", version.ref = "commodore" }
 guava = { group = "com.google.guava", name = "guava", version.ref = "guava" }
 gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
+gson-runtime = { group = "com.google.code.gson", name = "gson", version.ref = "gson-runtime" }
+gson-record-factory = { group = "com.github.Marcono1234", name = "gson-record-type-adapter-factory", version = "0.3.0" }
 junit = { group = "org.junit.jupiter", name = "junit-jupiter", version.ref = "junit" }
 minecraftauth = { group = "net.raphimc", name = "MinecraftAuth", version.ref = "minecraftauth" }
 mcprotocollib = { group = "org.geysermc.mcprotocollib", name = "protocol", version.ref = "mcprotocollib" }
@@ -141,6 +147,8 @@ protocol-codec = { group = "org.cloudburstmc.protocol", name = "bedrock-codec", 
 protocol-connection = { group = "org.cloudburstmc.protocol", name = "bedrock-connection", version.ref = "protocol-connection" }
 
 math = { group = "org.cloudburstmc.math", name = "immutable", version = "2.0" }
+
+bstats = { group = "org.bstats", name = "bstats-base", version.ref = "bstats"}
 
 mockito = { module = "org.mockito:mockito-core", version.ref = "mockito" }
 
@@ -159,7 +167,6 @@ runvelocity = { id = "xyz.jpenilla.run-velocity", version.ref = "runtask" }
 runpaper = { id = "xyz.jpenilla.run-paper", version.ref = "runtask" }
 
 [bundles]
-jackson = [ "jackson-annotations", "jackson-databind", "jackson-dataformat-yaml" ]
 fastutil = [ "fastutil-int-int-maps", "fastutil-int-long-maps", "fastutil-int-byte-maps", "fastutil-int-boolean-maps", "fastutil-object-int-maps", "fastutil-object-object-maps" ]
 adventure = [ "adventure-text-serializer-gson", "adventure-text-serializer-legacy", "adventure-text-serializer-plain" ]
 log4j = [ "log4j-api", "log4j-core", "log4j-slf4j2-impl", "log4j-iostreams", "log4j-jul" ]

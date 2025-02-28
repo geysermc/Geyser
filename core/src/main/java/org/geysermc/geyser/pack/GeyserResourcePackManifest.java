@@ -25,27 +25,29 @@
 
 package org.geysermc.geyser.pack;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
+import com.google.gson.annotations.JsonAdapter;
+import com.google.gson.annotations.SerializedName;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.geysermc.geyser.api.pack.ResourcePackManifest;
 
-import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.UUID;
 
-public record GeyserResourcePackManifest(@JsonProperty("format_version") int formatVersion, Header header, Collection<Module> modules, Collection<Dependency> dependencies) implements ResourcePackManifest {
+public record GeyserResourcePackManifest(@SerializedName("format_version") int formatVersion, Header header, Collection<Module> modules, Collection<Dependency> dependencies) implements ResourcePackManifest {
 
-    public record Header(UUID uuid, Version version, String name, String description, @JsonProperty("min_engine_version") Version minimumSupportedMinecraftVersion) implements ResourcePackManifest.Header { }
+    public record Header(UUID uuid, Version version, String name, String description, @SerializedName("min_engine_version") Version minimumSupportedMinecraftVersion) implements ResourcePackManifest.Header { }
 
     public record Module(UUID uuid, Version version, String type, String description) implements ResourcePackManifest.Module { }
 
     public record Dependency(UUID uuid, Version version) implements ResourcePackManifest.Dependency { }
 
-    @JsonDeserialize(using = Version.VersionDeserializer.class)
+    @JsonAdapter(value = Version.VersionDeserializer.class)
     public record Version(int major, int minor, int patch) implements ResourcePackManifest.Version {
 
         @Override
@@ -53,11 +55,11 @@ public record GeyserResourcePackManifest(@JsonProperty("format_version") int for
             return major + "." + minor + "." + patch;
         }
 
-        public static class VersionDeserializer extends JsonDeserializer<Version> {
+        public static class VersionDeserializer implements JsonDeserializer<Version> {
             @Override
-            public Version deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
-                int[] version = ctxt.readValue(p, int[].class);
-                return new Version(version[0], version[1], version[2]);
+            public Version deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+                JsonArray array = json.getAsJsonArray();
+                return new Version(array.get(0).getAsInt(), array.get(1).getAsInt(), array.get(2).getAsInt());
             }
         }
     }

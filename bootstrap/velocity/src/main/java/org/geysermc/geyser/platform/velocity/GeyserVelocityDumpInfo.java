@@ -25,6 +25,7 @@
 
 package org.geysermc.geyser.platform.velocity;
 
+import com.google.gson.annotations.JsonAdapter;
 import com.velocitypowered.api.plugin.PluginContainer;
 import com.velocitypowered.api.proxy.ProxyServer;
 import lombok.Getter;
@@ -42,7 +43,7 @@ public class GeyserVelocityDumpInfo extends BootstrapDumpInfo {
     private final String platformVendor;
     private final boolean onlineMode;
 
-    @AsteriskSerializer.Asterisk(isIp = true)
+    @JsonAdapter(value = AsteriskSerializer.class)
     private final String serverIP;
     private final int serverPort;
     private final List<PluginInfo> plugins;

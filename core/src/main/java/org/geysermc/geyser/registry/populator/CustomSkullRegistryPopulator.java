@@ -55,7 +55,7 @@ public class CustomSkullRegistryPopulator {
         SkullResourcePackManager.SKULL_SKINS.clear(); // Remove skins after reloading
         BlockRegistries.CUSTOM_SKULLS.set(Object2ObjectMaps.emptyMap());
 
-        if (!GeyserImpl.getInstance().getConfig().isAddNonBedrockItems()) {
+        if (!GeyserImpl.getInstance().config().addNonBedrockItems()) {
             return;
         }
 

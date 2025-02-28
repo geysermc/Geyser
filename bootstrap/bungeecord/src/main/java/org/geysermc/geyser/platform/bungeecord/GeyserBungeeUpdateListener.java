@@ -38,7 +38,7 @@ public final class GeyserBungeeUpdateListener implements Listener {
 
     @EventHandler
     public void onPlayerJoin(final PostLoginEvent event) {
-        if (GeyserImpl.getInstance().getConfig().isNotifyOnNewBedrockUpdate()) {
+        if (GeyserImpl.getInstance().config().notifyOnNewBedrockUpdate()) {
             final ProxiedPlayer player = event.getPlayer();
             if (player.hasPermission(Permissions.CHECK_UPDATE)) {
                 VersionCheckUtils.checkForGeyserUpdate(() -> new BungeeCommandSource(player));

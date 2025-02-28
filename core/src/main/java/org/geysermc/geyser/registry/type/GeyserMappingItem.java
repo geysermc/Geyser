@@ -25,7 +25,7 @@
 
 package org.geysermc.geyser.registry.type;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.gson.annotations.SerializedName;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -43,13 +43,13 @@ import lombok.With;
 @NoArgsConstructor
 @AllArgsConstructor
 public class GeyserMappingItem {
-    @JsonProperty("bedrock_identifier") String bedrockIdentifier;
-    @JsonProperty("bedrock_data") int bedrockData;
+    @SerializedName("bedrock_identifier") String bedrockIdentifier;
+    @SerializedName("bedrock_data") int bedrockData;
     Integer firstBlockRuntimeId;
     Integer lastBlockRuntimeId;
-    @JsonProperty("tool_type") String toolType;
-    @JsonProperty("armor_type") String armorType;
-    @JsonProperty("protection_value") int protectionValue;
-    @JsonProperty("is_edible") boolean edible = false;
-    @JsonProperty("is_entity_placer") boolean entityPlacer = false;
+    @SerializedName("tool_type") String toolType;
+    @SerializedName("armor_type") String armorType;
+    @SerializedName("protection_value") int protectionValue;
+    @SerializedName("is_edible") boolean edible = false;
+    @SerializedName("is_entity_placer") boolean entityPlacer = false;
 }

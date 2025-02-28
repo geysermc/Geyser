@@ -25,9 +25,11 @@
 
 package org.geysermc.geyser.skin;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import it.unimi.dsi.fastutil.bytes.ByteArrays;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -124,11 +126,6 @@ public class SkinProvider {
         WEARING_CUSTOM_SKULL = new SkinGeometry("{\"geometry\" :{\"default\" :\"geometry.humanoid.wearingCustomSkull\"}}", wearingCustomSkull);
         String wearingCustomSkullSlim = new String(FileUtils.readAllBytes("bedrock/skin/geometry.humanoid.wearingCustomSkullSlim.json"), StandardCharsets.UTF_8);
         WEARING_CUSTOM_SKULL_SLIM = new SkinGeometry("{\"geometry\" :{\"default\" :\"geometry.humanoid.wearingCustomSkullSlim\"}}", wearingCustomSkullSlim);
-
-        GeyserImpl geyser = GeyserImpl.getInstance();
-        if (geyser.getConfig().isAllowThirdPartyEars() || geyser.getConfig().isAllowThirdPartyCapes()) {
-            geyser.getLogger().warning("Third-party ears/capes have been removed from Geyser, if you still wish to have this functionality please use the extension: https://github.com/GeyserMC/ThirdPartyCosmetics");
-        }
     }
 
     public static ExecutorService getExecutorService() {
@@ -147,7 +144,7 @@ public class SkinProvider {
 
     public static void registerCacheImageTask(GeyserImpl geyser) {
         // Schedule Daily Image Expiry if we are caching them
-        if (geyser.getConfig().getCacheImages() > 0) {
+        if (geyser.config().advanced().cacheImages() > 0) {
             geyser.getScheduledThread().scheduleAtFixedRate(() -> {
                 File cacheFolder = GeyserImpl.getInstance().getBootstrap().getConfigFolder().resolve("cache").resolve("images").toFile();
                 if (!cacheFolder.exists()) {
@@ -155,7 +152,7 @@ public class SkinProvider {
                 }
 
                 int count = 0;
-                final long expireTime = ((long) GeyserImpl.getInstance().getConfig().getCacheImages()) * ((long)1000 * 60 * 60 * 24);
+                final long expireTime = ((long) GeyserImpl.getInstance().config().advanced().cacheImages()) * ((long)1000 * 60 * 60 * 24);
                 for (File imageFile : Objects.requireNonNull(cacheFolder.listFiles())) {
                     if (imageFile.lastModified() < System.currentTimeMillis() - expireTime) {
                         //noinspection ResultOfMethodCallIgnored
@@ -186,7 +183,7 @@ public class SkinProvider {
         Cape cape = null;
         SkinGeometry geometry = SkinGeometry.WIDE;
 
-        if (GeyserImpl.getInstance().getConfig().getRemote().authType() != AuthType.ONLINE) {
+        if (GeyserImpl.getInstance().config().java().authType() != AuthType.ONLINE) {
             // Let's see if this player is a Bedrock player, and if so, let's pull their skin.
             GeyserSession session = GeyserImpl.getInstance().connectionByUuid(uuid);
             if (session != null) {
@@ -425,7 +422,7 @@ public class SkinProvider {
             GeyserImpl.getInstance().getLogger().debug("Downloaded " + imageUrl);
 
             // Write to cache if we are allowed
-            if (GeyserImpl.getInstance().getConfig().getCacheImages() > 0) {
+            if (GeyserImpl.getInstance().config().advanced().cacheImages() > 0) {
                 imageFile.getParentFile().mkdirs();
                 try {
                     ImageIO.write(image, "png", imageFile);
@@ -485,16 +482,16 @@ public class SkinProvider {
     public static CompletableFuture<@Nullable String> requestTexturesFromUUID(String uuid) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                JsonNode node = WebUtils.getJson("https://sessionserver.mojang.com/session/minecraft/profile/" + uuid);
-                JsonNode properties = node.get("properties");
+                JsonObject node = WebUtils.getJson("https://sessionserver.mojang.com/session/minecraft/profile/" + uuid);
+                JsonArray properties = node.getAsJsonArray("properties");
                 if (properties == null) {
                     GeyserImpl.getInstance().getLogger().debug("No properties found in Mojang response for " + uuid);
                     return null;
                 }
-                return node.get("properties").get(0).get("value").asText();
+                return properties.get(0).getAsJsonObject().get("value").getAsString();
             } catch (Exception e) {
                 GeyserImpl.getInstance().getLogger().debug("Unable to request textures for " + uuid);
-                if (GeyserImpl.getInstance().getConfig().isDebugMode()) {
+                if (GeyserImpl.getInstance().config().debugMode()) {
                     e.printStackTrace();
                 }
                 return null;
@@ -512,15 +509,15 @@ public class SkinProvider {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 // Offline skin, or no present UUID
-                JsonNode node = WebUtils.getJson("https://api.mojang.com/users/profiles/minecraft/" + username);
-                JsonNode id = node.get("id");
+                JsonObject node = WebUtils.getJson("https://api.mojang.com/users/profiles/minecraft/" + username);
+                JsonElement id = node.get("id");
                 if (id == null) {
                     GeyserImpl.getInstance().getLogger().debug("No UUID found in Mojang response for " + username);
                     return null;
                 }
-                return id.asText();
+                return id.getAsString();
             } catch (Exception e) {
-                if (GeyserImpl.getInstance().getConfig().isDebugMode()) {
+                if (GeyserImpl.getInstance().config().debugMode()) {
                     e.printStackTrace();
                 }
                 return null;

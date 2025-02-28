@@ -27,12 +27,15 @@ package org.geysermc.geyser;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.geysermc.geyser.api.util.PlatformType;
 import org.geysermc.geyser.command.CommandRegistry;
-import org.geysermc.geyser.configuration.GeyserConfiguration;
+import org.geysermc.geyser.configuration.GeyserConfig;
 import org.geysermc.geyser.dump.BootstrapDumpInfo;
 import org.geysermc.geyser.level.GeyserWorldManager;
 import org.geysermc.geyser.level.WorldManager;
 import org.geysermc.geyser.ping.IGeyserPingPassthrough;
+import org.geysermc.geyser.util.metrics.MetricsPlatform;
+import org.geysermc.geyser.util.metrics.ProvidedMetricsPlatform;
 
 import java.io.InputStream;
 import java.net.SocketAddress;
@@ -68,11 +71,19 @@ public interface GeyserBootstrap {
     void onGeyserShutdown();
 
     /**
-     * Returns the current GeyserConfiguration
+     * Returns the platform type this Geyser instance is running on.
      *
-     * @return The current GeyserConfiguration
+     * @return The current PlatformType
      */
-    GeyserConfiguration getGeyserConfig();
+    @NonNull
+    PlatformType platformType();
+
+    /**
+     * Returns the current GeyserConfig
+     *
+     * @return The current GeyserConfig
+     */
+    GeyserConfig config();
 
     /**
      * Returns the current GeyserLogger
@@ -189,4 +200,14 @@ public interface GeyserBootstrap {
      * Tests if Floodgate is installed, loads the Floodgate key if so, and returns the result of Floodgate installed.
      */
     boolean testFloodgatePluginPresent();
+
+    /**
+     * TEMPORARY - will be removed after The Merge:tm:.
+     */
+    Path getFloodgateKeyPath();
+
+    @Nullable
+    default MetricsPlatform createMetricsPlatform() {
+        return new ProvidedMetricsPlatform();
+    }
 }

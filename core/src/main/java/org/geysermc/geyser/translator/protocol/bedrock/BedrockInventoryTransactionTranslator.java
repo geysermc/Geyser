@@ -178,7 +178,7 @@ public class BedrockInventoryTransactionTranslator extends PacketTranslator<Inve
                         final Vector3i packetBlockPosition = packet.getBlockPosition();
                         Vector3i blockPos = BlockUtils.getBlockPosition(packetBlockPosition, packet.getBlockFace());
 
-                        if (session.getGeyser().getConfig().isDisableBedrockScaffolding()) {
+                        if (session.getGeyser().config().disableBedrockScaffolding()) {
                             float yaw = session.getPlayerEntity().getYaw();
                             boolean isGodBridging = switch (packet.getBlockFace()) {
                                 case 2 -> yaw <= -135f || yaw > 135f;

@@ -25,93 +25,97 @@
 
 package org.geysermc.geyser.session.auth;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
+import com.google.gson.annotations.JsonAdapter;
+import com.google.gson.annotations.SerializedName;
 import lombok.Getter;
 import lombok.Setter;
 import org.geysermc.floodgate.util.DeviceOs;
 import org.geysermc.floodgate.util.InputMode;
 import org.geysermc.floodgate.util.UiProfile;
 
+import java.lang.reflect.Type;
+import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
-@JsonIgnoreProperties(ignoreUnknown = true)
 @Getter
 public final class BedrockClientData {
-    @JsonProperty(value = "GameVersion")
+    @SerializedName(value = "GameVersion")
     private String gameVersion;
-    @JsonProperty(value = "ServerAddress")
+    @SerializedName(value = "ServerAddress")
     private String serverAddress;
-    @JsonProperty(value = "ThirdPartyName")
+    @SerializedName(value = "ThirdPartyName")
     private String username;
-    @JsonProperty(value = "LanguageCode")
+    @SerializedName(value = "LanguageCode")
     private String languageCode;
 
-    @JsonProperty(value = "SkinId")
+    @SerializedName(value = "SkinId")
     private String skinId;
-    @JsonProperty(value = "SkinData")
+    @SerializedName(value = "SkinData")
     private String skinData;
-    @JsonProperty(value = "SkinImageHeight")
+    @SerializedName(value = "SkinImageHeight")
     private int skinImageHeight;
-    @JsonProperty(value = "SkinImageWidth")
+    @SerializedName(value = "SkinImageWidth")
     private int skinImageWidth;
-    @JsonProperty(value = "CapeId")
+    @SerializedName(value = "CapeId")
     private String capeId;
-    @JsonProperty(value = "CapeData")
+    @SerializedName(value = "CapeData")
+    @JsonAdapter(value = StringToByteDeserializer.class)
     private byte[] capeData;
-    @JsonProperty(value = "CapeImageHeight")
+    @SerializedName(value = "CapeImageHeight")
     private int capeImageHeight;
-    @JsonProperty(value = "CapeImageWidth")
+    @SerializedName(value = "CapeImageWidth")
     private int capeImageWidth;
-    @JsonProperty(value = "CapeOnClassicSkin")
+    @SerializedName(value = "CapeOnClassicSkin")
     private boolean capeOnClassicSkin;
-    @JsonProperty(value = "SkinResourcePatch")
+    @SerializedName(value = "SkinResourcePatch")
     private String geometryName;
-    @JsonProperty(value = "SkinGeometryData")
+    @SerializedName(value = "SkinGeometryData")
     private String geometryData;
-    @JsonProperty(value = "PersonaSkin")
+    @SerializedName(value = "PersonaSkin")
     private boolean personaSkin;
-    @JsonProperty(value = "PremiumSkin")
+    @SerializedName(value = "PremiumSkin")
     private boolean premiumSkin;
 
-    @JsonProperty(value = "DeviceId")
+    @SerializedName(value = "DeviceId")
     private String deviceId;
-    @JsonProperty(value = "DeviceModel")
+    @SerializedName(value = "DeviceModel")
     private String deviceModel;
-    @JsonProperty(value = "DeviceOS")
+    @SerializedName(value = "DeviceOS")
     private DeviceOs deviceOs;
-    @JsonProperty(value = "UIProfile")
+    @SerializedName(value = "UIProfile")
     private UiProfile uiProfile;
-    @JsonProperty(value = "GuiScale")
+    @SerializedName(value = "GuiScale")
     private int guiScale;
-    @JsonProperty(value = "CurrentInputMode")
+    @SerializedName(value = "CurrentInputMode")
     private InputMode currentInputMode;
-    @JsonProperty(value = "DefaultInputMode")
+    @SerializedName(value = "DefaultInputMode")
     private InputMode defaultInputMode;
-    @JsonProperty("PlatformOnlineId")
+    @SerializedName("PlatformOnlineId")
     private String platformOnlineId;
-    @JsonProperty(value = "PlatformOfflineId")
+    @SerializedName(value = "PlatformOfflineId")
     private String platformOfflineId;
-    @JsonProperty(value = "SelfSignedId")
+    @SerializedName(value = "SelfSignedId")
     private UUID selfSignedId;
-    @JsonProperty(value = "ClientRandomId")
+    @SerializedName(value = "ClientRandomId")
     private long clientRandomId;
 
-    @JsonProperty(value = "ArmSize")
+    @SerializedName(value = "ArmSize")
     private String armSize;
-    @JsonProperty(value = "SkinAnimationData")
+    @SerializedName(value = "SkinAnimationData")
     private String skinAnimationData;
-    @JsonProperty(value = "SkinColor")
+    @SerializedName(value = "SkinColor")
     private String skinColor;
-    @JsonProperty(value = "ThirdPartyNameOnly")
+    @SerializedName(value = "ThirdPartyNameOnly")
     private boolean thirdPartyNameOnly;
-    @JsonProperty(value = "PlayFabId")
+    @SerializedName(value = "PlayFabId")
     private String playFabId;
 
-    @JsonIgnore
     @Setter
-    private String originalString = null;
+    private transient String originalString = null;
 
     public DeviceOs getDeviceOs() {
         return deviceOs != null ? deviceOs : DeviceOs.UNKNOWN;
@@ -127,5 +131,12 @@ public final class BedrockClientData {
 
     public UiProfile getUiProfile() {
         return uiProfile != null ? uiProfile : UiProfile.CLASSIC;
+    }
+
+    private static final class StringToByteDeserializer implements JsonDeserializer<byte[]> {
+        @Override
+        public byte[] deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+            return json.getAsString().getBytes(StandardCharsets.UTF_8);
+        }
     }
 }

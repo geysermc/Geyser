@@ -27,7 +27,7 @@ package org.geysermc.geyser.session.cache;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.geysermc.geyser.configuration.GeyserConfiguration;
+import org.geysermc.geyser.configuration.GeyserConfig;
 import org.geysermc.geyser.session.GeyserSession;
 import org.geysermc.geyser.util.CooldownUtils;
 
@@ -54,15 +54,16 @@ public class PreferencesCache {
     private boolean prefersCustomSkulls;
 
     /**
-     * Which CooldownType the client prefers. Initially set to {@link CooldownUtils#getDefaultShowCooldown()}.
+     * Which CooldownType the client prefers. Initially set to the config default.
      */
     @Setter
-    private CooldownUtils.CooldownType cooldownPreference = CooldownUtils.getDefaultShowCooldown();
+    private CooldownUtils.CooldownType cooldownPreference;
 
     public PreferencesCache(GeyserSession session) {
         this.session = session;
 
-        prefersCustomSkulls = session.getGeyser().getConfig().isAllowCustomSkulls();
+        prefersCustomSkulls = session.getGeyser().config().allowCustomSkulls();
+        cooldownPreference = session.getGeyser().config().showCooldown();
     }
 
     /**
@@ -71,10 +72,10 @@ public class PreferencesCache {
      * If {@link #prefersShowCoordinates} is true, coordinates will be shown, unless either of the following conditions apply: <br>
      * <br>
      * {@link GeyserSession#isReducedDebugInfo()} is enabled
-     * {@link GeyserConfiguration#isShowCoordinates()} is disabled
+     * {@link GeyserConfig#showCoordinates()} is disabled
      */
     public void updateShowCoordinates() {
-        allowShowCoordinates = !session.isReducedDebugInfo() && session.getGeyser().getConfig().isShowCoordinates();
+        allowShowCoordinates = !session.isReducedDebugInfo() && session.getGeyser().config().showCoordinates();
         session.sendGameRule("showcoordinates", allowShowCoordinates && prefersShowCoordinates);
     }
 
@@ -82,6 +83,6 @@ public class PreferencesCache {
      * @return true if the session prefers custom skulls, and the config allows them.
      */
     public boolean showCustomSkulls() {
-        return prefersCustomSkulls && session.getGeyser().getConfig().isAllowCustomSkulls();
+        return prefersCustomSkulls && session.getGeyser().config().allowCustomSkulls();
     }
 }

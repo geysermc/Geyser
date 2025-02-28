@@ -25,7 +25,7 @@
 
 package org.geysermc.geyser.command.defaults;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.google.gson.JsonObject;
 import org.cloudburstmc.protocol.bedrock.codec.BedrockCodec;
 import org.geysermc.geyser.GeyserImpl;
 import org.geysermc.geyser.api.util.PlatformType;
@@ -73,7 +73,7 @@ public class VersionCommand extends GeyserCommand {
                 GeyserImpl.NAME, GeyserImpl.VERSION, javaVersions, bedrockVersions));
 
         // Disable update checking in dev mode and for players in Geyser Standalone
-        if (!GeyserImpl.getInstance().isProductionEnvironment() || (!source.isConsole() && geyser.getPlatformType() == PlatformType.STANDALONE)) {
+        if (!GeyserImpl.getInstance().isProductionEnvironment() || (!source.isConsole() && geyser.platformType() == PlatformType.STANDALONE)) {
             return;
         }
 
@@ -85,8 +85,8 @@ public class VersionCommand extends GeyserCommand {
         source.sendMessage(GeyserLocale.getPlayerLocaleString("geyser.commands.version.checking", source.locale()));
         try {
             int buildNumber = this.geyser.buildNumber();
-            JsonNode response = WebUtils.getJson("https://download.geysermc.org/v2/projects/geyser/versions/latest/builds/latest");
-            int latestBuildNumber = response.get("build").asInt();
+            JsonObject response = WebUtils.getJson("https://download.geysermc.org/v2/projects/geyser/versions/latest/builds/latest");
+            int latestBuildNumber = response.get("build").getAsInt();
 
             if (latestBuildNumber == buildNumber) {
                 source.sendMessage(GeyserLocale.getPlayerLocaleString("geyser.commands.version.no_updates", source.locale()));

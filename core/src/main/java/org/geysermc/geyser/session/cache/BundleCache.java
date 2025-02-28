@@ -68,7 +68,7 @@ public final class BundleCache {
         if (session.getTagCache().is(ItemTag.BUNDLES, itemStack)) {
             if (itemStack.getBundleData() != null) {
                 session.getGeyser().getLogger().warning("Stack has bundle data already! It should not!");
-                if (session.getGeyser().getConfig().isDebugMode()) {
+                if (session.getGeyser().getLogger().isDebug()) {
                     session.getGeyser().getLogger().debug("Player: " + session.javaUsername());
                     session.getGeyser().getLogger().debug("Stack: " + itemStack);
                 }

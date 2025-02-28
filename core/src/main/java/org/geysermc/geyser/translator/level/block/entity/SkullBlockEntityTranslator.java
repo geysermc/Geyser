@@ -118,7 +118,7 @@ public class SkullBlockEntityTranslator extends BlockEntityTranslator implements
                 return skull.getBlockDefinition();
             } catch (InterruptedException | ExecutionException e) {
                 session.getGeyser().getLogger().debug("Failed to acquire textures for custom skull: " + blockPosition + " " + javaNbt);
-                if (GeyserImpl.getInstance().getConfig().isDebugMode()) {
+                if (GeyserImpl.getInstance().config().debugMode()) {
                     e.printStackTrace();
                 }
             }

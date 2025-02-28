@@ -73,7 +73,7 @@ public class PacketTranslatorRegistry<T> extends AbstractMappedRegistry<Class<? 
             }
             return true;
         } else {
-            if (GeyserImpl.getInstance().getConfig().isDebugMode()) {
+            if (GeyserImpl.getInstance().config().debugMode()) {
                 if (!IGNORED_PACKETS.contains(clazz)) {
                     GeyserImpl.getInstance().getLogger().debug("Could not find packet for " + (packet.toString().length() > 25 ? packet.getClass().getSimpleName() : packet));
                 }

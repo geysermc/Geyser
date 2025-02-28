@@ -25,6 +25,7 @@
 
 package org.geysermc.geyser.platform.spigot;
 
+import com.google.gson.annotations.JsonAdapter;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
@@ -42,7 +43,7 @@ public class GeyserSpigotDumpInfo extends BootstrapDumpInfo {
     private final String platformAPIVersion;
     private final boolean onlineMode;
 
-    @AsteriskSerializer.Asterisk(isIp = true)
+    @JsonAdapter(value = AsteriskSerializer.class)
     private final String serverIP;
     private final int serverPort;
     private final List<PluginInfo> plugins;

@@ -97,7 +97,7 @@ public class JavaBlockEventTranslator extends PacketTranslator<ClientboundBlockE
                     // Retracting sticky pistons is an exception, since the event is not called on Spigot from 1.13.2 - 1.17.1
                     // See https://github.com/PaperMC/Paper/blob/6fa1983e9ce177a4a412d5b950fd978620174777/patches/server/0304-Fire-BlockPistonRetractEvent-for-all-empty-pistons.patch
                     boolean isSticky = isSticky(pistonBlock);
-                    if (session.getGeyser().getPlatformType() == PlatformType.SPIGOT && !isSticky) {
+                    if (session.getGeyser().platformType() == PlatformType.SPIGOT && !isSticky) {
                         return;
                     }
 

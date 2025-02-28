@@ -25,15 +25,15 @@
 
 package org.geysermc.geyser.registry.loader;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import org.geysermc.mcprotocollib.protocol.data.game.level.particle.ParticleType;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import org.cloudburstmc.protocol.bedrock.data.LevelEvent;
 import org.cloudburstmc.protocol.bedrock.data.LevelEventType;
 import org.geysermc.geyser.GeyserImpl;
 import org.geysermc.geyser.registry.type.ParticleMapping;
+import org.geysermc.mcprotocollib.protocol.data.game.level.particle.ParticleType;
 
-import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 
@@ -44,16 +44,13 @@ public class ParticleTypesRegistryLoader extends EffectRegistryLoader<Map<Partic
 
     @Override
     public Map<ParticleType, ParticleMapping> load(String input) {
-        this.loadFile(input);
-
-        Iterator<Map.Entry<String, JsonNode>> particlesIterator = this.get(input).fields();
+        JsonObject particlesJson = this.loadFile(input);
         Map<ParticleType, ParticleMapping> particles = new Object2ObjectOpenHashMap<>();
         try {
-            while (particlesIterator.hasNext()) {
-                Map.Entry<String, JsonNode> entry = particlesIterator.next();
+            for (Map.Entry<String, JsonElement> entry : particlesJson.entrySet()) {
                 String key = entry.getKey().toUpperCase(Locale.ROOT);
-                JsonNode bedrockId = entry.getValue().get("bedrockId");
-                JsonNode eventType = entry.getValue().get("eventType");
+                JsonElement bedrockId = entry.getValue().getAsJsonObject().get("bedrockId");
+                JsonElement eventType = entry.getValue().getAsJsonObject().get("eventType");
                 if (eventType == null && bedrockId == null) {
                     GeyserImpl.getInstance().getLogger().debug("Skipping particle mapping " + key + " because no Bedrock equivalent exists.");
                     continue;
@@ -63,16 +60,16 @@ public class ParticleTypesRegistryLoader extends EffectRegistryLoader<Map<Partic
                 if (eventType != null) {
                     try {
                         // Check if we have a particle type mapping
-                        type = org.cloudburstmc.protocol.bedrock.data.ParticleType.valueOf(eventType.asText().toUpperCase(Locale.ROOT));
+                        type = org.cloudburstmc.protocol.bedrock.data.ParticleType.valueOf(eventType.getAsString().toUpperCase(Locale.ROOT));
                     } catch (IllegalArgumentException ex) {
                         // No particle type; try level event
-                        type = LevelEvent.valueOf(eventType.asText().toUpperCase(Locale.ROOT));
+                        type = LevelEvent.valueOf(eventType.getAsString().toUpperCase(Locale.ROOT));
                     }
                 }
 
                 particles.put(ParticleType.valueOf(key), new ParticleMapping(
                         type,
-                        bedrockId == null ? null : bedrockId.asText())
+                        bedrockId == null ? null : bedrockId.getAsString())
                 );
             }
         } catch (Exception e) {

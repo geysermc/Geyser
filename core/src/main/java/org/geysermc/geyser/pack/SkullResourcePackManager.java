@@ -78,7 +78,7 @@ public class SkullResourcePackManager {
 
         Path packPath = cachePath.resolve("player_skulls.mcpack");
         File packFile = packPath.toFile();
-        if (BlockRegistries.CUSTOM_SKULLS.get().isEmpty() || !GeyserImpl.getInstance().getConfig().isAddNonBedrockItems()) {
+        if (BlockRegistries.CUSTOM_SKULLS.get().isEmpty() || !GeyserImpl.getInstance().config().addNonBedrockItems()) {
             packFile.delete(); // No need to keep resource pack
             return null;
         }
@@ -161,7 +161,7 @@ public class SkullResourcePackManager {
             }
         } catch (IOException e) {
             GeyserImpl.getInstance().getLogger().debug("Unable to clean up skull skin cache.");
-            if (GeyserImpl.getInstance().getConfig().isDebugMode()) {
+            if (GeyserImpl.getInstance().config().debugMode()) {
                 e.printStackTrace();
             }
         }

@@ -25,14 +25,16 @@
 
 package org.geysermc.geyser.registry.loader;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import org.geysermc.geyser.GeyserImpl;
 import org.geysermc.geyser.registry.type.SoundMapping;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -42,26 +44,24 @@ public class SoundRegistryLoader implements RegistryLoader<String, Map<String, S
 
     @Override
     public Map<String, SoundMapping> load(String input) {
-        JsonNode soundsTree;
+        JsonObject soundsJson;
         try (InputStream stream = GeyserImpl.getInstance().getBootstrap().getResourceOrThrow(input)) {
-            soundsTree = GeyserImpl.JSON_MAPPER.readTree(stream);
+            soundsJson = new JsonParser().parse(new InputStreamReader(stream)).getAsJsonObject();
         } catch (IOException e) {
             throw new AssertionError("Unable to load sound mappings", e);
         }
 
         Map<String, SoundMapping> soundMappings = new HashMap<>();
-        Iterator<Map.Entry<String, JsonNode>> soundsIterator = soundsTree.fields();
-        while(soundsIterator.hasNext()) {
-            Map.Entry<String, JsonNode> next = soundsIterator.next();
-            JsonNode brMap = next.getValue();
-            String javaSound = next.getKey();
+        for (Map.Entry<String, JsonElement> entry : soundsJson.entrySet()) {
+            JsonObject brMap = entry.getValue().getAsJsonObject();
+            String javaSound = entry.getKey();
             soundMappings.put(javaSound, new SoundMapping(
                             javaSound,
-                            brMap.has("bedrock_mapping") && brMap.get("bedrock_mapping").isTextual() ? brMap.get("bedrock_mapping").asText() : null,
-                            brMap.has("playsound_mapping") && brMap.get("playsound_mapping").isTextual() ? brMap.get("playsound_mapping").asText() : null,
-                            brMap.has("extra_data") && brMap.get("extra_data").isInt() ? brMap.get("extra_data").asInt() : -1,
-                            brMap.has("identifier") && brMap.get("identifier").isTextual() ? brMap.get("identifier").asText() : null,
-                            brMap.has("level_event") && brMap.get("level_event").isBoolean() && brMap.get("level_event").asBoolean()
+                            brMap.has("bedrock_mapping") ? brMap.get("bedrock_mapping").getAsString() : null,
+                            brMap.has("playsound_mapping") ? brMap.get("playsound_mapping").getAsString() : null,
+                            brMap.has("extra_data") ? brMap.get("extra_data").getAsInt() : -1,
+                            brMap.has("identifier") ? brMap.get("identifier").getAsString() : null,
+                            brMap.has("level_event") && brMap.get("level_event").getAsBoolean()
                     )
             );
         }

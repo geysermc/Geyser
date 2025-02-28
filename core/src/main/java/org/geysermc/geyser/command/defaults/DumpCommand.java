@@ -25,10 +25,9 @@
 
 package org.geysermc.geyser.command.defaults;
 
-import com.fasterxml.jackson.core.util.DefaultIndenter;
-import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
 import org.geysermc.geyser.GeyserImpl;
 import org.geysermc.geyser.api.util.TriState;
 import org.geysermc.geyser.command.GeyserCommand;
@@ -37,6 +36,7 @@ import org.geysermc.geyser.dump.DumpInfo;
 import org.geysermc.geyser.text.AsteriskSerializer;
 import org.geysermc.geyser.text.ChatColor;
 import org.geysermc.geyser.text.GeyserLocale;
+import org.geysermc.geyser.util.JsonUtils;
 import org.geysermc.geyser.util.WebUtils;
 import org.incendo.cloud.CommandManager;
 import org.incendo.cloud.context.CommandContext;
@@ -55,7 +55,6 @@ public class DumpCommand extends GeyserCommand {
     private static final Iterable<String> SUGGESTIONS = List.of("full", "offline", "logs");
 
     private final GeyserImpl geyser;
-    private static final ObjectMapper MAPPER = new ObjectMapper();
     private static final String DUMP_URL = "https://dump.geysermc.org/";
 
     public DumpCommand(GeyserImpl geyser, String name, String description, String permission) {
@@ -110,20 +109,14 @@ public class DumpCommand extends GeyserCommand {
 
         AsteriskSerializer.showSensitive = showSensitive;
 
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
         source.sendMessage(GeyserLocale.getPlayerLocaleString("geyser.commands.dump.collecting", source.locale()));
         String dumpData;
         try {
             DumpInfo dump = new DumpInfo(geyser, addLog);
-
-            if (offlineDump) {
-                DefaultPrettyPrinter prettyPrinter = new DefaultPrettyPrinter();
-                // Make arrays easier to read
-                prettyPrinter.indentArraysWith(new DefaultIndenter("    ", "\n"));
-                dumpData = MAPPER.writer(prettyPrinter).writeValueAsString(dump);
-            } else {
-                dumpData = MAPPER.writeValueAsString(dump);
-            }
-        } catch (IOException e) {
+            dumpData = gson.toJson(dump);
+        } catch (Exception e) {
             source.sendMessage(ChatColor.RED + GeyserLocale.getPlayerLocaleString("geyser.commands.dump.collect_error", source.locale()));
             geyser.getLogger().error(GeyserLocale.getLocaleStringLog("geyser.commands.dump.collect_error_short"), e);
             return;
@@ -149,10 +142,10 @@ public class DumpCommand extends GeyserCommand {
             source.sendMessage(GeyserLocale.getPlayerLocaleString("geyser.commands.dump.uploading", source.locale()));
 
             String response;
-            JsonNode responseNode;
+            JsonObject responseNode;
             try {
                 response = WebUtils.post(DUMP_URL + "documents", dumpData);
-                responseNode = MAPPER.readTree(response);
+                responseNode = JsonUtils.parseJson(response);
             } catch (IOException e) {
                 source.sendMessage(ChatColor.RED + GeyserLocale.getPlayerLocaleString("geyser.commands.dump.upload_error", source.locale()));
                 geyser.getLogger().error(GeyserLocale.getLocaleStringLog("geyser.commands.dump.upload_error_short"), e);
@@ -160,11 +153,11 @@ public class DumpCommand extends GeyserCommand {
             }
 
             if (!responseNode.has("key")) {
-                source.sendMessage(ChatColor.RED + GeyserLocale.getPlayerLocaleString("geyser.commands.dump.upload_error_short", source.locale()) + ": " + (responseNode.has("message") ? responseNode.get("message").asText() : response));
+                source.sendMessage(ChatColor.RED + GeyserLocale.getPlayerLocaleString("geyser.commands.dump.upload_error_short", source.locale()) + ": " + (responseNode.has("message") ? responseNode.get("message").getAsString() : response));
                 return;
             }
 
-            uploadedDumpUrl = DUMP_URL + responseNode.get("key").asText();
+            uploadedDumpUrl = DUMP_URL + responseNode.get("key").getAsString();
         }
 
         source.sendMessage(GeyserLocale.getPlayerLocaleString("geyser.commands.dump.message", source.locale()) + " " + ChatColor.DARK_AQUA + uploadedDumpUrl);

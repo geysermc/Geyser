@@ -25,18 +25,28 @@
 
 package org.geysermc.geyser.util;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.JsonNode;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.annotations.SerializedName;
 import lombok.Getter;
 import org.geysermc.geyser.GeyserImpl;
 import org.geysermc.geyser.network.GameProtocol;
 import org.geysermc.geyser.text.GeyserLocale;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
 import java.util.concurrent.CompletableFuture;
 import java.util.zip.ZipFile;
 
@@ -83,7 +93,7 @@ public final class AssetUtils {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 // Get the version manifest from Mojang
-                VersionManifest versionManifest = GeyserImpl.JSON_MAPPER.readValue(
+                VersionManifest versionManifest = GeyserImpl.GSON.fromJson(
                         WebUtils.getBody("https://launchermeta.mojang.com/mc/game/version_manifest.json"), VersionManifest.class);
 
                 // Get the url for the latest version of the games manifest
@@ -101,26 +111,24 @@ public final class AssetUtils {
                 }
 
                 // Get the individual version manifest
-                VersionInfo versionInfo = GeyserImpl.JSON_MAPPER.readValue(WebUtils.getBody(latestInfoURL), VersionInfo.class);
+                VersionInfo versionInfo = GeyserImpl.GSON.fromJson(WebUtils.getBody(latestInfoURL), VersionInfo.class);
 
                 // Get the client jar for use when downloading the en_us locale
-                GeyserImpl.getInstance().getLogger().debug(GeyserImpl.JSON_MAPPER.writeValueAsString(versionInfo.getDownloads()));
+                GeyserImpl.getInstance().getLogger().debug(versionInfo.getDownloads()); // Was previously a Jackson call for writeValueToString
                 CLIENT_JAR_INFO = versionInfo.getDownloads().get("client");
-                GeyserImpl.getInstance().getLogger().debug(GeyserImpl.JSON_MAPPER.writeValueAsString(CLIENT_JAR_INFO));
+                GeyserImpl.getInstance().getLogger().debug(CLIENT_JAR_INFO); // Was previously a Jackson call for writeValueToString
 
                 // Get the assets list
-                JsonNode assets = GeyserImpl.JSON_MAPPER.readTree(WebUtils.getBody(versionInfo.getAssetIndex().getUrl())).get("objects");
+                JsonObject assets = ((JsonObject) new JsonParser().parse(WebUtils.getBody(versionInfo.getAssetIndex().getUrl()))).getAsJsonObject("objects");
 
                 // Put each asset into an array for use later
-                Iterator<Map.Entry<String, JsonNode>> assetIterator = assets.fields();
-                while (assetIterator.hasNext()) {
-                    Map.Entry<String, JsonNode> entry = assetIterator.next();
+                for (Map.Entry<String, JsonElement> entry : assets.entrySet()) {
                     if (!entry.getKey().startsWith("minecraft/lang/")) {
                         // No need to cache non-language assets as we don't use them
                         continue;
                     }
 
-                    Asset asset = GeyserImpl.JSON_MAPPER.treeToValue(entry.getValue(), Asset.class);
+                    Asset asset = GeyserImpl.GSON.fromJson(entry.getValue(), Asset.class);
                     ASSET_MAP.put(entry.getKey(), asset);
                 }
 
@@ -221,106 +229,108 @@ public final class AssetUtils {
 
     /* Classes that map to JSON files served by Mojang */
 
-    @JsonIgnoreProperties(ignoreUnknown = true)
     @Getter
     static class VersionManifest {
-        @JsonProperty("latest")
+        @SerializedName("latest")
         private LatestVersion latestVersion;
 
-        @JsonProperty("versions")
+        @SerializedName("versions")
         private List<Version> versions;
     }
 
-    @JsonIgnoreProperties(ignoreUnknown = true)
     @Getter
     static class LatestVersion {
-        @JsonProperty("release")
+        @SerializedName("release")
         private String release;
 
-        @JsonProperty("snapshot")
+        @SerializedName("snapshot")
         private String snapshot;
     }
 
-    @JsonIgnoreProperties(ignoreUnknown = true)
     @Getter
     static class Version {
-        @JsonProperty("id")
+        @SerializedName("id")
         private String id;
 
-        @JsonProperty("type")
+        @SerializedName("type")
         private String type;
 
-        @JsonProperty("url")
+        @SerializedName("url")
         private String url;
 
-        @JsonProperty("time")
+        @SerializedName("time")
         private String time;
 
-        @JsonProperty("releaseTime")
+        @SerializedName("releaseTime")
         private String releaseTime;
     }
 
-    @JsonIgnoreProperties(ignoreUnknown = true)
     @Getter
     static class VersionInfo {
-        @JsonProperty("id")
+        @SerializedName("id")
         private String id;
 
-        @JsonProperty("type")
+        @SerializedName("type")
         private String type;
 
-        @JsonProperty("time")
+        @SerializedName("time")
         private String time;
 
-        @JsonProperty("releaseTime")
+        @SerializedName("releaseTime")
         private String releaseTime;
 
-        @JsonProperty("assetIndex")
+        @SerializedName("assetIndex")
         private AssetIndex assetIndex;
 
-        @JsonProperty("downloads")
+        @SerializedName("downloads")
         private Map<String, VersionDownload> downloads;
     }
 
-    @JsonIgnoreProperties(ignoreUnknown = true)
     @Getter
     static class VersionDownload {
-        @JsonProperty("sha1")
+        @SerializedName("sha1")
         private String sha1;
 
-        @JsonProperty("size")
+        @SerializedName("size")
         private int size;
 
-        @JsonProperty("url")
+        @SerializedName("url")
         private String url;
+
+        @Override
+        public String toString() {
+            return "VersionDownload{" +
+                "sha1='" + sha1 + '\'' +
+                ", size=" + size +
+                ", url='" + url + '\'' +
+                '}';
+        }
     }
 
-    @JsonIgnoreProperties(ignoreUnknown = true)
     @Getter
     static class AssetIndex {
-        @JsonProperty("id")
+        @SerializedName("id")
         private String id;
 
-        @JsonProperty("sha1")
+        @SerializedName("sha1")
         private String sha1;
 
-        @JsonProperty("size")
+        @SerializedName("size")
         private int size;
 
-        @JsonProperty("totalSize")
+        @SerializedName("totalSize")
         private int totalSize;
 
-        @JsonProperty("url")
+        @SerializedName("url")
         private String url;
     }
 
-    @JsonIgnoreProperties(ignoreUnknown = true)
     @Getter
     public static class Asset {
-        @JsonProperty("hash")
+        @SerializedName("hash")
         private String hash;
 
-        @JsonProperty("size")
+        @SerializedName("size")
         private int size;
     }
 

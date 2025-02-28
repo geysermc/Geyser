@@ -62,6 +62,9 @@ repositories {
         name = "viaversion"
     }
 
+    // MinecraftAuth
+    maven("https://maven.lenni0451.net/snapshots")
+
     // Jitpack for e.g. MCPL
     maven("https://jitpack.io") {
         content { includeGroupByRegex("com\\.github\\..*") }

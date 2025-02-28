@@ -25,6 +25,7 @@
 
 package org.geysermc.geyser.platform.fabric;
 
+import com.google.gson.annotations.JsonAdapter;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import net.fabricmc.api.EnvType;
@@ -48,7 +49,7 @@ public class GeyserFabricDumpInfo extends BootstrapDumpInfo {
     private final String minecraftVersion;
     private final EnvType environmentType;
 
-    @AsteriskSerializer.Asterisk(isIp = true)
+    @JsonAdapter(value = AsteriskSerializer.class)
     private final String serverIP;
     private final int serverPort;
     private final boolean onlineMode;

@@ -32,6 +32,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.apache.logging.log4j.io.IoBuilder;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.geysermc.geyser.GeyserImpl;
 import org.geysermc.geyser.GeyserLogger;
 import org.geysermc.geyser.command.GeyserCommandSource;
@@ -112,7 +113,12 @@ public class GeyserStandaloneLogger extends SimpleTerminalConsole implements Gey
 
     @Override
     public void debug(String message) {
-        log.debug(ChatColor.GRAY + message);
+        log.debug(ChatColor.GRAY + "{}", message);
+    }
+
+    @Override
+    public void debug(@Nullable Object object) {
+        log.debug("{}", object);
     }
 
     @Override
